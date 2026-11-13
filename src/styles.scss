@@ -1,0 +1,70 @@
+/* You can add global styles to this file, and also import other style files */
+
+:root {
+  --bg: #0b1a1c;
+  --panel: #11262a;
+  --panel-border: #2a4a4c;
+  --text: #ece4cc;
+  --accent: #f0c04a;
+  --gold-line: rgb(240 192 74 / 35%);
+  --font-display: 'Cinzel', 'Trajan Pro', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+  color-scheme: dark;
+}
+
+// Native <select> option lists are drawn by the browser and ignore component styles.
+option,
+optgroup {
+  background: var(--panel);
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+// Text cursors (pointer and caret) only belong where you can type.
+html {
+  cursor: default;
+  caret-color: transparent;
+}
+
+input:not([type='checkbox'], [type='radio'], [type='range'], [type='color'], [type='button'], [type='submit'], [type='reset']),
+textarea,
+[contenteditable='true'] {
+  cursor: text;
+  caret-color: auto;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  // The app shell owns its own scrolling, so the document never scrolls.
+  overflow: hidden;
+  overscroll-behavior: none;
+  background:
+    radial-gradient(120% 80% at 50% 0%, #133034 0%, transparent 70%),
+    var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+[role='dialog'],
+[role='dialog'] * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+[role='dialog']::-webkit-scrollbar,
+[role='dialog'] *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}

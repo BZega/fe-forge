@@ -1,0 +1,117 @@
+<nav class="topnav">
+  <a class="topnav__brand" routerLink="/" (click)="closeMenu()">
+    <span class="topnav__brand-full">Fire Emblem Forge</span>
+    <span class="topnav__brand-short">FE Forge</span>
+  </a>
+
+  <button
+    type="button"
+    class="topnav__toggle"
+    aria-label="Toggle navigation"
+    aria-controls="topnav-links"
+    [attr.aria-expanded]="menuOpen()"
+    (click)="toggleMenu()"
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      @if (menuOpen()) {
+        <path
+          d="M6.4 4.9 4.9 6.4 10.6 12l-5.7 5.6 1.5 1.5L12 13.4l5.6 5.7 1.5-1.5-5.7-5.6 5.7-5.6-1.5-1.5L12 10.6 6.4 4.9Z"
+        />
+      } @else {
+        <path d="M3 6h18v2H3V6Zm0 5h18v2H3v-2Zm0 5h18v2H3v-2Z" />
+      }
+    </svg>
+  </button>
+
+  <ul id="topnav-links" class="topnav__links" [class.is-open]="menuOpen()">
+    @for (link of links; track link.path) {
+      <li>
+        <a
+          [routerLink]="link.path"
+          routerLinkActive="is-active"
+          (click)="closeMenu()"
+        >
+          {{ link.label }}
+        </a>
+      </li>
+    }
+
+    <li class="resource-menu" routerLinkActive="has-active">
+      <button
+        type="button"
+        class="resource-menu__trigger"
+        aria-haspopup="true"
+        aria-controls="resource-menu-panel"
+        [attr.aria-expanded]="resourcesOpen()"
+        (click)="toggleResources()"
+      >
+        Resources
+        <span class="spoiler-menu__caret" aria-hidden="true">{{ resourcesOpen() ? '▴' : '▾' }}</span>
+      </button>
+
+      <ul id="resource-menu-panel" class="resource-menu__panel" [class.is-open]="resourcesOpen()">
+        @for (link of resourceLinks; track link.path) {
+          <li>
+            <a [routerLink]="link.path" routerLinkActive="is-active" (click)="closeMenu()">
+              {{ link.label }}
+            </a>
+          </li>
+        }
+      </ul>
+    </li>
+
+    <li class="topnav__spoilers">
+      <button
+        type="button"
+        class="spoiler-toggle"
+        aria-haspopup="dialog"
+        (click)="openSuggestions()"
+      >
+        Suggestions
+      </button>
+    </li>
+
+    <li class="topnav__spoilers spoiler-menu">
+      <button
+        type="button"
+        class="spoiler-toggle spoiler-menu__trigger"
+        [class.is-on]="hideSpoilers()"
+        aria-haspopup="true"
+        aria-controls="spoiler-menu-panel"
+        [attr.aria-expanded]="spoilerMenuOpen()"
+        (click)="toggleSpoilerMenu()"
+      >
+        Spoilers
+        <span class="spoiler-menu__caret" aria-hidden="true">{{ spoilerMenuOpen() ? '▴' : '▾' }}</span>
+      </button>
+
+      @if (spoilerMenuOpen()) {
+        <div id="spoiler-menu-panel" class="spoiler-menu__panel" role="group" aria-label="Hide spoilers">
+          @for (tier of spoilerTiers; track tier.key) {
+            <button
+              type="button"
+              class="spoiler-toggle"
+              role="switch"
+              [class.is-on]="hiddenTiers()[tier.key]"
+              [attr.aria-checked]="hiddenTiers()[tier.key]"
+              (click)="toggleSpoilerTier(tier.key)"
+            >
+              <span class="spoiler-toggle__track" aria-hidden="true">
+                <span class="spoiler-toggle__thumb"></span>
+              </span>
+              {{ tier.label }}
+            </button>
+          }
+        </div>
+      }
+    </li>
+  </ul>
+</nav>
+
+<main>
+  <router-outlet />
+</main>
+
+@if (suggestionsOpen()) {
+  <app-suggestion-dialog (closed)="suggestionsOpen.set(false)" />
+}

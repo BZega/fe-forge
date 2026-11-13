@@ -1,0 +1,192 @@
+@let a = buildA();
+@let b = buildB();
+@let d = delta();
+
+<div class="backdrop" (click)="close()"></div>
+
+<div
+  class="dialog"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="comparison-title"
+>
+  <header class="dialog__header">
+    <div>
+      <h2 id="comparison-title">{{ title() }}</h2>
+    </div>
+    <button type="button" class="dialog__close" aria-label="Close" (click)="close()">
+      &times;
+    </button>
+  </header>
+
+  <div class="summary">
+    <ng-container *ngTemplateOutlet="side; context: { $implicit: a, key: 'a', editor: editorA(), name: 'first' }" />
+    <ng-container *ngTemplateOutlet="side; context: { $implicit: b, key: 'b', editor: editorB(), name: 'second' }" />
+  </div>
+
+  <!-- One build's box. Change swaps its unit and build lines for two rows of the usual dropdowns. -->
+  <ng-template #side let-build let-key="key" let-editor="editor" let-name="name">
+    @let editingThis = editing() === key && editor;
+
+    <div class="summary__side summary__side--{{ key }}" [class.summary__side--editing]="editingThis">
+      @if (editingThis) {
+        <div class="summary__row" [class.summary__row--stacked]="!editor.levelConfig() && !editor.isMounted()">
+          <app-searchable-select
+            class="compact summary__pick"
+            placeholder="— Unit —"
+            [label]="'Unit of the ' + name + ' build'"
+            [keyboard]="false"
+            [items]="editor.units()"
+            [clearable]="!editor.lockUnit()"
+            [disabled]="editor.lockUnit()"
+            [value]="editor.selectedUnitId()"
+            (valueChange)="editor.onUnitChange($event)"
+          />
+          <app-searchable-select
+            class="compact summary__pick"
+            placeholder="— Class —"
+            [label]="'Class of the ' + name + ' build'"
+            [keyboard]="false"
+            [groups]="editor.classGroups()"
+            [value]="editor.selectedClassId()"
+            (valueChange)="editor.onClassChange($event)"
+          />
+          @if (editor.levelConfig(); as config) {
+            <select
+              class="summary__select"
+              [attr.aria-label]="'Class level of the ' + name + ' build'"
+              [value]="editor.classLevel()"
+              (change)="editor.onLevelChange($any($event.target).value)"
+            >
+              @for (level of config.levels; track level) {
+                <option [value]="level" [selected]="level === editor.classLevel()">Lv {{ level }}</option>
+              }
+            </select>
+          }
+        </div>
+        @if (editor.isMounted()) {
+          <div class="summary__row">
+            <app-searchable-select
+              class="compact summary__pick"
+              [label]="editor.mountType() + ' mount of the ' + name + ' build'"
+              [keyboard]="false"
+              [items]="editor.mountOptions()"
+              [clearable]="false"
+              [value]="editor.mount()?.id ?? null"
+              (valueChange)="editor.onMountChange($event)"
+            />
+            @if (editor.bondLevels().length > 0) {
+              <select
+                class="summary__select"
+                [attr.aria-label]="'Bond level of the ' + name + ' build'"
+                [value]="editor.mountLevel()"
+                (change)="editor.onMountLevelChange($any($event.target).value)"
+              >
+                @for (bond of editor.bondLevels(); track bond.level) {
+                  <option [value]="bond.level" [selected]="bond.level === editor.mountLevel()">
+                    Bond Lv {{ bond.level }}
+                  </option>
+                }
+              </select>
+            }
+          </div>
+        }
+      } @else {
+        <span class="summary__label">{{ build.unit?.name ?? 'No Unit' }}</span>
+        <span class="summary__build">{{ describe(build) }}</span>
+      }
+      <div class="summary__foot">
+        <span class="summary__total">{{ totalOf(build.total) }}%</span>
+        @if (editor) {
+          <button
+            type="button"
+            class="summary__change"
+            [attr.aria-label]="(editingThis ? 'Done changing the ' : 'Change the ') + name + ' build'"
+            [attr.aria-expanded]="!!editingThis"
+            (click)="toggleEditing(key)"
+          >
+            {{ editingThis ? 'Done' : 'Change' }}
+          </button>
+        }
+      </div>
+    </div>
+  </ng-template>
+
+  <p class="verdict">
+    @if (totalDelta() > 0) {
+      @if (a.unit?.name === b.unit?.name) {
+        <strong>{{ buildB().unit?.name ?? 'No Unit' }} ({{ buildB().unitClass?.name ?? 'No Class' }}) has {{ totalDelta() }}% more total growth.</strong>
+      } @else {
+        <strong>{{ buildB().unit?.name ?? 'No Unit' }} has {{ totalDelta() }}% more total growth.</strong>
+      }
+    } @else if (totalDelta() < 0) {
+      @if (winsA() > winsB()) {
+        <strong>{{ buildA().unit?.name ?? 'No Unit' }} ({{ buildA().unitClass?.name ?? 'No Class' }}) has {{ -totalDelta() }}% more total growth.</strong>
+      } @else {
+        <strong>{{ buildA().unit?.name ?? 'No Unit' }} has {{ -totalDelta() }}% more total growth.</strong>
+      }
+    } @else {
+      Both builds have identical total growth.
+    }
+    <span class="verdict__counts">
+      @if (a.unit?.name === b.unit?.name) {
+        {{ buildA().unit?.name ?? 'No Unit' }} ({{ buildA().unitClass?.name ?? 'No Class' }}) wins {{ winsA() }} · {{ buildB().unit?.name ?? 'No Unit' }} ({{ buildB().unitClass?.name ?? 'No Class' }}) wins {{ winsB() }} ·
+      } @else {
+        {{ buildA().unit?.name ?? 'No Unit' }} wins {{ winsA() }} · {{ buildB().unit?.name ?? 'No Unit' }} wins {{ winsB() }} ·
+      }
+      {{ ties() }} tied
+    </span>
+  </p>
+
+  <table class="compare">
+    <thead>
+      <tr>
+        <th scope="col">Stat</th>
+        @if (a.unit?.name === b.unit?.name) {
+          <th scope="col">{{ buildA().unit?.name ?? 'No Unit' }} ({{ buildA().unitClass?.name ?? 'No Class' }})</th>
+          <th scope="col">{{ buildB().unit?.name ?? 'No Unit' }} ({{ buildB().unitClass?.name ?? 'No Class' }})</th>
+        } @else {
+          <th scope="col">{{ buildA().unit?.name ?? 'No Unit' }}</th>
+          <th scope="col">{{ buildB().unit?.name ?? 'No Unit' }}</th>
+        }
+        <th scope="col">Difference</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (stat of statKeys; track stat) {
+        <tr>
+          <th scope="row">{{ statLabels[stat] }}</th>
+          <td [class.better]="d[stat] < 0">{{ a.total[stat] }}%</td>
+          <td [class.better]="d[stat] > 0">{{ b.total[stat] }}%</td>
+          <td
+            class="delta"
+            [class.delta--up]="d[stat] > 0"
+            [class.delta--down]="d[stat] < 0"
+          >
+            {{ d[stat] > 0 ? '+' : '' }}{{ d[stat] }}%
+          </td>
+        </tr>
+      }
+    </tbody>
+    <tfoot>
+      <tr>
+        <th scope="row">Total</th>
+        <td [class.better]="totalDelta() < 0">{{ totalOf(a.total) }}%</td>
+        <td [class.better]="totalDelta() > 0">{{ totalOf(b.total) }}%</td>
+        <td
+          class="delta"
+          [class.delta--up]="totalDelta() > 0"
+          [class.delta--down]="totalDelta() < 0"
+        >
+          {{ totalDelta() > 0 ? '+' : '' }}{{ totalDelta() }}%
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <footer class="dialog__footer">
+    <button type="button" class="dialog__dismiss" (click)="close()">
+      Back to calculators
+    </button>
+  </footer>
+</div>

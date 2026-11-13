@@ -1,0 +1,76 @@
+<header class="page-header">
+  <div>
+    <div class="page-header__title">
+      <h1>Growth Rate Calculator</h1>
+      <app-help-dialog heading="Growth Rate Calculator" [paragraphs]="helpText" />
+    </div>
+  </div>
+
+  <div class="header-actions">
+    @if (selectionMode()) {
+      <span class="hint">
+        Pick {{ remainingPicks() }} more
+        {{ remainingPicks() === 1 ? 'calculator' : 'calculators' }}
+      </span>
+      <button type="button" class="ghost-button" (click)="cancelCompare()">
+        Cancel
+      </button>
+    } @else {
+      @if (canCompare()) {
+        <button type="button" class="compare-button" (click)="startCompare()">
+          Compare Builds
+        </button>
+      }
+      <button type="button" class="ghost-button" aria-haspopup="dialog" (click)="projectionOpen.set(true)">
+        Projected Stats
+      </button>
+      <button type="button" class="ghost-button" (click)="add()">
+        + Add Calculator
+      </button>
+    }
+  </div>
+</header>
+
+<div class="panels">
+  @for (slot of slots(); track slot; let i = $index) {
+    <div class="panel" [class.panel--picked]="isPicked(slot)">
+      <app-growth-calculator
+        [heading]="headings()[i]"
+        [slotKey]="slot"
+        [canRemove]="slots().length > 1"
+        (removeRequested)="remove(slot)"
+      />
+
+      @if (selectionMode()) {
+        <button type="button" class="panel__picker" (click)="togglePick(slot)">
+          @if (isPicked(slot)) {
+            <span class="panel__badge">{{ pickNumber(slot) }}</span>
+            Selected
+          } @else {
+            Select
+          }
+        </button>
+      }
+    </div>
+  }
+</div>
+
+<div class="overscroll" aria-hidden="true"></div>
+
+@let active = comparison();
+
+@if (active) {
+  <app-comparison-dialog
+    [buildA]="active.a"
+    [buildB]="active.b"
+    [labelA]="active.labelA"
+    [labelB]="active.labelB"
+    [editorA]="active.editorA"
+    [editorB]="active.editorB"
+    (closed)="closeComparison()"
+  />
+}
+
+@if (projectionOpen()) {
+  <app-projection-picker (closed)="projectionOpen.set(false)" />
+}

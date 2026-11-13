@@ -1,0 +1,126 @@
+// While the on-screen keyboard is open (e.g. for a reclass level), centre the modal in the space above it.
+:host {
+  padding-bottom: calc(1.5rem + var(--keyboard-inset, 0px));
+}
+
+.dialog--projection {
+  width: min(560px, 100%);
+  max-height: min(80vh, calc(100dvh - 3rem - var(--keyboard-inset, 0px)));
+  overflow-y: auto;
+}
+
+.plan {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 1rem;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.plan__select,
+.results__level-input {
+  min-width: 0;
+  background: #142c30;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  color: inherit;
+  font: inherit;
+  font-size: 0.88rem;
+  padding: 0.35rem 0.5rem;
+
+  &:focus {
+    border-color: var(--accent);
+    outline: none;
+  }
+}
+
+.results {
+  margin-top: 1rem;
+}
+
+.results__level {
+  display: grid;
+  grid-template-columns: auto 1fr 4.5rem;
+  align-items: center;
+  gap: 0.75rem;
+
+  input[type='range'] {
+    accent-color: var(--accent);
+  }
+}
+
+.results__level-input {
+  text-align: center;
+}
+
+.results__summary {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+// HP alone on top, then Str–Dex down the left and Def–Cha down the right.
+.results__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.results__stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  background: rgb(240 192 74 / 8%);
+  border: 1px solid rgb(240 192 74 / 25%);
+
+  &:first-child {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  @for $i from 2 through 5 {
+    &:nth-child(#{$i}) {
+      grid-column: 1;
+      grid-row: $i;
+    }
+  }
+
+  @for $i from 6 through 9 {
+    &:nth-child(#{$i}) {
+      grid-column: 2;
+      grid-row: $i - 4;
+    }
+  }
+}
+
+.results__label {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.results__value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .results__level {
+    grid-template-columns: 1fr 4.5rem;
+
+    .field__label {
+      grid-column: 1 / -1;
+    }
+  }
+}

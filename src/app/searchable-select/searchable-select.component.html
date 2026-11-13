@@ -1,0 +1,71 @@
+<div
+  class="field"
+  [class.field--open]="open()"
+  [class.field--disabled]="disabled()"
+  (pointerdown)="onFieldPointerDown()"
+  (click)="onFieldClick()"
+>
+  <input
+    #search
+    class="field__input"
+    type="text"
+    role="combobox"
+    autocomplete="off"
+    autocapitalize="off"
+    spellcheck="false"
+    [attr.aria-label]="label() || null"
+    [attr.inputmode]="keyboard() ? null : 'none'"
+    [attr.aria-expanded]="open()"
+    aria-haspopup="listbox"
+    [disabled]="disabled()"
+    [placeholder]="open() ? (selectedName() ?? placeholder()) : placeholder()"
+    (focus)="openPanel()"
+    (input)="onSearch($event)"
+    (keydown)="onKeydown($event)"
+  />
+  <span class="field__caret" aria-hidden="true">▾</span>
+</div>
+
+@if (open()) {
+  <div class="panel">
+    <ul class="panel__list" role="listbox">
+      @if (clearable() && query().trim() === '') {
+        <li>
+          <button
+            type="button"
+            role="option"
+            class="option option--clear"
+            [attr.aria-selected]="value() === null"
+            (click)="pick(null)"
+          >
+            {{ placeholder() }}
+          </button>
+        </li>
+      }
+
+      @for (group of filtered(); track group.label) {
+        @if (group.label) {
+          <li class="option-group">{{ group.label }}</li>
+        }
+
+        @for (item of group.items; track item.id) {
+          <li>
+            <button
+              type="button"
+              role="option"
+              class="option"
+              [class.option--selected]="item.id === value()"
+              [class.option--active]="isActive(item)"
+              [attr.aria-selected]="item.id === value()"
+              (click)="pick(item.id)"
+            >
+              {{ item.name }}
+            </button>
+          </li>
+        }
+      } @empty {
+        <li class="panel__empty">No matches</li>
+      }
+    </ul>
+  </div>
+}

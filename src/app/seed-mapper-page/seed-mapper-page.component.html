@@ -1,0 +1,963 @@
+<header class="page-header">
+  <div>
+    <div class="page-header__title">
+      <h1>Growth Mapper</h1>
+      <app-help-dialog heading="Growth Mapper" [paragraphs]="helpText" />
+    </div>
+  </div>
+
+  <div class="page-header__actions">
+    @let active = loadedSave();
+
+    @if (changeCount() > 0) {
+      <span class="dirty" title="Unsaved changes">
+        {{ changeCount() }} unsaved
+        {{ changeCount() === 1 ? 'change' : 'changes' }}
+      </span>
+    } @else if (active) {
+      <span class="saved">Saved — {{ active.name }}</span>
+    }
+
+    <button
+      type="button"
+      class="ghost-button"
+      [attr.aria-pressed]="timelineView()"
+      [title]="
+        timelineView()
+          ? 'Show every section and comparator'
+          : 'One Lv 1–99 timeline at a time, with branches at each exam or reclass'
+      "
+      (click)="timelineView.set(!timelineView())"
+    >
+      {{ timelineView() ? 'Section view' : 'Timeline view' }}
+    </button>
+
+    <button
+      type="button"
+      class="ghost-button"
+      [disabled]="!canOpenRng()"
+      [title]="
+        canOpenRng()
+          ? 'Show the roll ranges for every section'
+          : 'Pick a unit and class first'
+      "
+      (click)="openRng()"
+    >
+      Seed RNG
+    </button>
+
+    <button
+      type="button"
+      class="ghost-button"
+      [disabled]="!canTakeLatestExam()"
+      [title]="latestExamHint()"
+      (click)="openLatestExam()"
+    >
+      Exam / Reclass
+    </button>
+  </div>
+</header>
+
+<div class="seeds">
+  @if (timelineView()) {
+    @if (sectionViews()[0]; as seedView) {
+      <section class="seed seed--setup" aria-label="Seed setup">
+        <header class="seed__header">
+          <h2>Seed</h2>
+          <ng-container [ngTemplateOutlet]="unitPicker" />
+          <div class="picker picker--inline">
+            <app-searchable-select
+              class="compact"
+              label="Starting Class"
+              placeholder="— Starting class —"
+              [groups]="availableClassGroups(seedView)"
+              [clearable]="false"
+              [value]="seedView.classId"
+              (valueChange)="onClassChange(seedView, $event)"
+            />
+          </div>
+          <ng-container [ngTemplateOutlet]="classesButton" [ngTemplateOutletContext]="{ view: seedView }" />
+        </header>
+
+        @if (mountsForClass(seedView.classId).length > 0) {
+          <div class="pickers">
+            <ng-container [ngTemplateOutlet]="mountPickers" [ngTemplateOutletContext]="{ view: seedView }" />
+          </div>
+        }
+
+        <ng-container [ngTemplateOutlet]="startStats" [ngTemplateOutletContext]="{ view: seedView }" />
+      </section>
+    }
+
+    <app-seed-timeline [mapper]="this" />
+  }
+
+  @for (view of timelineView() ? [] : sectionViews(); track view.section.id) {
+    @let section = view.section;
+    @let exam = section.exam;
+
+    <div
+      class="seed-group"
+      [class.seed-group--compact]="section.comparators.length === 0"
+      [id]="anchorOf(view)"
+    >
+      <section class="seed" [class.seed--exam]="!!exam">
+        <header class="seed__header">
+          <h2>{{ view.title }}</h2>
+
+          @if (exam && view.reclass) {
+            <span class="tag">Reclass</span>
+          } @else if (exam) {
+            <span class="tag" [class.tag--pass]="exam.passed" [class.tag--fail]="!exam.passed">
+              {{ exam.passed ? 'Passed' : 'Failed' }}
+            </span>
+            <span class="seed__summary">
+              {{ className(exam.classId) }} exam
+            </span>
+            <button type="button" class="ghost-button" title="Edit exam" (click)="editExam(view)">
+              <span class="label-long">Edit exam</span><span class="label-short">Edit</span>
+            </button>
+          } @else {
+            <ng-container [ngTemplateOutlet]="unitPicker" />
+            <ng-container [ngTemplateOutlet]="classesButton" [ngTemplateOutletContext]="{ view: view }" />
+          }
+
+          <button
+            type="button"
+            class="ghost-button"
+            [title]="'Stat abilities: ' + pickerSummary(equippedAbilityNames(view))"
+            (click)="openAbilityPicker(view)"
+          >
+            Abilities<span class="label-count"> ({{ equippedAbilities(view).length }}/{{ maxAbilities }})</span>
+          </button>
+
+          @if (usesWeapon(view)) {
+            <select
+              class="picker__select"
+              aria-label="Equipped weapon"
+              title="Equipped weapon, for weapon-dependent abilities"
+              [value]="section.weapon ?? ''"
+              (change)="onWeaponChange(view, $any($event.target).value)"
+            >
+              <option value="" [selected]="section.weapon === null">— Weapon —</option>
+              @for (weapon of weaponKeys; track weapon) {
+                <option [value]="weapon" [selected]="weapon === section.weapon">{{ weaponLabels[weapon] }}</option>
+              }
+            </select>
+          }
+
+          <button
+            type="button"
+            class="ghost-button"
+            [disabled]="!canAddComparator(view)"
+            title="Add comparator"
+            (click)="addComparator(view)"
+          >
+            <span class="label-long">Add comparator</span><span class="label-short">+ Comparator</span>
+          </button>
+
+          <button
+            type="button"
+            class="ghost-button"
+            [disabled]="!canProject(view)"
+            [title]="projectionHint(view)"
+            (click)="openProjection(view)"
+          >
+            <span class="label-long">Projected Stats</span><span class="label-short">Projection</span>
+          </button>
+
+          @if (exam) {
+            <button
+              type="button"
+              class="icon icon--danger"
+              [title]="
+                canRemoveSection(view)
+                  ? 'Remove this exam'
+                  : 'Remove the exams taken after this one first'
+              "
+              aria-label="Remove this exam"
+              [disabled]="!canRemoveSection(view)"
+              (click)="removeSection(view)"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z"
+                />
+              </svg>
+            </button>
+          }
+        </header>
+
+        @if (!exam) {
+          <ng-container [ngTemplateOutlet]="startStats" [ngTemplateOutletContext]="{ view: view }" />
+        }
+
+        <div class="blocks">
+          <article class="block">
+            <header class="block__header">
+              <h3>{{ view.title }}</h3>
+              <span class="tag">Base</span>
+            </header>
+
+            <ng-container [ngTemplateOutlet]="classPickers" [ngTemplateOutletContext]="{ view: view }" />
+
+            <div class="grid grid--actions" [style.--stat-count]="statKeys.length">
+              <div class="grid__corner"></div>
+              @for (stat of statKeys; track stat) {
+                <div class="grid__head">{{ statLabels[stat] }}</div>
+              }
+              <div class="grid__corner"></div>
+
+              <div class="grid__label">Growth</div>
+              @for (stat of statKeys; track stat) {
+                <div class="grid__growth" [class.negative]="view.growth[stat] < 0">
+                  {{ view.growth[stat] }}%
+                </div>
+              }
+              <div class="grid__corner"></div>
+
+              @if (exam) {
+                @let carried = startStatsOf(view);
+
+                <div class="grid__caption">
+                  Lv {{ startLevelOf(view) }} stats
+                  <span class="grid__caption-note">carried over from {{ view.parentTitle }}</span>
+                </div>
+                <div class="grid__label">Stats</div>
+                @for (stat of statKeys; track stat; let statIndex = $index) {
+                  <ng-container
+                    [ngTemplateOutlet]="statTotal"
+                    [ngTemplateOutletContext]="{ total: carried[statIndex] }"
+                  />
+                }
+                <div class="grid__corner"></div>
+              }
+
+              @if (exam && view.exam) {
+                <ng-container
+                  [ngTemplateOutlet]="examRow"
+                  [ngTemplateOutletContext]="{ view: view, exam: exam }"
+                />
+                <div class="grid__corner"></div>
+              }
+
+              @for (row of section.rows; track row.id; let rowIndex = $index) {
+                @let examHere = hasExamAt(view, rowIndex);
+                @let examSection = examSectionAt(view, rowIndex);
+                @let anchored = isBranchRow(view, rowIndex);
+                @let rowGrowths = rowGrowth(view, rowIndex);
+                @let cells = effectiveRow(rowGrowths, row, slotOf(view, rowIndex));
+
+                @if (row.exam; as inlineExam) {
+                  @let boost = inlineBoostOf(view, rowIndex);
+                  @let examOptions = inlineExamOptions(view, row);
+
+                  <div class="grid__label" [title]="'Uses the roll before Lv ' + levelOf(view, rowIndex)">
+                    <span class="level level--exam">{{ inlineExam.passed ? 'Exam' : 'Skip' }}</span>
+                  </div>
+                  <div class="grid__inline">
+                    <app-searchable-select
+                      class="compact"
+                      style="flex: 0 1 14rem; min-width: 0"
+                      label="Exam class"
+                      placeholder="— Select a class —"
+                      [groups]="examOptions"
+                      [focusGroup]="focusRank(examOptions, levelOf(view, rowIndex))"
+                      [clearable]="false"
+                      [value]="inlineExam.classId"
+                      (valueChange)="onInlineExamClass(view, row, $event)"
+                    />
+                    <input
+                      class="level-input level-input--inline"
+                      type="number"
+                      inputmode="numeric"
+                      min="0"
+                      max="100"
+                      aria-label="Pass chance"
+                      title="Pass chance %"
+                      [value]="inlineExam.chance"
+                      (change)="onInlineExamChance(view, row, $event)"
+                    />%
+                    <button
+                      type="button"
+                      class="ghost-button"
+                      [class.tag--pass]="inlineExam.passed"
+                      [class.tag--fail]="!inlineExam.passed"
+                      [attr.aria-pressed]="inlineExam.passed"
+                      [title]="inlineExam.passed ? 'Passed; click to mark as failed' : 'Failed; click to mark as passed'"
+                      (click)="onInlineExamPassed(view, row, !inlineExam.passed)"
+                    >
+                      {{ inlineExam.passed ? 'Passed' : 'Failed' }}
+                    </button>
+                    @if (inlineExam.passed) {
+                      <label class="switch-class" title="Untick to unlock the class but stay in the current one">
+                        <input
+                          type="checkbox"
+                          [checked]="!inlineExam.keepClass"
+                          (change)="onInlineExamSwitch(view, row, $any($event.target).checked)"
+                        />
+                        Switch class
+                      </label>
+                    }
+                  </div>
+                  <button
+                    type="button"
+                    class="level__remove"
+                    title="Remove this exam (keeps the level)"
+                    aria-label="Remove this exam"
+                    (click)="removeInlineExam(view, row)"
+                  >
+                    &times;
+                  </button>
+
+                  @if (hasInlineBoost(view, rowIndex)) {
+                    <div class="grid__label">Base</div>
+                    @for (stat of statKeys; track stat) {
+                      @if (boost[stat] > 0) {
+                        <div class="floor-cell" [title]="inlineBoostTitle(view, row, rowIndex, stat)">+{{ boost[stat] }}</div>
+                      } @else {
+                        <div class="grid__corner"></div>
+                      }
+                    }
+                    <div class="grid__corner"></div>
+                  }
+
+                  @if (inlineExam.passed && !inlineExam.keepClass) {
+                    <div class="grid__label">Growth</div>
+                    @for (stat of statKeys; track stat) {
+                      <div class="grid__growth" [class.negative]="(rowGrowths?.[stat] ?? 0) < 0">
+                        {{ rowGrowths?.[stat] ?? 0 }}%
+                      </div>
+                    }
+                    <div class="grid__corner"></div>
+                  }
+                }
+
+                @if (row.reclassTo !== undefined) {
+                  @let reclassChoices = reclassOptions(view, rowIndex);
+                  <div class="grid__label">
+                    <span class="level level--exam">Reclass</span>
+                  </div>
+                  <div class="grid__inline">
+                    <app-searchable-select
+                      class="compact"
+                      style="flex: 0 1 14rem; min-width: 0"
+                      label="Reclass to"
+                      placeholder="— Select a class —"
+                      [groups]="reclassChoices"
+                      [focusGroup]="focusRank(reclassChoices, levelOf(view, rowIndex))"
+                      [clearable]="false"
+                      [value]="row.reclassTo"
+                      (valueChange)="onReclassChange(view, row, $event)"
+                    />
+                    <span class="grid__caption-note">from Lv {{ levelOf(view, rowIndex) }}</span>
+                  </div>
+                  <button
+                    type="button"
+                    class="level__remove"
+                    title="Remove this reclass"
+                    aria-label="Remove this reclass"
+                    (click)="removeReclass(view, row)"
+                  >
+                    &times;
+                  </button>
+
+                  <div class="grid__label">Growth</div>
+                  @for (stat of statKeys; track stat) {
+                    <div class="grid__growth" [class.negative]="(rowGrowths?.[stat] ?? 0) < 0">
+                      {{ rowGrowths?.[stat] ?? 0 }}%
+                    </div>
+                  }
+                  <div class="grid__corner"></div>
+                }
+
+                <div class="grid__label">
+                  <span class="level">Lv {{ levelOf(view, rowIndex) }}</span>
+                  @if (rowIndex > 0) {
+                    <button
+                      type="button"
+                      class="level__remove"
+                      [title]="anchored ? 'An exam branches off at or right after this level' : 'Remove this level'"
+                      aria-label="Remove this level"
+                      [disabled]="anchored"
+                      (click)="removeLevel(view, row)"
+                    >
+                      &times;
+                    </button>
+                  }
+                </div>
+
+                @for (stat of statKeys; track stat) {
+                  <button
+                    type="button"
+                    class="cell"
+                    [class.cell--on]="cells.marks[stat] > 0"
+                    [class.cell--auto]="cells.auto[stat]"
+                    (click)="toggleStat(view, row, stat)"
+                  >
+                    {{ cells.marks[stat] }}
+                  </button>
+                }
+
+                <button
+                  type="button"
+                  class="exam-add"
+                  [class.exam-add--used]="examHere"
+                  [title]="
+                    examSection
+                      ? 'Another exam or reclass at Lv ' + levelOf(view, rowIndex) + ', beside ' + examSection.title
+                      : 'Exam in place of Lv ' + levelOf(view, rowIndex) + ', or reclass from Lv ' + levelOf(view, rowIndex)
+                  "
+                  [attr.aria-label]="'Exam or reclass at Lv ' + levelOf(view, rowIndex)"
+                  [disabled]="!canTakeExamAtRow(view, rowIndex)"
+                  (click)="openExamAt(view, rowIndex)"
+                >
+                  +
+                </button>
+              }
+
+              <ng-container
+                [ngTemplateOutlet]="endStats"
+                [ngTemplateOutletContext]="{ view: view, totals: endStatsOf(view), actions: true }"
+              />
+            </div>
+          </article>
+
+          @for (
+            comparator of section.comparators;
+            track comparator.id;
+            let comparatorIndex = $index
+          ) {
+            @let options = comparatorClasses(view, comparator);
+
+            <article class="block block--comparator">
+              <header class="block__header">
+                <h3>{{ view.title }}</h3>
+                <span class="tag">Comparator {{ comparatorIndex + 1 }}</span>
+                <button
+                  type="button"
+                  class="icon icon--danger"
+                  title="Remove this comparator"
+                  aria-label="Remove this comparator"
+                  (click)="removeComparator(view, comparator)"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z"
+                    />
+                  </svg>
+                </button>
+              </header>
+
+              <div class="pickers">
+                <div class="picker">
+                  <span class="picker__label">Class</span>
+                  <app-searchable-select
+                    label="Class"
+                    placeholder="— Select a class —"
+                    [items]="options"
+                    [disabled]="options.length === 0"
+                    [value]="comparator.classId"
+                    (valueChange)="onComparatorClassChange(view, comparator, $event)"
+                  />
+                </div>
+
+                @if (mountsForClass(comparator.classId).length > 0) {
+                  <div class="picker">
+                    <span class="picker__label">Mount</span>
+                    <app-searchable-select
+                      label="Mount"
+                      [items]="mountItems(comparator.classId, comparatorMountOf(comparator)?.id)"
+                      [clearable]="false"
+                      [value]="comparatorMountOf(comparator)?.id ?? null"
+                      (valueChange)="onComparatorMountChange(view, comparator, $event)"
+                    />
+                  </div>
+
+                  @let comparatorBonds = bondLevelsOf(comparatorMountOf(comparator));
+                  @if (comparatorBonds.length > 0) {
+                    @let comparatorLevel = comparatorMountLevel(comparator);
+                    <label class="picker">
+                      <span class="picker__label">Bond Level</span>
+                      <select
+                        class="picker__select"
+                        [value]="comparatorLevel"
+                        (change)="
+                          onComparatorMountLevelChange(view, comparator, $any($event.target).value)
+                        "
+                      >
+                        @for (bond of comparatorBonds; track bond.level) {
+                          <option [value]="bond.level" [selected]="bond.level === comparatorLevel">
+                            Level {{ bond.level }}
+                          </option>
+                        }
+                      </select>
+                    </label>
+                  }
+                }
+              </div>
+
+              @let comparatorGrowths = comparatorGrowth(comparator);
+
+              <div class="grid" [style.--stat-count]="statKeys.length">
+                <div class="grid__corner"></div>
+                @for (stat of statKeys; track stat) {
+                  <div class="grid__head">{{ statLabels[stat] }}</div>
+                }
+
+                <div class="grid__label">Growth</div>
+                @for (stat of statKeys; track stat) {
+                  <div
+                    class="grid__growth"
+                    [class.negative]="comparatorGrowths[stat] < 0"
+                  >
+                    {{ comparatorGrowths[stat] }}%
+                  </div>
+                }
+
+                @if (exam && view.exam) {
+                  <ng-container
+                    [ngTemplateOutlet]="examRow"
+                    [ngTemplateOutletContext]="{ view: view, exam: exam }"
+                  />
+                }
+
+                @for (
+                  row of comparator.rows;
+                  track row.id;
+                  let rowIndex = $index
+                ) {
+                  @let comparatorCells = effectiveRow(
+                    comparator.classId === null ? null : comparatorGrowths,
+                    row,
+                    slotOf(view, rowIndex)
+                  );
+
+                  <div class="grid__label">
+                    <span class="level">Lv {{ levelOf(view, rowIndex) }}</span>
+                  </div>
+
+                  @for (stat of statKeys; track stat) {
+                    <button
+                      type="button"
+                      class="cell"
+                      [class.cell--on]="comparatorCells.marks[stat] > 0"
+                      [class.cell--auto]="comparatorCells.auto[stat]"
+                      (click)="toggleComparatorStat(view, comparator, row, stat)"
+                    >
+                      {{ comparatorCells.marks[stat] }}
+                    </button>
+                  }
+                }
+
+                <ng-container
+                  [ngTemplateOutlet]="endStats"
+                  [ngTemplateOutletContext]="{
+                    view: view,
+                    totals: endStatsOf(view, comparator),
+                    actions: false,
+                  }"
+                />
+              </div>
+            </article>
+          }
+        </div>
+
+        <footer class="seed__footer">
+          <button
+            type="button"
+            class="icon"
+            [title]="canAddLevel(view) ? 'Add the next level' : 'Lv ' + maxLevel + ' is the highest level'"
+            aria-label="Add the next level"
+            [disabled]="!canAddLevel(view)"
+            (click)="addLevel(view)"
+          >
+            +
+          </button>
+        </footer>
+      </section>
+    </div>
+  }
+
+  <section class="saves">
+    <header class="saves__header">
+      <h2>Saves</h2>
+
+      <div class="saves__actions">
+        <button
+          type="button"
+          class="ghost-button"
+          [disabled]="!canReset()"
+          (click)="requestReset()"
+        >
+          New seed map
+        </button>
+        <input
+          class="save-name"
+          type="text"
+          aria-label="Save name"
+          [placeholder]="defaultSaveName()"
+          [value]="saveName()"
+          (input)="saveName.set($any($event.target).value)"
+          (keydown.enter)="saveToList()"
+        />
+        <button type="button" class="ghost-button" (click)="saveToList()">
+          Save to browser
+        </button>
+        <button type="button" class="ghost-button" (click)="download()">
+          Download JSON
+        </button>
+        <button type="button" class="ghost-button" (click)="uploadInput.click()">
+          Upload JSON
+        </button>
+        <input
+          #uploadInput
+          type="file"
+          accept="application/json,.json"
+          hidden
+          (change)="onUpload($event)"
+        />
+      </div>
+    </header>
+
+    @if (visibleProblems().length > 0) {
+      <div class="problems">
+        <p class="problems__title">Fix these before saving:</p>
+        <ul>
+          @for (problem of visibleProblems(); track problem) {
+            <li>{{ problem }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    @if (pending(); as action) {
+      <div class="confirm" role="alertdialog">
+        <span>{{ action.message }}</span>
+        <div class="confirm__buttons">
+          <button type="button" class="ghost-button" (click)="confirmPending()">
+            Yes, continue
+          </button>
+          <button type="button" class="ghost-button" (click)="cancelPending()">
+            Cancel
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (status(); as message) {
+      <p class="saves__status">{{ message }}</p>
+    }
+
+    @if (saves().length === 0) {
+      <p class="saves__empty">
+        No saves yet. “Save to browser” keeps a copy in this browser; “Download
+        JSON” gives you a file you can keep or share.
+      </p>
+    } @else {
+      <ul class="save-list">
+        @for (save of saves(); track save.id) {
+          <li
+            class="save-list__item"
+            [class.save-list__item--active]="loadedSave()?.id === save.id"
+          >
+            @if (renamingId() === save.id) {
+              <input
+                class="save-name save-name--inline"
+                type="text"
+                aria-label="New name"
+                [value]="renameValue()"
+                (input)="renameValue.set($any($event.target).value)"
+                (keydown.enter)="commitRename()"
+                (keydown.escape)="cancelRename()"
+              />
+              <div class="save-list__tools">
+                <button type="button" class="ghost-button" (click)="commitRename()">
+                  Save name
+                </button>
+                <button type="button" class="ghost-button" (click)="cancelRename()">
+                  Cancel
+                </button>
+              </div>
+            } @else {
+              @let exams = examCount(save);
+
+              <button
+                type="button"
+                class="save-list__load"
+                (click)="requestLoad(save)"
+              >
+                <span class="save-list__name">{{ save.name }}</span>
+                <span class="save-list__meta">
+                  @if (save.seed.unit) {
+                    {{ save.seed.unit }} ·
+                  }
+                  {{ exams }} {{ exams === 1 ? 'exam' : 'exams' }} ·
+                  {{ save.savedAt | date: 'medium' }}
+                </span>
+              </button>
+
+              <div class="save-list__tools">
+                <button
+                  type="button"
+                  class="ghost-button"
+                  (click)="requestOverwrite(save)"
+                >
+                  Overwrite
+                </button>
+                <button
+                  type="button"
+                  class="ghost-button"
+                  (click)="startRename(save)"
+                >
+                  Rename
+                </button>
+                <button
+                  type="button"
+                  class="ghost-button"
+                  (click)="downloadSave(save)"
+                >
+                  Download
+                </button>
+                <button
+                  type="button"
+                  class="ghost-button ghost-button--danger"
+                  (click)="requestDelete(save)"
+                >
+                  Delete
+                </button>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </section>
+</div>
+
+<ng-template #statTotal let-total="total">
+  @let delta = total.gained + total.floorBoost + total.classBonus + total.mountBonus + total.abilityBonus;
+  @let bonus = total.classBonus + total.mountBonus + total.abilityBonus;
+  <div
+    class="stat-value"
+    [class.stat-value--bonus-up]="bonus > 0"
+    [class.stat-value--bonus-down]="bonus < 0"
+    [title]="statTotalTitle(total)"
+  >
+    @if (total.value !== null) {
+      <span>{{ total.value }}</span>
+    } @else {
+      <span class="stat-value__unknown">{{ delta < 0 ? '' : '+' }}{{ delta }}</span>
+    }
+  </div>
+</ng-template>
+
+<ng-template #endStats let-view="view" let-totals="totals" let-actions="actions">
+  <div class="grid__caption grid__caption--end">Lv {{ endLevelOf(view) }} stats</div>
+  <div class="grid__label">Stats</div>
+  @for (stat of statKeys; track stat; let statIndex = $index) {
+    <ng-container
+      [ngTemplateOutlet]="statTotal"
+      [ngTemplateOutletContext]="{ total: totals[statIndex] }"
+    />
+  }
+  @if (actions) {
+    <div class="grid__corner"></div>
+  }
+</ng-template>
+
+<ng-template #examRow let-view="view" let-exam="exam">
+  @let boost = examBoostOf(view);
+  <div class="grid__label" [title]="'Used the Lv ' + (view.exam.level + 1) + ' roll'">
+    <span class="level level--exam">{{ examLabel(view) }}</span>
+  </div>
+
+  @for (stat of statKeys; track stat) {
+    @if (stat === 'str' && !exam.passed) {
+      <div
+        class="exam-cell exam-cell--fail"
+        [title]="className(exam.classId) + ' exam failed at ' + exam.chance + '%'"
+      >
+        ✗ {{ exam.chance }}%
+      </div>
+    } @else if (boost[stat] > 0) {
+      <div class="floor-cell" [title]="examBoostTitle(view, stat)">+{{ boost[stat] }}</div>
+    } @else {
+      <div class="blank-cell" aria-hidden="true"></div>
+    }
+  }
+</ng-template>
+
+<ng-template #unitPicker>
+  <div class="picker picker--inline">
+    <app-searchable-select
+      class="compact"
+      label="Unit"
+      placeholder="— Select a unit —"
+      [items]="units()"
+      [value]="seedMap().unitId"
+      (valueChange)="onUnitChange($event)"
+    />
+  </div>
+</ng-template>
+
+<ng-template #classesButton let-view="view">
+  <button
+    type="button"
+    class="ghost-button"
+    [title]="'Available classes: ' + pickerSummary(availableClassNames(view))"
+    (click)="openClassPicker()"
+  >
+    Classes<span class="label-count"> ({{ availableClasses(view).length }})</span>
+  </button>
+</ng-template>
+
+<ng-template #startStats let-view="view">
+  <div class="start-stats">
+    <div class="start-stats__heading">
+      <label class="stats-level">
+        Starting stats at Lv
+        <input
+          class="level-input level-input--inline"
+          type="number"
+          inputmode="numeric"
+          [min]="minLevel"
+          [max]="maxLevel - 1"
+          aria-label="Stats level"
+          [value]="seedMap().statsLevel"
+          (change)="onStatsLevelChange($event)"
+          (keydown.enter)="focusNextStartField($event)"
+        />
+      </label>
+    </div>
+
+    <div class="grid" [style.--stat-count]="statKeys.length">
+      <div class="grid__corner"></div>
+      @for (stat of statKeys; track stat) {
+        <div class="grid__head">{{ statLabels[stat] }}</div>
+      }
+
+      <div class="grid__label">Stats</div>
+      @for (stat of statKeys; track stat) {
+        <input
+          class="stat-input"
+          type="number"
+          inputmode="numeric"
+          min="0"
+          placeholder="—"
+          [attr.aria-label]="'Lv ' + startLevelOf(view) + ' ' + statLabels[stat]"
+          [value]="seedMap().startStats[stat] ?? ''"
+          (change)="onStartStatChange(stat, $event)"
+          (keydown.enter)="focusNextStartField($event)"
+        />
+      }
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #classPickers let-view="view">
+  @let exam = view.section.exam;
+
+  <div class="pickers">
+    <div class="picker">
+      <span class="picker__label">
+        Class
+        @if (exam && !exam.passed) {
+          <span class="picker__note">(unchanged)</span>
+        } @else if (exam && view.section.classId === null) {
+          <span class="picker__note">(from exam)</span>
+        }
+      </span>
+      <app-searchable-select
+        label="Class"
+        placeholder="— Select a class —"
+        [groups]="availableClassGroups(view)"
+        [clearable]="false"
+        [disabled]="!!exam && !exam.passed"
+        [value]="view.classId"
+        (valueChange)="onClassChange(view, $event)"
+      />
+    </div>
+
+    <ng-container [ngTemplateOutlet]="mountPickers" [ngTemplateOutletContext]="{ view: view }" />
+  </div>
+</ng-template>
+
+<ng-template #mountPickers let-view="view">
+  @if (mountsForClass(view.classId).length > 0) {
+    <div class="picker">
+      <span class="picker__label">Mount</span>
+      <app-searchable-select
+        label="Mount"
+        [items]="mountItems(view.classId, view.mount?.id)"
+        [clearable]="false"
+        [value]="view.mount?.id ?? null"
+        (valueChange)="onMountChange(view, $event)"
+      />
+    </div>
+
+    @if (bondLevelsOf(view.mount).length > 0) {
+      <label class="picker">
+        <span class="picker__label">Bond Level</span>
+        <select
+          class="picker__select"
+          [value]="view.mountLevel"
+          (change)="onMountLevelChange(view, $any($event.target).value)"
+        >
+          @for (bond of bondLevelsOf(view.mount); track bond.level) {
+            <option [value]="bond.level" [selected]="bond.level === view.mountLevel">
+              Level {{ bond.level }}
+            </option>
+          }
+        </select>
+      </label>
+    }
+  }
+</ng-template>
+
+@if (rngSectionId(); as activeId) {
+  <app-seed-rng-dialog
+    [sections]="rngSections()"
+    [activeId]="activeId"
+    (selected)="rngSectionId.set($event)"
+    (closed)="closeRng()"
+  />
+}
+
+@if (examDialog(); as dialog) {
+  <app-exam-dialog
+    [title]="dialog.title"
+    [context]="dialog.context"
+    [reclassContext]="dialog.reclassContext"
+    [classGroups]="dialog.classGroups"
+    [reclassGroups]="dialog.reclassGroups"
+    [initial]="dialog.initial"
+    [initialMode]="dialog.initialMode"
+    [canSwitchMode]="dialog.canSwitchMode"
+    [strBounds]="dialog.strBounds"
+    [level]="dialog.level"
+    (confirmed)="onExamConfirmed($event)"
+    (closed)="closeExam()"
+  />
+}
+
+@if (pickerConfig(); as picker) {
+  <app-picker-dialog
+    [title]="picker.title"
+    [context]="picker.context"
+    [groups]="picker.groups"
+    [selected]="picker.selected"
+    [max]="picker.max"
+    (confirmed)="onPickerConfirmed($event)"
+    (closed)="closePicker()"
+  />
+}
+
+@if (projection(); as projected) {
+  <app-projection-dialog
+    [unit]="projected.unit"
+    [chapters]="[projected.start]"
+    [chapterPicker]="false"
+    (closed)="projection.set(null)"
+  />
+}

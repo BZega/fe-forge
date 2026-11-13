@@ -1,0 +1,130 @@
+import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+
+import { Battalion, characterKey, ClassAbility, FEMALE_ONLY_CLASS_NAMES, GrowthRates, Mount, MountType, SKILL_KEYS, SkillKey, SkillPreference, StatBoostAbility, toGrowth, Unit, UnitClass } from '../models/growth.models';
+import battalionData from '../data/battalions.json';
+import classAbilityData from '../data/class-abilities.json';
+import classMountTypes from '../data/class-mount-types.json';
+import mountBondLevelData from '../data/mount-bond-levels.json';
+import mountData from '../data/mounts.json';
+
+interface MountBondLevelData {
+  level: number;
+  growth: Partial<GrowthRates>;
+  bonusStats: Partial<GrowthRates>;
+}
+import unitClassData from '../data/unit-classes.json';
+import unitData from '../data/units.json';
+import skillPreferenceData from '../data/unit-skill-preferences.json';
+import statBoostAbilityData from '../data/stat-boost-abilities.json';
+
+
+@Injectable({ providedIn: 'root' })
+export class GrowthDataService {
+  // Preferences live in their own file, keyed by name, so refresh-data.js can't overwrite them.
+  private readonly units: Unit[] = (unitData as Omit<Unit, 'skillPreference'>[])
+    .map((unit) => ({
+      ...unit,
+      skillPreference: {
+        ...(Object.fromEntries(SKILL_KEYS.map((skill) => [skill, 'neutral'])) as Record<SkillKey, SkillPreference>),
+        ...(skillPreferenceData as Record<string, Partial<Record<SkillKey, SkillPreference>>>)[characterKey(unit.name)],
+      },
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  private readonly classes = unitClassData as UnitClass[];
+
+  private readonly classAbilities = classAbilityData as ClassAbility[];
+
+  private readonly battalions = battalionData as Battalion[];
+
+  private readonly allMounts: Mount[] = (
+    mountData as Omit<Mount, 'bondLevels'>[]
+  ).map((mount) => ({
+    ...mount,
+    bondLevels: (
+      (mountBondLevelData as Record<string, MountBondLevelData[]>)[mount.name] ?? []
+    )
+      .map((entry) => ({
+        level: entry.level,
+        growth: toGrowth(entry.growth),
+        bonusStats: toGrowth(entry.bonusStats),
+      }))
+      .sort((a, b) => a.level - b.level),
+  }));
+
+  private readonly mounts = this.allMounts.filter(
+    (mount) => mount.type !== 'None',
+  );
+
+  private readonly mountTypesByClassName = classMountTypes as Record<
+    string,
+    MountType
+  >;
+
+  getUnits(): Observable<Unit[]> {
+    return of(this.units);
+  }
+
+  getClasses(): Observable<UnitClass[]> {
+    return of(this.classes);
+  }
+
+  getClassAbilities(): Observable<ClassAbility[]> {
+    return of(this.classAbilities);
+  }
+
+  getStatBoostAbilities(): Observable<StatBoostAbility[]> {
+    return of(statBoostAbilityData as StatBoostAbility[]);
+  }
+
+  getMounts(): Observable<Mount[]> {
+    return of(this.mounts);
+  }
+
+  getMountsForClass(classId: number): Observable<Mount[]> {
+    return of(this.mountsForClass(classId));
+  }
+
+  getBattalions(): Observable<Battalion[]> {
+    return of(this.battalions);
+  }
+
+  mountTypeOfClass(className: string): MountType {
+    return this.mountTypesByClassName[className] ?? 'None';
+  }
+
+  canUseClass(unit: Unit | null | undefined, unitClass: UnitClass): boolean {
+    if (!unit) {
+      return true;
+    }
+
+    if (unit.gender !== 'Female' && FEMALE_ONLY_CLASS_NAMES.has(unitClass.name)) {
+      return false;
+    }
+
+    return unit.canUseMounts || this.mountTypeOfClass(unitClass.name) === 'None';
+  }
+
+  classesForUnit(unit: Unit | null | undefined): UnitClass[] {
+    return this.classes.filter((unitClass) => this.canUseClass(unit, unitClass));
+  }
+
+  unitById(unitId: number | null): Unit | null {
+    return this.units.find((unit) => unit.id === unitId) ?? null;
+  }
+
+  private mountsForClass(classId: number): Mount[] {
+    const unitClass = this.classes.find((c) => c.id === classId);
+
+    if (!unitClass) {
+      return [];
+    }
+
+    const type = this.mountTypeOfClass(unitClass.name);
+
+    return type === 'None'
+      ? []
+      : this.mounts.filter((mount) => mount.type === type);
+  }
+}

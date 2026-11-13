@@ -1,0 +1,186 @@
+:host {
+  // Tallest the option list gets; app.component reads it to place the list before it opens.
+  --dropdown-height: 16rem;
+  // Shortest the list gets, however little room is left.
+  --dropdown-min-height: 8rem;
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  background: #142c30;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.5rem;
+  text-align: left;
+
+  &:hover {
+    border-color: var(--accent);
+  }
+}
+
+.field--open {
+  border-color: var(--accent);
+}
+
+.field--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+
+  &:hover {
+    border-color: var(--panel-border);
+  }
+}
+
+:host(.compact) .field {
+  height: 1.9rem;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.field__input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0;
+  text-overflow: ellipsis;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::placeholder {
+    color: inherit;
+    opacity: 0.55;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.field__caret {
+  flex: none;
+  font-size: 0.7rem;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.panel {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: min(
+    var(--dropdown-height),
+    max(
+      var(--dropdown-min-height),
+      min(var(--dropdown-max-height, var(--dropdown-height)), var(--dropdown-room, var(--dropdown-height)))
+    )
+  );
+  background: #0f2225;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  box-shadow: 0 14px 30px rgb(0 0 0 / 55%);
+  overflow: hidden;
+}
+
+:host([data-floating]) .panel {
+  position: fixed;
+  top: var(--panel-top);
+  left: var(--panel-left);
+  right: auto;
+  width: var(--panel-width);
+}
+
+.panel__list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+}
+
+.panel__empty {
+  padding: 0.6rem;
+  font-size: 0.85rem;
+  opacity: 0.6;
+  font-style: italic;
+}
+
+.option {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.88rem;
+  padding: 0.4rem 0.5rem;
+  text-align: left;
+
+  &:hover {
+    background: rgb(255 255 255 / 10%);
+  }
+}
+
+.option--active {
+  background: rgb(255 255 255 / 10%);
+}
+
+.option--selected {
+  background: rgb(240 192 74 / 18%);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.option--clear {
+  opacity: 0.65;
+  font-style: italic;
+}
+
+.option-group {
+  padding: 0.45rem 0.5rem 0.2rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+@media (max-width: 720px) {
+  .field {
+    font-size: 0.85rem;
+  }
+
+  :host {
+    --dropdown-height: 13rem;
+  }
+}

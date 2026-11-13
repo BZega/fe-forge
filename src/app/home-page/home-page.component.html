@@ -1,0 +1,91 @@
+<section class="hero">
+  <div class="hero__crest" aria-hidden="true">
+    <svg viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="56" />
+      <circle cx="60" cy="60" r="44" />
+      <path d="M60 14 L68 52 L106 60 L68 68 L60 106 L52 68 L14 60 L52 52 Z" />
+      <circle cx="60" cy="60" r="7" />
+    </svg>
+  </div>
+  <p class="hero__eyebrow">Planning tools for the strategist in you</p>
+  <h1 class="hero__title">Fire Emblem Forge</h1>
+  <p class="hero__tagline">
+    Forge every unit into their best self &mdash; map growths, calculate rates, and project stats
+    before you commit a single level.
+  </p>
+  <div class="hero__actions">
+    <a class="btn btn--primary" routerLink="/growth-mapper">Start Mapping</a>
+    <button type="button" class="btn btn--ghost" (click)="toolsSection.scrollIntoView({ behavior: 'smooth' })">
+      Explore the Tools
+    </button>
+  </div>
+</section>
+
+<div class="divider" aria-hidden="true"><span></span></div>
+
+<section #toolsSection class="section">
+  <header class="section__header">
+    <h2>Tools</h2>
+    <p>The core of the forge.</p>
+  </header>
+
+  <div class="cards">
+    @for (tool of tools; track tool.path) {
+      <a class="card card--tool" [routerLink]="tool.path">
+        <img class="card__icon" [src]="'icons/skills/gold/' + tool.icon + '.svg'" alt="" />
+        <h3 class="card__title">{{ tool.label }}</h3>
+        <p class="card__text">{{ tool.description }}</p>
+        <span class="card__cta">Open {{ tool.label }} &rsaquo;</span>
+      </a>
+    }
+  </div>
+</section>
+
+<section class="section">
+  <header class="section__header">
+    <h2>Resources</h2>
+    <p>Reference data, one click away.</p>
+  </header>
+
+  <div class="cards cards--compact">
+    @for (resource of resources; track resource.path) {
+      <a class="card" [routerLink]="resource.path">
+        <img class="card__icon" [src]="'icons/skills/gold/' + resource.icon + '.svg'" alt="" />
+        <h3 class="card__title">{{ resource.label }}</h3>
+        <p class="card__text">{{ resource.description }}</p>
+      </a>
+    }
+  </div>
+</section>
+
+<div class="divider" aria-hidden="true"><span></span></div>
+
+<section class="section about">
+  <div class="about__panel">
+    <p class="about__eyebrow">About the Developer</p>
+    <h2>Built by a fan, for fans</h2>
+    <p>
+      Hi! I'm a software developer and lifelong Fire Emblem fan. FE Forge started as a handful of
+      spreadsheets I used to plan my own playthroughs, and grew into the set of tools you see here.
+    </p>
+    <p>
+      It's a passion project built in my free time, and it will always be free to use. If you have an
+      idea or spot something wrong, the Suggestions button in the menu comes straight to me.
+    </p>
+    <p>
+      If FE Forge has helped you plan the perfect run and you'd like to support its continued
+      development, tips are always appreciated &mdash; but never expected.
+    </p>
+    <button type="button" class="btn btn--primary" aria-haspopup="dialog" (click)="supportOpen.set(true)">
+      Support the Developer
+    </button>
+  </div>
+</section>
+
+<footer class="footer">
+  FE Forge is a fan-made project and is not affiliated with Nintendo or Intelligent Systems.
+</footer>
+
+@if (supportOpen()) {
+  <app-support-dialog (closed)="supportOpen.set(false)" />
+}

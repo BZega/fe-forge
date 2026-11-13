@@ -1,0 +1,18 @@
+@if (projecting() && start(); as from) {
+  <app-projection-dialog
+    [unit]="from.unit"
+    [chapters]="chapters()"
+    [initialChapter]="from.chapterNumber"
+    [chapterPicker]="from.source === 'chapter'"
+    [plannedSteps]="from.steps"
+    (back)="projecting.set(false)"
+    (closed)="close()"
+  />
+} @else {
+  <app-projection-start-dialog
+    eyebrow="Growth Rate Calculator"
+    [initial]="start()"
+    (confirmed)="start.set($event); projecting.set(true)"
+    (closed)="close()"
+  />
+}

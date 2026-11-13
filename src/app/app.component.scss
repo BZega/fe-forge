@@ -1,0 +1,345 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  overscroll-behavior: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  // Room to scroll fields at the bottom of the page above the on-screen keyboard.
+  &::after {
+    content: '';
+    flex: none;
+    height: calc(var(--keyboard-inset, 0px) + var(--scroll-extra, 0px));
+  }
+}
+
+.topnav {
+  flex: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--gold-line);
+  z-index: 20;
+}
+
+.topnav__brand {
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-size: 1.05rem;
+  margin-right: auto;
+  white-space: nowrap;
+}
+
+.topnav__brand-short {
+  display: none;
+}
+
+.topnav__toggle {
+  display: none;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  padding: 0;
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: currentColor;
+  }
+
+  &:hover {
+    background: rgb(255 255 255 / 8%);
+  }
+}
+
+.topnav__links {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  a {
+    display: block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.88rem;
+    opacity: 0.75;
+
+    &:hover {
+      background: rgb(255 255 255 / 8%);
+      opacity: 1;
+    }
+
+    &.is-active {
+      background: rgb(240 192 74 / 15%);
+      color: var(--accent);
+      opacity: 1;
+      font-weight: 600;
+    }
+  }
+}
+
+.topnav__spoilers {
+  margin-left: 0.5rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--panel-border);
+}
+
+.resource-menu {
+  position: relative;
+}
+
+.resource-menu__trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.8rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.88rem;
+  opacity: 0.75;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgb(255 255 255 / 8%);
+    opacity: 1;
+  }
+
+  .has-active > & {
+    background: rgb(240 192 74 / 15%);
+    color: var(--accent);
+    opacity: 1;
+    font-weight: 600;
+  }
+}
+
+.resource-menu__panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 30;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 11rem;
+  margin: 0;
+  padding: 0.5rem;
+  list-style: none;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgb(0 0 0 / 45%);
+
+  &.is-open {
+    display: flex;
+  }
+}
+
+.spoiler-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.82rem;
+  opacity: 0.75;
+  padding: 0.35rem 0.5rem;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgb(255 255 255 / 8%);
+    opacity: 1;
+  }
+
+  &.is-on {
+    color: var(--accent);
+    opacity: 1;
+  }
+}
+
+.spoiler-toggle__track {
+  position: relative;
+  flex: none;
+  width: 1.8rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: var(--panel-border);
+  transition: background 120ms ease;
+
+  .is-on & {
+    background: var(--accent);
+  }
+}
+
+.spoiler-toggle__thumb {
+  position: absolute;
+  top: 0.125rem;
+  left: 0.125rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--bg);
+  transition: transform 120ms ease;
+
+  .is-on & {
+    transform: translateX(0.8rem);
+  }
+}
+
+.spoiler-menu {
+  position: relative;
+}
+
+.spoiler-menu__caret {
+  font-size: 0.7em;
+}
+
+.spoiler-menu__panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 12rem;
+  padding: 0.5rem;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgb(0 0 0 / 45%);
+
+  .spoiler-toggle {
+    width: 100%;
+  }
+}
+
+.spoiler-menu__heading {
+  margin: 0 0 0.25rem;
+  padding: 0 0.5rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+@media (max-width: 720px) {
+  .topnav {
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .topnav__toggle {
+    display: grid;
+  }
+
+  .topnav__brand-full {
+    display: none;
+  }
+
+  .topnav__brand-short {
+    display: inline;
+  }
+
+  // Expands inline inside the mobile menu instead of floating.
+  .resource-menu__trigger {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .resource-menu__panel {
+    position: static;
+    min-width: 0;
+    padding: 0 0 0 0.75rem;
+    border: none;
+    box-shadow: none;
+  }
+
+  // Drops out of flow so the bar keeps its height while the menu is open.
+  .topnav__links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.15rem;
+    padding: 0.5rem;
+    background: var(--panel);
+    border-bottom: 1px solid var(--panel-border);
+    box-shadow: 0 12px 24px rgb(0 0 0 / 45%);
+
+    &.is-open {
+      display: flex;
+    }
+
+    a {
+      padding: 0.65rem 0.75rem;
+      font-size: 0.95rem;
+    }
+  }
+
+  .topnav__spoilers {
+    margin: 0.25rem 0 0;
+    padding: 0.4rem 0 0;
+    border-left: none;
+    border-top: 1px solid var(--panel-border);
+  }
+
+  .spoiler-toggle {
+    width: 100%;
+    font-size: 0.95rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  // Expands inline inside the mobile menu instead of floating.
+  .spoiler-menu__panel {
+    position: static;
+    min-width: 0;
+    margin-top: 0.25rem;
+    padding: 0 0 0 0.75rem;
+    border: none;
+    box-shadow: none;
+  }
+}

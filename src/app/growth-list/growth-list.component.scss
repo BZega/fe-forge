@@ -1,0 +1,316 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.empty {
+  opacity: 0.6;
+  font-style: italic;
+}
+
+// One wrapped column of non-zero bonuses instead of a column per stat.
+.list .list__bonus {
+  text-align: left;
+  white-space: normal;
+}
+
+thead .list__bonus {
+  padding: 0.45rem 0.6rem;
+}
+
+.chip {
+  display: inline-block;
+  margin: 0.1rem 0.35rem 0.1rem 0;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 6%);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chip--positive {
+  color: #7ee08a;
+}
+
+.chip--negative {
+  color: #ff8d8d;
+}
+
+.chip--sorted {
+  outline: 1px solid var(--accent);
+}
+
+.chip--none {
+  font-weight: 400;
+  opacity: 0.55;
+}
+
+.scroller {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  // Stops the elastic overscroll past the first and last row.
+  overscroll-behavior: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border: 1px solid var(--panel-border);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  background: var(--panel);
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+}
+
+.list {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.85rem;
+  white-space: nowrap;
+
+  th,
+  td {
+    padding: 0.35rem 0.6rem;
+    text-align: right;
+    border-bottom: 1px solid rgb(255 255 255 / 12%);
+    border-right: 1px solid rgb(255 255 255 / 12%);
+  }
+
+  tr > *:last-child {
+    border-right: none;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 0;
+    background: #c00000;
+    color: #ffffff;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-bottom: none;
+    box-shadow: 0 2px 6px rgb(0 0 0 / 45%);
+  }
+
+  tbody tr:not(.group):hover {
+    td,
+    th {
+      // Works over the solid tier fills as well as the plain cells.
+      filter: brightness(1.22);
+      border-bottom-color: rgb(240 192 74 / 45%);
+    }
+
+    th.list__name {
+      background: rgb(240 192 74 / 16%);
+      color: var(--accent);
+    }
+  }
+}
+
+.list__name {
+  text-align: left;
+  font-weight: 600;
+  // Shrinks the column to the longest name so the stat columns take the slack.
+  width: 1px;
+  padding-right: 1.25rem;
+}
+
+.sort {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.3rem;
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgb(0 0 0 / 20%);
+  }
+
+  &--left {
+    justify-content: flex-start;
+  }
+
+  &--center {
+    justify-content: center;
+  }
+}
+
+// A short label beside the name, e.g. a battalion's rank.
+.list .list__tag {
+  text-align: center;
+  font-weight: 600;
+  width: 1px;
+}
+
+.sort__arrow {
+  font-size: 0.65em;
+  width: 0.75em;
+  text-align: center;
+}
+
+.list__total {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.list__link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgb(255 255 255 / 25%);
+  text-underline-offset: 3px;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--accent);
+    text-decoration-color: currentColor;
+  }
+}
+
+thead .list__total {
+  background: #000000;
+  color: #ffffff;
+}
+
+// Free text (e.g. a battalion's skill): a bold title over a wrapped, quieter description.
+.list .list__detail {
+  text-align: left;
+  white-space: normal;
+  min-width: 14rem;
+  max-width: 26rem;
+}
+
+.list td.list__detail {
+  vertical-align: top;
+}
+
+.detail__title {
+  display: block;
+  font-weight: 600;
+}
+
+.detail__text {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.92em;
+  opacity: 0.7;
+}
+
+
+.group th {
+  text-align: left;
+  background: #1b3639;
+  color: var(--accent);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+// The cell spans the whole table, so the text pins itself while the table pans.
+.group__label {
+  position: sticky;
+  left: 0;
+  display: inline-block;
+}
+
+.group__count {
+  margin-left: 0.5rem;
+  opacity: 0.55;
+  color: var(--text);
+}
+
+.negative {
+  color: #ff8d8d;
+}
+
+.positive {
+  color: #7ee08a;
+}
+
+// Graded text rather than filled cells, to match the sign colouring on the other lists.
+.tier-best {
+  color: #7ee08a;
+  font-weight: 700;
+}
+
+.tier-good {
+  color: #5fae70;
+}
+
+.tier-fair {
+  color: #94a7a0;
+}
+
+.tier-poor {
+  color: #c79b9b;
+}
+
+.tier-worst {
+  color: #ff8d8d;
+  font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .list {
+    font-size: 0.7rem;
+    white-space: normal;
+
+    th,
+    td {
+      padding: 0.25rem 0.2rem;
+    }
+  }
+
+  // The column headings already say these are percentages.
+  .unit {
+    display: none;
+  }
+
+  .list__name {
+    width: auto;
+    max-width: 7rem;
+    padding-right: 0.3rem;
+    font-size: 0.72rem;
+    overflow-wrap: anywhere;
+  }
+
+  // Free text doesn't fit beside the stats on a phone.
+  .list .list__detail {
+    display: none;
+  }
+
+  // Stacking the arrow keeps each column as narrow as its label.
+  .sort {
+    flex-direction: column;
+    gap: 0;
+    padding: 0.3rem 0.1rem;
+    font-size: 0.62rem;
+    white-space: normal;
+
+    &--left {
+      align-items: flex-start;
+    }
+
+    &--center {
+      align-items: center;
+    }
+  }
+
+  .sort__arrow {
+    font-size: 0.85em;
+  }
+}

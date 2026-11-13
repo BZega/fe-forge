@@ -1,0 +1,392 @@
+import baseStatData from '../data/base-stats.json';
+
+export type StatKey =
+  | 'hp'
+  | 'str'
+  | 'mag'
+  | 'spd'
+  | 'dex'
+  | 'def'
+  | 'res'
+  | 'lck'
+  | 'cha';
+
+export const STAT_KEYS = [
+  'hp',
+  'str',
+  'mag',
+  'spd',
+  'dex',
+  'def',
+  'res',
+  'lck',
+  'cha',
+] as const satisfies readonly StatKey[];
+
+export const STAT_LABELS: Record<StatKey, string> = {
+  hp: 'HP',
+  str: 'Str',
+  mag: 'Mag',
+  spd: 'Spd',
+  dex: 'Dex',
+  def: 'Def',
+  res: 'Res',
+  lck: 'Lck',
+  cha: 'Cha',
+};
+
+export type GrowthRates = Record<StatKey, number>;
+
+export type ClassRank =
+  | 'Base'
+  | 'Beginner'
+  | 'Speciality'
+  | 'Advanced'
+  | 'Master'
+  | 'Divine';
+
+export const CLASS_RANK_ORDER: readonly ClassRank[] = [
+  'Base',
+  'Beginner',
+  'Speciality',
+  'Advanced',
+  'Master',
+  'Divine',
+];
+
+export type MountType =
+  | 'None'
+  | 'Ornius'
+  | 'Horse'
+  | 'Pegasus'
+  | 'Bau'
+  | 'Elephant';
+
+export const MOUNT_TYPE_ORDER: readonly MountType[] = [
+  'Ornius',
+  'Horse',
+  'Pegasus',
+  'Bau',
+  'Elephant',
+];
+
+export type BattalionType = 'Physical' | 'Magic' | 'Defense' | 'Recovery';
+
+/** Battalion ranks from lowest to highest; used to sort by rank. */
+export const BATTALION_RANK_ORDER: readonly string[] = [
+  'E',
+  'E+',
+  'D',
+  'D+',
+  'C',
+  'C+',
+  'B',
+  'B+',
+  'A',
+  'A+',
+  'S',
+  'S+',
+];
+
+export const BATTALION_TYPE_ORDER: readonly BattalionType[] = [
+  'Physical',
+  'Magic',
+  'Defense',
+  'Recovery',
+];
+
+/** A battalion's flat stat bonuses, plus the skill it lets its leader use. */
+export interface Battalion extends GrowthRates {
+  id: number;
+  name: string;
+  type: BattalionType;
+  rank: string;
+  total: number;
+  skillName: string;
+  skillDescription: string;
+}
+
+export type Gender = 'Male' | 'Female';
+
+/** Classes only female units may take. */
+export const FEMALE_ONLY_CLASS_NAMES: ReadonlySet<string> = new Set([
+  'Winged Soldier',
+  'Celestial Trooper',
+]);
+
+/** Unit names that are variants of one character, so per-character data is written once. */
+const CHARACTER_ALIASES: Readonly<Record<string, string>> = {
+  'Eshmel (M)': 'Eshmel',
+  'Eshmel (F)': 'Eshmel',
+  'Mu*': 'Mu',
+};
+
+export function characterKey(unitName: string): string {
+  return CHARACTER_ALIASES[unitName] ?? unitName;
+}
+
+const BASE_STATS = baseStatData as Readonly<Record<string, GrowthRates>>;
+
+/** A unit's Lv 1 base stats (gender and boosted variants share their character's), if known. */
+export function baseStatsOf(unitName: string): GrowthRates | null {
+  return BASE_STATS[characterKey(unitName)] ?? null;
+}
+
+/** Characters whose recruitment growths come from a boosted variant, shown as the base unit's plus a bonus. */
+export const BOOSTED_GROWTH_VARIANTS: Readonly<Record<string, string>> = {
+  Mu: 'Mu*',
+};
+
+export interface Unit extends GrowthRates {
+  id: number;
+  name: string;
+  gender: Gender;
+  /** False for units that cannot take any mounted class. */
+  canUseMounts: boolean;
+  skillPreference: Record<SkillKey, SkillPreference>;
+  total: number;
+}
+
+export interface UnitClass extends GrowthRates {
+  id: number;
+  name: string;
+  rank: ClassRank;
+  description: string;
+  bonusStats: StatBonuses;
+  classFloorStats: ClassFloorStats;
+  skills: Record<SkillKey, boolean>;
+  skillExpBonus: Record<SkillKey, number>;
+  classAbilities: number[];
+  masterAbilities: number[];
+  total: number;
+}
+
+export type BonusStatKey = StatKey | 'mov';
+
+export type StatBonuses = Record<BonusStatKey, number>;
+
+export type ClassFloorStats = Record<StatKey, number>;
+
+export const BONUS_STAT_KEYS = [...STAT_KEYS, 'mov'] as const satisfies readonly BonusStatKey[];
+
+export const BONUS_STAT_LABELS: Record<BonusStatKey, string> = {
+  ...STAT_LABELS,
+  mov: 'Mov',
+};
+
+export type SkillKey =
+  | 'sword'
+  | 'spear'
+  | 'axe'
+  | 'bow'
+  | 'gauntlet'
+  | 'blackMagic'
+  | 'whiteMagic'
+  | 'authority'
+  | 'infantry'
+  | 'riding'
+  | 'heavyArmor'
+  | 'flying';
+
+export type SkillPreference = 'good' | 'neutral' | 'bad';
+
+export const SKILL_KEYS = [
+  'sword',
+  'spear',
+  'axe',
+  'bow',
+  'gauntlet',
+  'blackMagic',
+  'whiteMagic',
+  'authority',
+  'infantry',
+  'riding',
+  'heavyArmor',
+  'flying',
+] as const satisfies readonly SkillKey[];
+
+export const SKILL_LABELS: Record<SkillKey, string> = {
+  sword: 'Sword',
+  spear: 'Spear',
+  axe: 'Axe',
+  bow: 'Bow',
+  gauntlet: 'Gauntlet',
+  blackMagic: 'Black Magic',
+  whiteMagic: 'White Magic',
+  authority: 'Authority',
+  infantry: 'Infantry',
+  riding: 'Riding',
+  heavyArmor: 'Heavy Armor',
+  flying: 'Flying',
+};
+
+export interface ClassAbility {
+  id: number;
+  name: string;
+  description: string;
+  isCombatArt: boolean;
+}
+
+/** An ability that raises the unit's own stats while equipped (data/stat-boost-abilities.json). */
+export interface StatBoostAbility {
+  name: string;
+  description: string;
+  boosts: Partial<Record<StatKey, number>>;
+  /** Only these characters can equip it; absent means anyone. */
+  characters?: string[];
+  /** Extra boosts that depend on the equipped weapon type. */
+  weaponBoosts?: Partial<Record<WeaponKey, Partial<Record<StatKey, number>>>>;
+  /** The ability this upgrades; the two can't be equipped together. */
+  upgradeOf?: string;
+}
+
+export const MAX_EQUIPPED_ABILITIES = 5;
+
+export type WeaponKey = Extract<SkillKey, 'sword' | 'spear' | 'axe' | 'bow' | 'gauntlet' | 'blackMagic' | 'whiteMagic'>;
+
+export const WEAPON_KEYS: readonly WeaponKey[] = ['sword', 'spear', 'axe', 'bow', 'gauntlet', 'blackMagic', 'whiteMagic'];
+
+export interface MountBondLevel {
+  level: number;
+  growth: GrowthRates;
+  bonusStats: GrowthRates;
+}
+
+export interface Mount extends GrowthRates {
+  id: number;
+  name: string;
+  type: MountType;
+  total: number;
+  bondLevels: readonly MountBondLevel[];
+}
+
+export const DEFAULT_MOUNT_BOND_LEVEL = 1;
+
+export function hasBondLevels(mount: Mount | null | undefined): mount is Mount {
+  return (mount?.bondLevels.length ?? 0) > 0;
+}
+
+export function bondLevelOf(
+  mount: Mount | null | undefined,
+  level: number | null | undefined,
+): MountBondLevel | null {
+  if (!hasBondLevels(mount)) {
+    return null;
+  }
+
+  return mount.bondLevels.find((entry) => entry.level === level) ?? mount.bondLevels[0];
+}
+
+export function mountGrowthAt(
+  mount: Mount | null | undefined,
+  level: number | null | undefined,
+): GrowthRates {
+  return bondLevelOf(mount, level)?.growth ?? toGrowth(mount);
+}
+
+export function mountBonusAt(
+  mount: Mount | null | undefined,
+  level: number | null | undefined,
+): GrowthRates {
+  return bondLevelOf(mount, level)?.bonusStats ?? { ...ZERO_GROWTH };
+}
+
+export interface ClassLevelConfig {
+  levels: readonly number[];
+  defaultLevel: number;
+  /** Bonuses added to base class growths per level; levels do not stack. */
+  bonuses: Readonly<Record<number, Partial<GrowthRates>>>;
+  mountMultiplier: number;
+}
+
+export const CLASS_LEVEL_CONFIGS: Readonly<Record<string, ClassLevelConfig>> = {
+  'Elephant Rider': {
+    levels: [35, 45],
+    defaultLevel: 35,
+    bonuses: { 
+      45: {hp: 10, str: 10, dex: 10, def: 10, res: 10}
+    },
+    mountMultiplier: 1,
+  },
+  Charioteer: {
+    levels: [20, 35, 45],
+    defaultLevel: 20,
+    bonuses: {
+      35: { hp: 10, str: 5, mag: 5, spd: 5, dex: 5, def: 10, cha: 5 },
+      45: { hp: 10, str: 15, mag: 5, spd: 5, dex: 10, def: 20, res: 5, lck: 5, cha: 10 },
+    },
+    mountMultiplier: 2,
+  },
+};
+
+/** A unit + class + mount selection and the growth rows it produces. */
+export interface GrowthBuild {
+  unit: Unit | null;
+  unitClass: UnitClass | null;
+  classLevel: number | null;
+  mount: Mount | null;
+  mountLevel: number | null;
+  mountType: MountType;
+  unitGrowth: GrowthRates;
+  classGrowth: GrowthRates;
+  mountGrowth: GrowthRates;
+  total: GrowthRates;
+}
+
+export const ZERO_GROWTH: GrowthRates = {
+  hp: 0,
+  str: 0,
+  mag: 0,
+  spd: 0,
+  dex: 0,
+  def: 0,
+  res: 0,
+  lck: 0,
+  cha: 0,
+};
+
+export function toGrowth(source: Partial<GrowthRates> | null | undefined): GrowthRates {
+  if (!source) {
+    return { ...ZERO_GROWTH };
+  }
+
+  const result = { ...ZERO_GROWTH };
+  for (const key of STAT_KEYS) {
+    result[key] = source[key] ?? 0;
+  }
+
+  return result;
+}
+
+export function sumGrowth(...parts: readonly GrowthRates[]): GrowthRates {
+  const result = { ...ZERO_GROWTH };
+  for (const part of parts) {
+    for (const key of STAT_KEYS) {
+      result[key] += part[key];
+    }
+  }
+
+  return result;
+}
+
+export function scaleGrowth(growth: GrowthRates, factor: number): GrowthRates {
+  const result = { ...ZERO_GROWTH };
+  for (const key of STAT_KEYS) {
+    result[key] = growth[key] * factor;
+  }
+
+  return result;
+}
+
+export function diffGrowth(left: GrowthRates, right: GrowthRates): GrowthRates {
+  const result = { ...ZERO_GROWTH };
+  for (const key of STAT_KEYS) {
+    result[key] = left[key] - right[key];
+  }
+
+  return result;
+}
+
+export function growthTotal(growth: GrowthRates): number {
+  return STAT_KEYS.reduce((sum, key) => sum + growth[key], 0);
+}
