@@ -6,7 +6,7 @@
     "prestart": "node tools/build-recruitment-index.js",
     "start": "ng serve",
     "prebuild": "node tools/build-recruitment-index.js",
-    "build": "ng build --configuration production --base-href /fe-forge/ && npx angular-cli-ghpages --dir=dist/fe-forge/browser",
+    "build": "ng build --configuration production && npx angular-cli-ghpages --dir=dist/fe-forge/browser --cname=feforge.app",
     "prewatch": "node tools/build-recruitment-index.js",
     "watch": "ng build --watch --configuration development",
     "pretest": "node tools/build-recruitment-index.js",
