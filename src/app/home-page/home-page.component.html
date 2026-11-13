@@ -7,10 +7,11 @@
       <circle cx="60" cy="60" r="7" />
     </svg>
   </div>
-  <p class="hero__eyebrow">Planning tools for the strategist in you</p>
   <h1 class="hero__title">Fire Emblem Forge</h1>
+  <p class="hero__eyebrow">Planning tools for the strategist in you</p>
+
   <p class="hero__tagline">
-    Forge every unit into their best self &mdash; map growths, calculate rates, and project stats
+    Forge every unit into their best self with growth mapping, growth rate calculations, and stat projections
     before you commit a single level.
   </p>
   <div class="hero__actions">
@@ -18,6 +19,28 @@
     <button type="button" class="btn btn--ghost" (click)="toolsSection.scrollIntoView({ behavior: 'smooth' })">
       Explore the Tools
     </button>
+  </div>
+
+  <div class="spoilers" role="group" aria-labelledby="spoilers-title">
+    <h2 id="spoilers-title" class="spoilers__title">We care about the data you see</h2>
+    <p class="spoilers__text">
+      Still playing through? Hide the units, classes and mounts from parts of the story you haven't reached yet.
+    </p>
+    <div class="spoilers__toggles">
+      @for (tier of spoilerTiers; track tier.key) {
+        <button
+          type="button"
+          class="switch"
+          role="switch"
+          [class.is-on]="hiddenTiers()[tier.key]"
+          [attr.aria-checked]="hiddenTiers()[tier.key]"
+          (click)="toggleSpoilerTier(tier.key)"
+        >
+          <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+          Hide {{ tier.label }}
+        </button>
+      }
+    </div>
   </div>
 </section>
 
@@ -65,8 +88,9 @@
     <p class="about__eyebrow">About the Developer</p>
     <h2>Built by a fan, for fans</h2>
     <p>
-      Hi! I'm a software developer and lifelong Fire Emblem fan. FE Forge started as a handful of
-      spreadsheets I used to plan my own playthroughs, and grew into the set of tools you see here.
+      Hi! I'm a software developer and lifelong Fire Emblem fan. Fire Emblem Forge started as a handful of
+      excel spreadsheets I used in order to plan my own playthroughs. This eventually grew into the set of tools you see here.
+      I will continue to work hard to improve and expand Fire Emblem Forge for the community.
     </p>
     <p>
       It's a passion project built in my free time, and it will always be free to use. If you have an
@@ -74,7 +98,7 @@
     </p>
     <p>
       If FE Forge has helped you plan the perfect run and you'd like to support its continued
-      development, tips are always appreciated &mdash; but never expected.
+      development, tips are always appreciated, but never expected.
     </p>
     <button type="button" class="btn btn--primary" aria-haspopup="dialog" (click)="supportOpen.set(true)">
       Support the Developer

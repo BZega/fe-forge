@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { RESOURCE_LINKS, TOOL_LINKS } from '../nav-links';
+import { SPOILER_TIERS, SpoilerService, SpoilerTier } from '../services/spoiler.service';
 import { SupportDialogComponent } from '../support-dialog/support-dialog.component';
 
 @Component({
@@ -11,7 +12,15 @@ import { SupportDialogComponent } from '../support-dialog/support-dialog.compone
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomePageComponent {
+  private readonly spoilers = inject(SpoilerService);
+
   readonly tools = TOOL_LINKS;
   readonly resources = RESOURCE_LINKS;
   readonly supportOpen = signal(false);
+  readonly spoilerTiers = SPOILER_TIERS;
+  readonly hiddenTiers = this.spoilers.hiddenTiers;
+
+  toggleSpoilerTier(tier: SpoilerTier): void {
+    this.spoilers.toggle(tier);
+  }
 }
