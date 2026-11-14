@@ -47,18 +47,18 @@ describe('SearchableSelectComponent without the keyboard', () => {
     expect(options()).toEqual(['Alexandra', 'Alecto', 'Aleph', 'Bertrand']);
   });
 
-  it('switches to typing when the text box is tapped again, waiting for 3 letters and showing at most 2 results', () => {
+  it('switches to typing when the text box is tapped again, waiting for 2 letters and showing at most 2 results', () => {
     tapInput();
     tapInput();
 
     expect(input.hasAttribute('inputmode')).toBeFalse();
     expect(options()).toEqual([]);
-    expect(empty()).toBe('Type at least 3 letters');
+    expect(empty()).toBe('Type at least 2 letters');
 
-    type('al');
+    type('a');
     expect(options()).toEqual([]);
 
-    type('ale');
+    type('al');
     expect(options()).toEqual(['Alexandra', 'Alecto']);
   });
 

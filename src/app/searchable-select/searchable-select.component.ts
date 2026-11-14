@@ -359,5 +359,5 @@ function clamp(index: number, length: number): number {
 const LIST_GAP = 12;
 const PANEL_OFFSET = 4;
 
-const TYPING_MIN_LENGTH = 3;
+const TYPING_MIN_LENGTH = 2;
 const TYPING_MAX_RESULTS = 2;
