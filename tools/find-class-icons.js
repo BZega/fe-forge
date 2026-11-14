@@ -3,14 +3,14 @@ const path = require('path');
 
 /**
  * Fills "classSprites" in src/app/data/icon-links.json with the small pixel-art class sprites
- * listed at https://eoddb.com/fefw/classes.
+ * listed at https://eoddb.com/fefw/img/classes.
  *
  *   node tools/find-class-icons.js            # print matches only
  *   node tools/find-class-icons.js --write    # also save them to icon-links.json
  *
  * Needs a network that can reach eoddb.com (it is blocked on some corporate proxies).
  */
-const PAGE = 'https://eoddb.com/fefw/classes';
+const PAGE = 'https://eoddb.com/fefw/img/classes';
 const DATA = path.join(__dirname, '..', 'src', 'app', 'data');
 const LINKS_FILE = path.join(DATA, 'icon-links.json');
 
