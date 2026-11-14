@@ -16,7 +16,7 @@ describe('GrowthListComponent tag column', () => {
   const names = () =>
     Array.from(host.querySelectorAll('tbody tr:not(.group) th')).map((cell) => cell.textContent!.trim());
   const sortByTag = () => {
-    host.querySelector<HTMLButtonElement>('thead .list__tag .sort')!.click();
+    host.querySelector<HTMLButtonElement>('thead .list-tag .sort')!.click();
     fixture.detectChanges();
   };
 
@@ -83,7 +83,7 @@ describe('GrowthListComponent tag column', () => {
     fixture.componentRef.setInput('tagHeader', null);
     fixture.detectChanges();
 
-    expect(host.querySelector('.list__tag')).toBeNull();
+    expect(host.querySelector('.list-tag')).toBeNull();
   });
 });
 
@@ -129,7 +129,7 @@ describe('GrowthListComponent stat list layout', () => {
     fixture.componentRef.setInput('bonusLayout', false);
     fixture.detectChanges();
 
-    expect(host.querySelector('.list__bonus')).toBeNull();
+    expect(host.querySelector('.list-bonus')).toBeNull();
     expect(names(0)).toEqual(['Wild Ornius', 'Tame Ornius']);
   });
 

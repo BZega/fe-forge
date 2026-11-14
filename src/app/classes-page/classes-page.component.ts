@@ -15,12 +15,12 @@ type ClassListView = 'growth' | 'bonus' | 'floors';
   imports: [GrowthListComponent, HelpDialogComponent, LayoutSwitchComponent, StatSortComponent],
   template: `
     <header class="browse-header">
-      <div class="browse-header__title">
+      <div class="browse-header-title">
         <h1>Classes</h1>
         <app-help-dialog heading="Classes" [paragraphs]="helpText()" />
       </div>
       @if (view() === 'bonus') {
-        <div class="browse-header__controls">
+        <div class="browse-header-controls">
           <app-layout-switch [(layout)]="layout" />
           @if (layout() === 'bonus') {
             <app-stat-sort [stats]="visibleStatKeys()" [(stat)]="sortStat" [(direction)]="sortDirection" />
@@ -35,8 +35,8 @@ type ClassListView = 'growth' | 'bonus' | 'floors';
           <button
             type="button"
             role="tab"
-            class="view-tabs__tab"
-            [class.view-tabs__tab--active]="view() === tab.key"
+            class="view-tabs-tab"
+            [class.view-tabs-tab--active]="view() === tab.key"
             [attr.aria-selected]="view() === tab.key"
             [attr.tabindex]="view() === tab.key ? 0 : -1"
             (click)="view.set(tab.key)"

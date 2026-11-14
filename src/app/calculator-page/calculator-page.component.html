@@ -1,6 +1,6 @@
 <header class="page-header">
   <div>
-    <div class="page-header__title">
+    <div class="page-header-title">
       <h1>Growth Rate Calculator</h1>
       <app-help-dialog heading="Growth Rate Calculator" [paragraphs]="helpText" />
     </div>
@@ -42,9 +42,9 @@
       />
 
       @if (selectionMode()) {
-        <button type="button" class="panel__picker" (click)="togglePick(slot)">
+        <button type="button" class="panel-picker" (click)="togglePick(slot)">
           @if (isPicked(slot)) {
-            <span class="panel__badge">{{ pickNumber(slot) }}</span>
+            <span class="panel-badge">{{ pickNumber(slot) }}</span>
             Selected
           } @else {
             Select

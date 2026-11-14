@@ -19,6 +19,11 @@ export class HomePageComponent {
   readonly supportOpen = signal(false);
   readonly spoilerTiers = SPOILER_TIERS;
   readonly hiddenTiers = this.spoilers.hiddenTiers;
+  readonly allHidden = this.spoilers.allHidden;
+
+  toggleAllSpoilers(): void {
+    this.spoilers.toggleAll();
+  }
 
   toggleSpoilerTier(tier: SpoilerTier): void {
     this.spoilers.toggle(tier);

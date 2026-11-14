@@ -1,9 +1,9 @@
 @let current = build();
 
 <section class="calculator">
-  <header class="calculator__header">
+  <header class="calculator-header">
     <h2>{{ heading() }}</h2>
-    <div class="calculator__actions">
+    <div class="calculator-actions">
       <button type="button" class="reset" (click)="reset()">Reset</button>
       <button
         type="button"
@@ -24,7 +24,7 @@
 
   <div class="pickers" [class.pickers--split]="isMounted() || !!levelConfig()">
     <div class="picker picker--unit">
-      <span class="picker__label">Unit</span>
+      <span class="picker-label">Unit</span>
       <app-searchable-select
         label="Unit"
         placeholder="— Select a unit —"
@@ -37,7 +37,7 @@
     </div>
 
     <div class="picker picker--class">
-      <span class="picker__label">Class</span>
+      <span class="picker-label">Class</span>
       <app-searchable-select
         label="Class"
         placeholder="— Select a class —"
@@ -49,9 +49,9 @@
 
     @if (levelConfig(); as config) {
       <label class="picker picker--level picker--class-level" [class.picker--half]="bondLevels().length > 0">
-        <span class="picker__label">Level</span>
+        <span class="picker-label">Level</span>
         <select
-          class="picker__select"
+          class="picker-select"
           [value]="classLevel()"
           (change)="onLevelChange($any($event.target).value)"
         >
@@ -67,7 +67,7 @@
 
     @if (isMounted()) {
       <div class="picker picker--mount">
-        <span class="picker__label">Mount ({{ mountType() }})</span>
+        <span class="picker-label">Mount ({{ mountType() }})</span>
         <app-searchable-select
           label="Mount"
           [items]="mountOptions()"
@@ -80,9 +80,9 @@
 
     @if (bondLevels().length > 0) {
       <label class="picker picker--level picker--bond" [class.picker--half]="!!levelConfig()">
-        <span class="picker__label">Bond Level</span>
+        <span class="picker-label">Bond Level</span>
         <select
-          class="picker__select"
+          class="picker-select"
           [value]="mountLevel()"
           (change)="onMountLevelChange($any($event.target).value)"
         >
@@ -96,14 +96,14 @@
     }
 
     <!-- Phones only: an invisible Mount and Bond Level picker that keep row 2 the same height in every layout. -->
-    <div class="pickers__reserve" aria-hidden="true" inert>
+    <div class="pickers-reserve" aria-hidden="true" inert>
       <div class="picker">
-        <span class="picker__label">Mount</span>
+        <span class="picker-label">Mount</span>
         <app-searchable-select [disabled]="true" />
       </div>
       <div class="picker">
-        <span class="picker__label">Bond Level</span>
-        <select class="picker__select" disabled tabindex="-1"><option>Level 1</option></select>
+        <span class="picker-label">Bond Level</span>
+        <select class="picker-select" disabled tabindex="-1"><option>Level 1</option></select>
       </div>
     </div>
   </div>
@@ -111,21 +111,21 @@
   <table class="growth">
     <thead>
       <tr>
-        <th class="growth__corner"></th>
+        <th class="growth-corner"></th>
         @for (stat of statKeys; track stat) {
           <th scope="col">{{ statLabels[stat] }}</th>
         }
-        <th scope="col" class="growth__total-head">Total</th>
+        <th scope="col" class="growth-total-head">Total</th>
       </tr>
     </thead>
 
     <tbody>
       <tr class="band band--unit">
-        <th scope="rowgroup" rowspan="2" class="band__name">
+        <th scope="rowgroup" rowspan="2" class="band-name">
           {{ current.unit?.name ?? 'No unit' }}
         </th>
-        <td class="band__caption" [attr.colspan]="statKeys.length">Unit Selection</td>
-        <td rowspan="2" class="band__total">{{ totalOf(current.unitGrowth) }}%</td>
+        <td class="band-caption" [attr.colspan]="statKeys.length">Unit Selection</td>
+        <td rowspan="2" class="band-total">{{ totalOf(current.unitGrowth) }}%</td>
       </tr>
       <tr class="band band--unit">
         @for (stat of statKeys; track stat) {
@@ -136,16 +136,16 @@
       </tr>
 
       <tr class="band band--class">
-        <th scope="rowgroup" rowspan="2" class="band__name">
+        <th scope="rowgroup" rowspan="2" class="band-name">
           {{ current.unitClass?.name ?? 'No class' }}
         </th>
-        <td class="band__caption" [attr.colspan]="statKeys.length">
+        <td class="band-caption" [attr.colspan]="statKeys.length">
           {{ current.unitClass ? current.unitClass.rank + ' Class Selected' : 'No Class Selected' }}
           @if (current.classLevel !== null) {
             (Level {{ current.classLevel }})
           }
         </td>
-        <td rowspan="2" class="band__total">{{ totalOf(current.classGrowth) }}%</td>
+        <td rowspan="2" class="band-total">{{ totalOf(current.classGrowth) }}%</td>
       </tr>
       <tr class="band band--class">
         @for (stat of statKeys; track stat) {
@@ -155,10 +155,10 @@
         }
       </tr>
       <tr class="band band--mount">
-        <th scope="rowgroup" rowspan="2" class="band__name">
+        <th scope="rowgroup" rowspan="2" class="band-name">
           {{ current.mount?.name ?? 'None' }}
         </th>
-        <td class="band__caption" [attr.colspan]="statKeys.length">
+        <td class="band-caption" [attr.colspan]="statKeys.length">
           {{ isMounted() ? 'Growths From Mounts' : 'No Mount Growth' }}
           @if (current.mountLevel !== null) {
             (Bond Level {{ current.mountLevel }})
@@ -169,7 +169,7 @@
             }
           }
         </td>
-        <td rowspan="2" class="band__total">{{ totalOf(current.mountGrowth) }}%</td>
+        <td rowspan="2" class="band-total">{{ totalOf(current.mountGrowth) }}%</td>
       </tr>
       <tr class="band band--mount">
         @for (stat of statKeys; track stat) {
@@ -180,9 +180,9 @@
       </tr>
 
       <tr class="band band--grand">
-        <th scope="rowgroup" rowspan="2" class="band__name">Total</th>
-        <td class="band__caption" [attr.colspan]="statKeys.length"></td>
-        <td rowspan="2" class="band__total band__total--grand">
+        <th scope="rowgroup" rowspan="2" class="band-name">Total</th>
+        <td class="band-caption" [attr.colspan]="statKeys.length"></td>
+        <td rowspan="2" class="band-total band-total--grand">
           {{ totalOf(current.total) }}%
         </td>
       </tr>

@@ -136,7 +136,7 @@ describe('ProjectionBuildComponent', () => {
   it('leaves the rarest outcomes off the histogram, but widens it to show any actual value', () => {
     const { build, fixture, host } = open(chapterStart('Cai'));
     const str = () => build.rows().find((row) => row.stat === 'str')!;
-    const values = () => Array.from(host.querySelectorAll('.histogram__bar')).map((bar) => Number(bar.getAttribute('title')!.match(/Str (\d+)/)![1]));
+    const values = () => Array.from(host.querySelectorAll('.histogram-bar')).map((bar) => Number(bar.getAttribute('title')!.match(/Str (\d+)/)![1]));
 
     fixture.detectChanges();
     expect(values()[0]).toBeGreaterThan(str().summary.low);
@@ -145,7 +145,7 @@ describe('ProjectionBuildComponent', () => {
     build.actualStats.update((stats) => ({ ...stats, str: 99 }));
     fixture.detectChanges();
     expect(values().at(-1)).toBe(99);
-    expect(host.querySelector('.histogram__bar--actual')!.getAttribute('title')).toContain('Str 99');
+    expect(host.querySelector('.histogram-bar--actual')!.getAttribute('title')).toContain('Str 99');
   });
 
   it("raises stats below a new class's floors when reclassing into it", () => {

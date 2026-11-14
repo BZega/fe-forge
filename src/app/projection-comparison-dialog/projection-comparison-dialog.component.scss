@@ -36,21 +36,21 @@
   }
 }
 
-.compare__best strong {
+.compare-best strong {
   color: var(--accent);
 }
 
-.compare__difference {
+.compare-difference {
   white-space: nowrap;
   opacity: 0.7;
 }
 
-.compare__difference--up {
+.compare-difference--up {
   color: #81e6a1;
   opacity: 1;
 }
 
-.compare__difference--down {
+.compare-difference--down {
   color: #ff9e80;
   opacity: 1;
 }
@@ -61,7 +61,7 @@
   gap: 0.2rem;
 }
 
-.versus__bar {
+.versus-bar {
   display: flex;
   width: 5.5rem;
   height: 0.5rem;
@@ -70,21 +70,21 @@
   background: #ff9e80;
 }
 
-.legend__lose {
+.legend-lose {
   background: #ff9e80;
 }
 
-.versus__win,
-.legend__win {
+.versus-win,
+.legend-win {
   background: #81e6a1;
 }
 
-.versus__tie,
-.legend__tie {
+.versus-tie,
+.legend-tie {
   background: rgb(255 255 255 / 40%);
 }
 
-.versus__text {
+.versus-text {
   font-size: 0.72rem;
   opacity: 0.75;
   white-space: nowrap;
@@ -117,7 +117,7 @@
     }
   }
 
-  .versus__bar {
+  .versus-bar {
     width: 3.5rem;
   }
 }

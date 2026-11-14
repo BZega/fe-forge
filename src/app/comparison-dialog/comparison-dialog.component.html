@@ -10,11 +10,11 @@
   aria-modal="true"
   aria-labelledby="comparison-title"
 >
-  <header class="dialog__header">
+  <header class="dialog-header">
     <div>
       <h2 id="comparison-title">{{ title() }}</h2>
     </div>
-    <button type="button" class="dialog__close" aria-label="Close" (click)="close()">
+    <button type="button" class="dialog-close" aria-label="Close" (click)="close()">
       &times;
     </button>
   </header>
@@ -28,11 +28,11 @@
   <ng-template #side let-build let-key="key" let-editor="editor" let-name="name">
     @let editingThis = editing() === key && editor;
 
-    <div class="summary__side summary__side--{{ key }}" [class.summary__side--editing]="editingThis">
+    <div class="summary-side summary-side--{{ key }}" [class.summary-side--editing]="editingThis">
       @if (editingThis) {
-        <div class="summary__row" [class.summary__row--stacked]="!editor.levelConfig() && !editor.isMounted()">
+        <div class="summary-row" [class.summary-row--stacked]="!editor.levelConfig() && !editor.isMounted()">
           <app-searchable-select
-            class="compact summary__pick"
+            class="compact summary-pick"
             placeholder="— Unit —"
             [label]="'Unit of the ' + name + ' build'"
             [keyboard]="false"
@@ -43,7 +43,7 @@
             (valueChange)="editor.onUnitChange($event)"
           />
           <app-searchable-select
-            class="compact summary__pick"
+            class="compact summary-pick"
             placeholder="— Class —"
             [label]="'Class of the ' + name + ' build'"
             [keyboard]="false"
@@ -53,7 +53,7 @@
           />
           @if (editor.levelConfig(); as config) {
             <select
-              class="summary__select"
+              class="summary-select"
               [attr.aria-label]="'Class level of the ' + name + ' build'"
               [value]="editor.classLevel()"
               (change)="editor.onLevelChange($any($event.target).value)"
@@ -65,9 +65,9 @@
           }
         </div>
         @if (editor.isMounted()) {
-          <div class="summary__row">
+          <div class="summary-row">
             <app-searchable-select
-              class="compact summary__pick"
+              class="compact summary-pick"
               [label]="editor.mountType() + ' mount of the ' + name + ' build'"
               [keyboard]="false"
               [items]="editor.mountOptions()"
@@ -77,7 +77,7 @@
             />
             @if (editor.bondLevels().length > 0) {
               <select
-                class="summary__select"
+                class="summary-select"
                 [attr.aria-label]="'Bond level of the ' + name + ' build'"
                 [value]="editor.mountLevel()"
                 (change)="editor.onMountLevelChange($any($event.target).value)"
@@ -92,15 +92,15 @@
           </div>
         }
       } @else {
-        <span class="summary__label">{{ build.unit?.name ?? 'No Unit' }}</span>
-        <span class="summary__build">{{ describe(build) }}</span>
+        <span class="summary-label">{{ build.unit?.name ?? 'No Unit' }}</span>
+        <span class="summary-build">{{ describe(build) }}</span>
       }
-      <div class="summary__foot">
-        <span class="summary__total">{{ totalOf(build.total) }}%</span>
+      <div class="summary-foot">
+        <span class="summary-total">{{ totalOf(build.total) }}%</span>
         @if (editor) {
           <button
             type="button"
-            class="summary__change"
+            class="summary-change"
             [attr.aria-label]="(editingThis ? 'Done changing the ' : 'Change the ') + name + ' build'"
             [attr.aria-expanded]="!!editingThis"
             (click)="toggleEditing(key)"
@@ -128,7 +128,7 @@
     } @else {
       Both builds have identical total growth.
     }
-    <span class="verdict__counts">
+    <span class="verdict-counts">
       @if (a.unit?.name === b.unit?.name) {
         {{ buildA().unit?.name ?? 'No Unit' }} ({{ buildA().unitClass?.name ?? 'No Class' }}) wins {{ winsA() }} · {{ buildB().unit?.name ?? 'No Unit' }} ({{ buildB().unitClass?.name ?? 'No Class' }}) wins {{ winsB() }} ·
       } @else {
@@ -184,8 +184,8 @@
     </tfoot>
   </table>
 
-  <footer class="dialog__footer">
-    <button type="button" class="dialog__dismiss" (click)="close()">
+  <footer class="dialog-footer">
+    <button type="button" class="dialog-dismiss" (click)="close()">
       Back to calculators
     </button>
   </footer>

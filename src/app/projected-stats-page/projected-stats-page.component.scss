@@ -21,7 +21,7 @@
   }
 }
 
-.page-header__title {
+.page-header-title {
   display: flex;
   align-items: center;
   gap: 0.65rem;
@@ -83,7 +83,7 @@
   outline-offset: 3px;
 }
 
-.panel__picker {
+.panel-picker {
   position: absolute;
   inset: 0;
   display: flex;
@@ -105,7 +105,7 @@
   }
 }
 
-.panel__badge {
+.panel-badge {
   display: grid;
   place-items: center;
   width: 1.6rem;

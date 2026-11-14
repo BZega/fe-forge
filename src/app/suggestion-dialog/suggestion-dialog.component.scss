@@ -4,7 +4,7 @@
   margin-top: 1rem;
 }
 
-.suggestion__input {
+.suggestion-input {
   width: 100%;
   resize: vertical;
   background: #142c30;
@@ -21,7 +21,7 @@
   }
 }
 
-.suggestion__count {
+.suggestion-count {
   align-self: flex-end;
   margin-top: 0.25rem;
   font-size: 0.72rem;
@@ -29,14 +29,14 @@
 }
 
 // Off-screen rather than display: none, which some bots skip.
-.suggestion__trap {
+.suggestion-trap {
   position: absolute;
   left: -9999px;
   width: 1px;
   height: 1px;
 }
 
-.suggestion__done {
+.suggestion-done {
   margin: 1rem 0 0;
   color: #7ee08a;
 }

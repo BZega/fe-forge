@@ -138,7 +138,7 @@ describe('ProjectionDialogComponent', () => {
     fixture.detectChanges();
 
     expect(host.querySelectorAll('fieldset.tier').length).toBe(1);
-    expect(host.querySelector('.tier__from')!.textContent!.trim()).toBe('Lv 40');
+    expect(host.querySelector('.tier-from')!.textContent!.trim()).toBe('Lv 40');
     expect(host.querySelector('select[aria-label="Starting class"]')).toBeNull();
     expect(host.querySelector<HTMLInputElement>('input[aria-label="Starting class"]')!.value).toBe('Swordmaster');
     expect(host.querySelector('input[aria-label="Reclass to"]')).toBeNull();
@@ -237,7 +237,7 @@ describe('ProjectionDialogComponent', () => {
 
   it('hides + Reclass until the new reclass has a class', () => {
     const { plan, fixture, host } = open('Cai');
-    const addButton = () => host.querySelector<HTMLButtonElement>('.tier__add');
+    const addButton = () => host.querySelector<HTMLButtonElement>('.tier-add');
 
     expect(addButton()).not.toBeNull();
 
@@ -255,7 +255,7 @@ describe('ProjectionDialogComponent', () => {
 
   it('gives every reclass its own level between its neighbours', () => {
     const { plan, fixture, host } = open('Cai');
-    const levelBoxes = () => Array.from(host.querySelectorAll<HTMLInputElement>('.tier__level input'));
+    const levelBoxes = () => Array.from(host.querySelectorAll<HTMLInputElement>('.tier-level input'));
     const setLevel = (box: HTMLInputElement, value: string) => {
       box.value = value;
       box.dispatchEvent(new Event('change'));
@@ -298,7 +298,7 @@ describe('ProjectionDialogComponent', () => {
     const mag = dialog.projection().find((row) => row.stat === 'mag')!;
 
     expect(mag.total).toBeCloseTo(expectedMag, 10);
-    expect(Array.from(host.querySelectorAll('.results__value')).every((value) => /^-?\d+\.\d{2}$/.test(value.textContent!.trim()))).toBeTrue();
+    expect(Array.from(host.querySelectorAll('.results-value')).every((value) => /^-?\d+\.\d{2}$/.test(value.textContent!.trim()))).toBeTrue();
   });
 
   it('recalculates when the end level changes, and Back returns to the plan', () => {
@@ -312,12 +312,12 @@ describe('ProjectionDialogComponent', () => {
     const at20 = dialog.projection().find((row) => row.stat === 'hp')!.total;
 
     expect(at20).toBeLessThan(at99);
-    expect(host.querySelector<HTMLInputElement>('.results__level-input')!.value).toBe('20');
+    expect(host.querySelector<HTMLInputElement>('.results-level-input')!.value).toBe('20');
 
     dialog.setEndLevel('1');
     expect(dialog.endLevel()).toBe(4);
 
-    host.querySelector<HTMLButtonElement>('.results .dialog__footer .button:not(.button--primary)')!.click();
+    host.querySelector<HTMLButtonElement>('.results .dialog-footer .button:not(.button--primary)')!.click();
     fixture.detectChanges();
     expect(host.querySelector('form')!.hidden).toBeFalse();
   });
@@ -357,10 +357,10 @@ describe('ProjectionDialogComponent', () => {
     dialog.submit();
     fixture.detectChanges();
 
-    const boxes = Array.from(host.querySelectorAll<HTMLElement>('.results__stat')).map((stat) => ({
-      label: stat.querySelector('.results__label')!.textContent!.trim(),
+    const boxes = Array.from(host.querySelectorAll<HTMLElement>('.results-stat')).map((stat) => ({
+      label: stat.querySelector('.results-label')!.textContent!.trim(),
       rect: stat.getBoundingClientRect(),
-      value: stat.querySelector('.results__value')!.getBoundingClientRect(),
+      value: stat.querySelector('.results-value')!.getBoundingClientRect(),
     }));
     const column = (labels: string[]) => boxes.filter((box) => labels.includes(box.label));
     const [hp] = column(['HP']);

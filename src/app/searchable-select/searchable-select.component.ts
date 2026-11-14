@@ -258,7 +258,7 @@ export class SearchableSelectComponent {
   private scrollActiveIntoView(groupToTop = false): void {
     afterNextRender(
       () => {
-        const list = this.host.nativeElement.querySelector('.panel__list') as HTMLElement | null;
+        const list = this.host.nativeElement.querySelector('.panel-list') as HTMLElement | null;
         const option = list?.querySelector('.option--active') as HTMLElement | null;
 
         if (!list || !option) {

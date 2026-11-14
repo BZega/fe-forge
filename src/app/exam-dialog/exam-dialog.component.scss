@@ -26,7 +26,7 @@
   padding: 1.25rem 1.5rem 1.5rem;
 }
 
-.dialog__header {
+.dialog-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -38,7 +38,7 @@
   }
 }
 
-.dialog__eyebrow {
+.dialog-eyebrow {
   margin: 0;
   font-size: 0.72rem;
   letter-spacing: 0.1em;
@@ -46,7 +46,7 @@
   color: var(--accent);
 }
 
-.dialog__close {
+.dialog-close {
   background: transparent;
   border: none;
   color: inherit;
@@ -56,7 +56,7 @@
   padding: 0 0.25rem;
 }
 
-.dialog__context {
+.dialog-context {
   margin: 0.6rem 0 0;
   font-size: 0.85rem;
   opacity: 0.75;
@@ -76,7 +76,7 @@
   min-width: 0;
 }
 
-.field__label {
+.field-label {
   font-size: 0.72rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -116,7 +116,7 @@
   border-color: #ff8d8d;
 }
 
-.chance__unit {
+.chance-unit {
   margin-left: 0.2rem;
   opacity: 0.6;
 }
@@ -136,8 +136,8 @@
   margin: 1rem 0 0.25rem;
 }
 
-.outcome__option,
-.mode__option {
+.outcome-option,
+.mode-option {
   background: #142c30;
   border: 1px solid var(--panel-border);
   border-radius: 6px;
@@ -157,19 +157,19 @@
   }
 }
 
-.outcome__option--pass.outcome__option--selected {
+.outcome-option--pass.outcome-option--selected {
   background: #1d6f3a;
   border-color: #2f9e4f;
   color: #e8fff0;
 }
 
-.outcome__option--fail.outcome__option--selected {
+.outcome-option--fail.outcome-option--selected {
   background: #9c2b2b;
   border-color: #c04545;
   color: #ffeaea;
 }
 
-.mode__option--selected {
+.mode-option--selected {
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -219,7 +219,7 @@
   }
 }
 
-.dialog__footer {
+.dialog-footer {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
@@ -266,7 +266,7 @@
     padding: 1rem;
   }
 
-  .dialog__header h2 {
+  .dialog-header h2 {
     font-size: 1.1rem;
   }
 

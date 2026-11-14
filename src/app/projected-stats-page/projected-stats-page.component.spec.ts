@@ -57,7 +57,7 @@ describe('ProjectedStatsPageComponent', () => {
     expect(ctx.builds().length).toBe(1);
     expect(ctx.host.querySelector('.build--placeholder')).not.toBeNull();
     expect(ctx.host.querySelector('.placeholder-histogram')).not.toBeNull();
-    expect(ctx.host.querySelector('.build__edit')).toBeNull();
+    expect(ctx.host.querySelector('.build-edit')).toBeNull();
 
     ctx.button('+ Build')!.click();
     ctx.fixture.detectChanges();
@@ -125,7 +125,7 @@ describe('ProjectedStatsPageComponent', () => {
     const ctx = render();
     addManual(ctx, 'Cai');
 
-    ctx.host.querySelector<HTMLButtonElement>('.build__edit')!.click();
+    ctx.host.querySelector<HTMLButtonElement>('.build-edit')!.click();
     ctx.fixture.detectChanges();
     const dialog = ctx.startDialog()!;
     expect(dialog.source()).toBe('manual');
@@ -151,7 +151,7 @@ describe('ProjectedStatsPageComponent', () => {
     ctx.fixture.detectChanges();
     expect(ctx.page.selectionMode()).toBeTrue();
 
-    const pickers = () => Array.from(ctx.host.querySelectorAll<HTMLButtonElement>('.panel__picker'));
+    const pickers = () => Array.from(ctx.host.querySelectorAll<HTMLButtonElement>('.panel-picker'));
     expect(pickers().length).toBe(3);
     pickers()[0].click();
     pickers()[2].click();

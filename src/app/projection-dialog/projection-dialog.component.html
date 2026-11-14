@@ -1,12 +1,12 @@
 <div class="backdrop" (click)="close()"></div>
 
 <div class="dialog dialog--projection" role="dialog" aria-modal="true" aria-labelledby="projection-title">
-  <header class="dialog__header">
+  <header class="dialog-header">
     <div>
-      <p class="dialog__eyebrow">{{ unit().name }}</p>
+      <p class="dialog-eyebrow">{{ unit().name }}</p>
       <h2 id="projection-title">{{ page() === 'plan' ? 'Projected Stats' : 'Projected Final Stats' }}</h2>
     </div>
-    <button type="button" class="dialog__close" aria-label="Close" (click)="close()">
+    <button type="button" class="dialog-close" aria-label="Close" (click)="close()">
       &times;
     </button>
   </header>
@@ -15,8 +15,8 @@
   <form class="plan" [hidden]="page() !== 'plan'" (submit)="$event.preventDefault(); submit()">
     @if (chapterPicker()) {
       <label class="field">
-        <span class="field__label">Starting chapter</span>
-        <select class="plan__select" [value]="chapter()?.chapter" (change)="chapterNumber.set(+$any($event.target).value)">
+        <span class="field-label">Starting chapter</span>
+        <select class="plan-select" [value]="chapter()?.chapter" (change)="chapterNumber.set(+$any($event.target).value)">
           @for (option of chapters(); track option.chapter) {
             <option [value]="option.chapter" [selected]="option.chapter === chapter()?.chapter">
               Chapter {{ option.chapter }} · Lv {{ option.level }} {{ option.className }}
@@ -28,7 +28,7 @@
 
     <app-class-plan [unit]="unit()" [startLevel]="startLevel()" [joiningClassName]="chapter()?.className ?? null" />
 
-    <footer class="dialog__footer">
+    <footer class="dialog-footer">
       <button type="button" class="button" (click)="close()">Cancel</button>
       <button type="submit" class="button button--primary" [disabled]="!chapter()">Submit</button>
     </footer>
@@ -37,8 +37,8 @@
 
   @if (page() === 'results') {
     <div class="results">
-      <label class="results__level">
-        <span class="field__label">End level</span>
+      <label class="results-level">
+        <span class="field-label">End level</span>
         <input
           type="range"
           [min]="startLevel()"
@@ -48,7 +48,7 @@
           (input)="setEndLevel($any($event.target).value)"
         />
         <input
-          class="results__level-input"
+          class="results-level-input"
           type="number"
           inputmode="numeric"
           [min]="startLevel()"
@@ -60,19 +60,19 @@
         />
       </label>
 
-      <ul class="results__stats">
+      <ul class="results-stats">
         @for (row of projection(); track row.stat) {
           <li
-            class="results__stat"
+            class="results-stat"
             [title]="'Levelled ' + fixed(row.base) + (row.bonus ? ' + class bonus ' + row.bonus : '') + (row.mountBonus ? ' + mount bonus ' + row.mountBonus : '')"
           >
-            <span class="results__label">{{ row.label }}</span>
-            <span class="results__value">{{ fixed(row.total) }}</span>
+            <span class="results-label">{{ row.label }}</span>
+            <span class="results-value">{{ fixed(row.total) }}</span>
           </li>
         }
       </ul>
 
-      <footer class="dialog__footer">
+      <footer class="dialog-footer">
         <button type="button" class="button" (click)="goBack()">Back</button>
         <button type="button" class="button button--primary" (click)="close()">Done</button>
       </footer>

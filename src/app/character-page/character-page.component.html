@@ -39,8 +39,8 @@
       <button
         type="button"
         role="tab"
-        class="tabs__tab"
-        [class.tabs__tab--active]="activeTab() === tab.key"
+        class="tabs-tab"
+        [class.tabs-tab--active]="activeTab() === tab.key"
         [attr.aria-selected]="activeTab() === tab.key"
         (click)="selectTab(tab.key)"
       >
@@ -90,23 +90,23 @@
 
         @if (difference(); as diff) {
           <section class="difference">
-            <p class="difference__caption">
+            <p class="difference-caption">
               How <strong>Build 1</strong> ({{ diff.labelA }}) compares to
               <strong>Build 2</strong> ({{ diff.labelB }}).
             </p>
-            <table class="difference__table">
+            <table class="difference-table">
               <thead>
                 <tr>
-                  <th class="difference__corner"></th>
+                  <th class="difference-corner"></th>
                   @for (stat of statKeys; track stat) {
                     <th scope="col">{{ statLabels[stat] }}</th>
                   }
-                  <th scope="col" class="difference__total-head">Total</th>
+                  <th scope="col" class="difference-total-head">Total</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <th scope="row" class="difference__label">Difference</th>
+                  <th scope="row" class="difference-label">Difference</th>
                   @for (stat of statKeys; track stat) {
                     <td
                       [class.up]="diff.growth[stat] > 0"
@@ -116,7 +116,7 @@
                     </td>
                   }
                   <td
-                    class="difference__total"
+                    class="difference-total"
                     [class.up]="diff.total > 0"
                     [class.down]="diff.total < 0"
                   >
@@ -138,8 +138,8 @@
                 <button
                   type="button"
                   role="tab"
-                  class="route-tabs__tab"
-                  [class.route-tabs__tab--active]="route.key === activeRouteKey()"
+                  class="route-tabs-tab"
+                  [class.route-tabs-tab--active]="route.key === activeRouteKey()"
                   [attr.aria-selected]="route.key === activeRouteKey()"
                   (click)="selectRoute(route.key)"
                 >
@@ -150,9 +150,9 @@
 
             @if (activeRoute(); as route) {
               <label class="chapter-picker">
-                <span class="chapter-picker__label">Chapter</span>
+                <span class="chapter-picker-label">Chapter</span>
                 <select
-                  class="chapter-picker__select"
+                  class="chapter-picker-select"
                   [value]="selectedChapter()"
                   (change)="selectChapter($any($event.target).value)"
                 >
@@ -176,7 +176,7 @@
                 {{ route.recruitable ? 'Recruitable' : 'Not recruitable' }}
               </span>
               @if (route.recruitable && route.requirement; as requirement) {
-                <span class="route-status__requirement">{{ requirementText(requirement) }}</span>
+                <span class="route-status-requirement">{{ requirementText(requirement) }}</span>
               }
             </p>
           }
@@ -184,16 +184,16 @@
           @if (chapterView(); as view) {
             <div class="chapter">
               <div class="card sheet">
-                <div class="sheet__col">
+                <div class="sheet-col">
                   <section aria-labelledby="stats-title">
                     <div class="profile">
-                      <span class="profile__class summary__value">{{ view.chapter.className }}</span>
+                      <span class="profile-class summary-value">{{ view.chapter.className }}</span>
                       <ng-container *ngTemplateOutlet="statRows; context: { $implicit: view.profile }" />
                     </div>
                   </section>
                   <section aria-labelledby="growth-title">
-                    <div class="sheet__head">
-                      <h2 class="sheet__title" id="growth-title">Growth Rates</h2>
+                    <div class="sheet-head">
+                      <h2 class="sheet-title" id="growth-title">Growth Rates</h2>
                       @if (view.growthTotal !== null) {
                         <span class="section-hint">Total {{ view.growthTotal }}%</span>
                       }
@@ -205,28 +205,28 @@
                     }
                   </section>
                   <section aria-labelledby="stats-title">
-                    <h2 class="sheet__title" id="stats-title">Basic Stats</h2>
+                    <h2 class="sheet-title" id="stats-title">Basic Stats</h2>
                     <ng-container *ngTemplateOutlet="statRows; context: { $implicit: view.stats, split: true }" />
                   </section>     
                 </div>
 
-                <div class="sheet__col">
+                <div class="sheet-col">
                   @for (group of view.inventory; track group.label) {
                     <ng-container *ngTemplateOutlet="inventoryGroup; context: { $implicit: group }" />
                   }
 
                   @if (view.skillRanks.length) {
                     <section aria-labelledby="ranks-title">
-                      <div class="sheet__head">
-                        <h2 class="sheet__title" id="ranks-title">Skill Lv</h2>
+                      <div class="sheet-head">
+                        <h2 class="sheet-title" id="ranks-title">Skill Lv</h2>
                         <span class="section-hint">Highlighted = usable</span>
                       </div>
                       <ul class="skill-grid">
                         @for (skill of view.skillRanks; track skill.key) {
                           <li class="skill-rank" [class.skill-rank--usable]="skill.usable" [title]="skill.label + (skill.usable ? '' : ' (not usable)')">
-                            <img class="skill-rank__icon" [src]="skillIcon(skill.key, skill.preference)" alt="" />
-                            <span class="skill-rank__label">{{ skill.label }}</span>
-                            <span class="skill-rank__value">{{ skill.value }}</span>
+                            <img class="skill-rank-icon" [src]="skillIcon(skill.key, skill.preference)" alt="" />
+                            <span class="skill-rank-label">{{ skill.label }}</span>
+                            <span class="skill-rank-value">{{ skill.value }}</span>
                           </li>
                         }
                       </ul>
@@ -234,9 +234,9 @@
                   }
                 </div>
 
-                <div class="sheet__col">
+                <div class="sheet-col">
                   <section aria-labelledby="equipped-title">
-                    <h2 class="sheet__title" id="equipped-title">Equipped Abilities</h2>
+                    <h2 class="sheet-title" id="equipped-title">Equipped Abilities</h2>
                     @if (view.chapter.equippedAbilities.length) {
                       <ng-container *ngTemplateOutlet="abilityList; context: { $implicit: view.chapter.equippedAbilities }" />
                     } @else {
@@ -275,13 +275,13 @@
   <ul class="abilities">
     @for (ability of abilities; track ability.name) {
       <li class="ability">
-        <div class="ability__head">
-          <span class="ability__name">{{ ability.name }}</span>
+        <div class="ability-head">
+          <span class="ability-name">{{ ability.name }}</span>
           @if (ability.level) {
             <span class="tag">Lv {{ ability.level }}</span>
           }
         </div>
-        <p class="ability__description">{{ ability.description }}</p>
+        <p class="ability-description">{{ ability.description }}</p>
       </li>
     }
   </ul>
@@ -289,25 +289,25 @@
 
 <ng-template #inventoryGroup let-group>
   <section [attr.aria-label]="group.label">
-    <div class="sheet__head">
-      <h2 class="sheet__title">{{ group.label }}</h2>
+    <div class="sheet-head">
+      <h2 class="sheet-title">{{ group.label }}</h2>
     </div>
     <ul class="inventory">
       @for (entry of group.entries; track $index) {
-        <li class="inventory__entry">
-          <span class="inventory__item">{{ entry.name }}</span>
-          <ul class="inventory__stats">
+        <li class="inventory-entry">
+          <span class="inventory-item">{{ entry.name }}</span>
+          <ul class="inventory-stats">
             @for (column of group.columns; track column) {
               @if (entry.values[column]) {
-                <li class="inventory__stat">
-                  <span class="inventory__stat-label">{{ column }}</span>
+                <li class="inventory-stat">
+                  <span class="inventory-stat-label">{{ column }}</span>
                   {{ entry.values[column] }}
                 </li>
               }
             }
           </ul>
           @if (entry.description) {
-            <span class="inventory__description">{{ entry.description }}</span>
+            <span class="inventory-description">{{ entry.description }}</span>
           }
         </li>
       }
@@ -319,8 +319,8 @@
   <ul class="stat-rows" [class.stat-rows--split]="split">
     @for (item of items; track item.label) {
       <li class="stat-row" [class.stat-row--wide]="item.wide" [attr.data-tone]="item.tone" [attr.title]="item.detail ?? null">
-        <span class="stat-row__label">{{ item.label }}</span>
-        <span class="stat-row__value">{{ item.value }}</span>
+        <span class="stat-row-label">{{ item.label }}</span>
+        <span class="stat-row-value">{{ item.value }}</span>
       </li>
     }
   </ul>

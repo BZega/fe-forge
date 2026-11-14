@@ -1,5 +1,5 @@
 <section class="hero">
-  <div class="hero__crest" aria-hidden="true">
+  <div class="hero-crest" aria-hidden="true">
     <svg viewBox="0 0 120 120">
       <circle cx="60" cy="60" r="56" />
       <circle cx="60" cy="60" r="44" />
@@ -7,13 +7,13 @@
       <circle cx="60" cy="60" r="7" />
     </svg>
   </div>
-  <h1 class="hero__title">Fire Emblem Forge</h1>
+  <h1 class="hero-title">Fire Emblem Forge</h1>
 
-  <p class="hero__tagline">
+  <p class="hero-tagline">
     Forge every unit into their best self with growth mapping, growth rate calculations, and stat projections
     before you commit a single level.
   </p>
-  <div class="hero__actions">
+  <div class="hero-actions">
     <a class="btn btn--primary" routerLink="/growth-mapper">Start Mapping</a>
     <button type="button" class="btn btn--ghost" (click)="toolsSection.scrollIntoView({ behavior: 'smooth' })">
       Explore the Tools
@@ -21,24 +21,38 @@
   </div>
 
   <div class="spoilers" role="group" aria-labelledby="spoilers-title">
-    <h2 id="spoilers-title" class="spoilers__title">We care about the data you see</h2>
-    <p class="spoilers__text">
+    <h2 id="spoilers-title" class="spoilers-title">We care about the data you see</h2>
+    <p class="spoilers-text">
       Still playing through? Hide the units, classes and mounts from parts of the story you haven't reached yet.
     </p>
-    <div class="spoilers__toggles">
-      @for (tier of spoilerTiers; track tier.key) {
-        <button
-          type="button"
-          class="switch"
-          role="switch"
-          [class.is-on]="hiddenTiers()[tier.key]"
-          [attr.aria-checked]="hiddenTiers()[tier.key]"
-          (click)="toggleSpoilerTier(tier.key)"
-        >
-          <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
-          Hide {{ tier.label }}
-        </button>
-      }
+    <div class="spoilers-toggles">
+      <button
+        type="button"
+        class="switch switch-all"
+        role="switch"
+        [class.is-on]="allHidden()"
+        [attr.aria-checked]="allHidden()"
+        (click)="toggleAllSpoilers()"
+      >
+        <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+        {{ allHidden() ? 'Show' : 'Hide' }} All Spoilers
+      </button>
+      <div class="spoilers-tiers">
+        @for (tier of spoilerTiers; track tier.key) {
+          <button
+            type="button"
+            class="switch"
+            role="switch"
+            [class.is-on]="hiddenTiers()[tier.key]"
+            [attr.aria-checked]="hiddenTiers()[tier.key]"
+            [attr.aria-label]="'Hide ' + tier.label"
+            (click)="toggleSpoilerTier(tier.key)"
+          >
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+            {{ tier.label }}
+          </button>
+        }
+      </div>
     </div>
   </div>
 </section>
@@ -46,33 +60,33 @@
 <div class="divider" aria-hidden="true"><span></span></div>
 
 <section #toolsSection class="section">
-  <header class="section__header">
+  <header class="section-header">
     <h2>Tools</h2>
   </header>
 
   <div class="cards">
     @for (tool of tools; track tool.path) {
       <a class="card card--tool" [routerLink]="tool.path">
-        <img class="card__icon" [src]="'icons/skills/gold/' + tool.icon + '.svg'" alt="" />
-        <h3 class="card__title">{{ tool.label }}</h3>
-        <p class="card__text">{{ tool.description }}</p>
-        <span class="card__cta">Open {{ tool.label }} &rsaquo;</span>
+        <img class="card-icon" [src]="'icons/skills/gold/' + tool.icon + '.svg'" alt="" />
+        <h3 class="card-title">{{ tool.label }}</h3>
+        <p class="card-text">{{ tool.description }}</p>
+        <span class="card-cta">Open {{ tool.label }} &rsaquo;</span>
       </a>
     }
   </div>
 </section>
 
 <section class="section">
-  <header class="section__header">
+  <header class="section-header">
     <h2>Resources</h2>
   </header>
 
   <div class="cards cards--compact">
     @for (resource of resources; track resource.path) {
       <a class="card" [routerLink]="resource.path">
-        <img class="card__icon" [src]="'icons/skills/gold/' + resource.icon + '.svg'" alt="" />
-        <h3 class="card__title">{{ resource.label }}</h3>
-        <p class="card__text">{{ resource.description }}</p>
+        <img class="card-icon" [src]="'icons/skills/gold/' + resource.icon + '.svg'" alt="" />
+        <h3 class="card-title">{{ resource.label }}</h3>
+        <p class="card-text">{{ resource.description }}</p>
       </a>
     }
   </div>
@@ -81,8 +95,8 @@
 <div class="divider" aria-hidden="true"><span></span></div>
 
 <section class="section about">
-  <div class="about__panel">
-    <p class="about__eyebrow">About the Developer</p>
+  <div class="about-panel">
+    <p class="about-eyebrow">About the Developer</p>
     <h2>Built by a fan, for fans</h2>
     <p>
       Hi! I'm a software developer and lifelong Fire Emblem fan. Fire Emblem Forge started as a handful of

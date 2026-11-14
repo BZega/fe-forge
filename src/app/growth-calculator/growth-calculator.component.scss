@@ -10,7 +10,7 @@
   box-shadow: 0 2px 10px rgb(0 0 0 / 25%);
 }
 
-.calculator__header {
+.calculator-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -39,7 +39,7 @@
   }
 }
 
-.calculator__actions {
+.calculator-actions {
   display: flex;
   align-items: center;
   gap: 0.35rem;
@@ -111,13 +111,13 @@
     }
   }
 
-  &__label {
+  &-label {
     text-transform: uppercase;
     letter-spacing: 0.06em;
     opacity: 0.75;
   }
 
-  &__select {
+  &-select {
     background: #142c30;
     border: 1px solid var(--panel-border);
     border-radius: 6px;
@@ -160,80 +160,80 @@
     font-weight: 700;
   }
 
-  .growth__corner {
+  .growth-corner {
     background: #c00000;
     width: 22%;
   }
 
-  .growth__total-head {
+  .growth-total-head {
     background: #000000;
     width: 10%;
   }
 }
 
-.band__name {
+.band-name {
   color: #ffffff;
   font-weight: 700;
   font-size: 0.9rem;
 }
 
-.band__caption {
+.band-caption {
   color: #ffffff;
   font-weight: 600;
   letter-spacing: 0.03em;
 }
 
-.band__total {
+.band-total {
   background: #000000;
   color: #ffffff;
   font-weight: 700;
 }
 
 .band--unit {
-  .band__name,
-  .band__caption {
+  .band-name,
+  .band-caption {
     background: #1f5fa9;
   }
 
-  td:not(.band__caption):not(.band__total) {
+  td:not(.band-caption):not(.band-total) {
     background: #cfe2f3;
   }
 }
 
 .band--class {
-  .band__name,
-  .band__caption {
+  .band-name,
+  .band-caption {
     background: #38914c;
   }
 
-  td:not(.band__caption):not(.band__total) {
+  td:not(.band-caption):not(.band-total) {
     background: #d9ead3;
   }
 }
 
 .band--mount {
-  .band__name,
-  .band__caption {
+  .band-name,
+  .band-caption {
     background: #8a8a8a;
   }
 
-  td:not(.band__caption):not(.band__total) {
+  td:not(.band-caption):not(.band-total) {
     background: #d5f2f2;
   }
 }
 
 .band--grand {
-  .band__name,
-  .band__caption {
+  .band-name,
+  .band-caption {
     background: #bf9000;
   }
 
-  td:not(.band__caption):not(.band__total) {
+  td:not(.band-caption):not(.band-total) {
     background: #ffd966;
     font-weight: 700;
   }
 
-  .band__total--grand {
+  .band-total--grand {
     background: #e0a800;
     color: #101010;
     font-size: 1rem;
@@ -250,7 +250,7 @@
     padding: 0.75rem;
   }
 
-  .calculator__header {
+  .calculator-header {
     gap: 0.5rem;
     margin-bottom: 0.6rem;
 
@@ -273,25 +273,25 @@
       padding: 0.2rem 0.1rem;
     }
 
-    .growth__corner {
+    .growth-corner {
       width: 21%;
     }
 
-    .growth__total-head {
+    .growth-total-head {
       width: 12%;
     }
   }
 
-  .band__name {
+  .band-name {
     font-size: 0.62rem;
     overflow-wrap: anywhere;
   }
 
-  .band__caption {
+  .band-caption {
     font-size: 0.62rem;
   }
 
-  .band--grand .band__total--grand {
+  .band--grand .band-total--grand {
     font-size: 0.8rem;
   }
 }
@@ -299,7 +299,7 @@
 // Phones always lay the pickers out in two rows, so a calculator never changes height. Unmounted
 // classes stack Unit over Class; mounted ones put Unit | Class on row 1 and Mount | Bond Level on
 // row 2, with a class Level sharing the right half of row 2.
-.pickers__reserve {
+.pickers-reserve {
   display: none;
 }
 
@@ -348,13 +348,13 @@
     grid-column-start: 4;
   }
 
-  .picker__label {
+  .picker-label {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .pickers__reserve {
+  .pickers-reserve {
     display: grid;
     grid-area: 2 / 1 / auto / -1;
     visibility: hidden;

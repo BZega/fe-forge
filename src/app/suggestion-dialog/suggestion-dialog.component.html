@@ -1,24 +1,24 @@
 <div class="backdrop" (click)="close()"></div>
 
 <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="suggestion-title">
-  <header class="dialog__header">
+  <header class="dialog-header">
     <div>
-      <p class="dialog__eyebrow">FE Forge</p>
+      <p class="dialog-eyebrow">FE Forge</p>
       <h2 id="suggestion-title">Send a suggestion</h2>
     </div>
-    <button type="button" class="dialog__close" aria-label="Close" (click)="close()">
+    <button type="button" class="dialog-close" aria-label="Close" (click)="close()">
       &times;
     </button>
   </header>
 
   @if (state() === 'sent') {
-    <p class="suggestion__done" role="status">Thanks! Your suggestion was sent.</p>
+    <p class="suggestion-done" role="status">Thanks! Your suggestion was sent.</p>
   } @else {
     <form class="suggestion" (submit)="$event.preventDefault(); send()">
       <label class="field">
-        <span class="field__label">Suggestion</span>
+        <span class="field-label">Suggestion</span>
         <textarea
-          class="suggestion__input"
+          class="suggestion-input"
           rows="6"
           placeholder="Found a mistake or have an idea? Let us know."
           [attr.maxlength]="maxLength"
@@ -27,12 +27,12 @@
           (input)="message.set($any($event.target).value)"
         ></textarea>
       </label>
-      <span class="suggestion__count">{{ message().length }}/{{ maxLength }}</span>
+      <span class="suggestion-count">{{ message().length }}/{{ maxLength }}</span>
 
       <label class="field">
-        <span class="field__label">Email (optional)</span>
+        <span class="field-label">Email (optional)</span>
         <input
-          class="suggestion__input"
+          class="suggestion-input"
           type="email"
           name="email"
           autocomplete="email"
@@ -49,7 +49,7 @@
       }
 
       <input
-        class="suggestion__trap"
+        class="suggestion-trap"
         type="text"
         name="_gotcha"
         tabindex="-1"
@@ -65,7 +65,7 @@
         <p class="hint hint--error" role="alert">Something went wrong sending that. Please try again.</p>
       }
 
-      <footer class="dialog__footer">
+      <footer class="dialog-footer">
         <button type="button" class="button" (click)="close()">Cancel</button>
         <button type="submit" class="button button--primary" [disabled]="!canSend()">
           {{ state() === 'sending' ? 'Sending…' : 'Submit' }}

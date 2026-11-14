@@ -71,7 +71,7 @@ describe('PickerDialogComponent', () => {
   it('closes without confirming on Cancel', () => {
     open(['a'], null);
     dialog.toggle(item('a'));
-    click('.dialog__footer .button:not(.button--primary)');
+    click('.dialog-footer .button:not(.button--primary)');
 
     expect(closed).toBeTrue();
     expect(confirmed).toBeNull();
@@ -113,7 +113,7 @@ describe('PickerDialogComponent', () => {
 
     expect(dialog.picked()).toEqual([]);
     expect(checkbox('Hunting Basics').disabled).toBeTrue();
-    expect(fixture.nativeElement.querySelector('.picker-item__locked').textContent).toContain('Needs Hunter');
+    expect(fixture.nativeElement.querySelector('.picker-item-locked').textContent).toContain('Needs Hunter');
   });
 
   it('filters by search text', () => {

@@ -1,12 +1,29 @@
 <nav class="topnav">
-  <a class="topnav__brand" routerLink="/" (click)="closeMenu()">
-    <span class="topnav__brand-full">Fire Emblem Forge</span>
-    <span class="topnav__brand-short">FE Forge</span>
+  <a class="topnav-brand" routerLink="/" (click)="closeMenu()">
+    <span class="topnav-brand-full">Fire Emblem Forge</span>
+    <span class="topnav-brand-short">FE Forge</span>
   </a>
+
+  @if (hideSpoilers()) {
+    <button
+      type="button"
+      class="spoiler-indicator"
+      aria-label="Some content is hidden by spoiler settings"
+      title="Some content is hidden by spoiler settings"
+      (click)="openSpoilerSettings()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92A11.8 11.8 0 0 0 23 12c-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7ZM2 4.27l2.74 2.74A11.8 11.8 0 0 0 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27Zm5.53 5.53 1.55 1.55A2.9 2.9 0 0 0 9 12c0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2Zm4.31-.78 3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01Z"
+        />
+      </svg>
+      <span>Spoilers hidden</span>
+    </button>
+  }
 
   <button
     type="button"
-    class="topnav__toggle"
+    class="topnav-toggle"
     aria-label="Toggle navigation"
     aria-controls="topnav-links"
     [attr.aria-expanded]="menuOpen()"
@@ -23,7 +40,7 @@
     </svg>
   </button>
 
-  <ul id="topnav-links" class="topnav__links" [class.is-open]="menuOpen()">
+  <ul id="topnav-links" class="topnav-links" [class.is-open]="menuOpen()">
     @for (link of links; track link.path) {
       <li>
         <a
@@ -39,17 +56,17 @@
     <li class="resource-menu" routerLinkActive="has-active">
       <button
         type="button"
-        class="resource-menu__trigger"
+        class="resource-menu-trigger"
         aria-haspopup="true"
         aria-controls="resource-menu-panel"
         [attr.aria-expanded]="resourcesOpen()"
         (click)="toggleResources()"
       >
         Resources
-        <span class="spoiler-menu__caret" aria-hidden="true">{{ resourcesOpen() ? '▴' : '▾' }}</span>
+        <span class="spoiler-menu-caret" aria-hidden="true">{{ resourcesOpen() ? '▴' : '▾' }}</span>
       </button>
 
-      <ul id="resource-menu-panel" class="resource-menu__panel" [class.is-open]="resourcesOpen()">
+      <ul id="resource-menu-panel" class="resource-menu-panel" [class.is-open]="resourcesOpen()">
         @for (link of resourceLinks; track link.path) {
           <li>
             <a [routerLink]="link.path" routerLinkActive="is-active" (click)="closeMenu()">
@@ -60,7 +77,7 @@
       </ul>
     </li>
 
-    <li class="topnav__spoilers">
+    <li class="topnav-spoilers">
       <button
         type="button"
         class="spoiler-toggle"
@@ -71,10 +88,10 @@
       </button>
     </li>
 
-    <li class="topnav__spoilers spoiler-menu">
+    <li class="topnav-spoilers spoiler-menu">
       <button
         type="button"
-        class="spoiler-toggle spoiler-menu__trigger"
+        class="spoiler-toggle spoiler-menu-trigger"
         [class.is-on]="hideSpoilers()"
         aria-haspopup="true"
         aria-controls="spoiler-menu-panel"
@@ -82,11 +99,24 @@
         (click)="toggleSpoilerMenu()"
       >
         Spoilers
-        <span class="spoiler-menu__caret" aria-hidden="true">{{ spoilerMenuOpen() ? '▴' : '▾' }}</span>
+        <span class="spoiler-menu-caret" aria-hidden="true">{{ spoilerMenuOpen() ? '▴' : '▾' }}</span>
       </button>
 
       @if (spoilerMenuOpen()) {
-        <div id="spoiler-menu-panel" class="spoiler-menu__panel" role="group" aria-label="Hide spoilers">
+        <div id="spoiler-menu-panel" class="spoiler-menu-panel" role="group" aria-label="Hide spoilers">
+          <button
+            type="button"
+            class="spoiler-toggle spoiler-toggle-all"
+            role="switch"
+            [class.is-on]="allSpoilersHidden()"
+            [attr.aria-checked]="allSpoilersHidden()"
+            (click)="toggleAllSpoilers()"
+          >
+            <span class="spoiler-toggle-track" aria-hidden="true">
+              <span class="spoiler-toggle-thumb"></span>
+            </span>
+            {{ allSpoilersHidden() ? 'Show All' : 'Hide All' }}
+          </button>
           @for (tier of spoilerTiers; track tier.key) {
             <button
               type="button"
@@ -96,8 +126,8 @@
               [attr.aria-checked]="hiddenTiers()[tier.key]"
               (click)="toggleSpoilerTier(tier.key)"
             >
-              <span class="spoiler-toggle__track" aria-hidden="true">
-                <span class="spoiler-toggle__thumb"></span>
+              <span class="spoiler-toggle-track" aria-hidden="true">
+                <span class="spoiler-toggle-thumb"></span>
               </span>
               {{ tier.label }}
             </button>

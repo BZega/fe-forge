@@ -61,7 +61,7 @@ describe('ExamDialogComponent reclass mode', () => {
     dialog.chanceText.set('47');
     fixture.detectChanges();
 
-    const buttons = () => Array.from(host().querySelectorAll<HTMLButtonElement>('.outcome__option'));
+    const buttons = () => Array.from(host().querySelectorAll<HTMLButtonElement>('.outcome-option'));
     expect(host().querySelector('.known')!.textContent).toContain('above 55%');
     expect(buttons().map((button) => button.disabled)).toEqual([true, false]);
     expect(dialog.outcome()).toBeFalse();

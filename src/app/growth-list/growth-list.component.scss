@@ -10,12 +10,12 @@
 }
 
 // One wrapped column of non-zero bonuses instead of a column per stat.
-.list .list__bonus {
+.list .list-bonus {
   text-align: left;
   white-space: normal;
 }
 
-thead .list__bonus {
+thead .list-bonus {
   padding: 0.45rem 0.6rem;
 }
 
@@ -106,14 +106,14 @@ thead .list__bonus {
       border-bottom-color: rgb(240 192 74 / 45%);
     }
 
-    th.list__name {
+    th.list-name {
       background: rgb(240 192 74 / 16%);
       color: var(--accent);
     }
   }
 }
 
-.list__name {
+.list-name {
   text-align: left;
   font-weight: 600;
   // Shrinks the column to the longest name so the stat columns take the slack.
@@ -151,24 +151,24 @@ thead .list__bonus {
 }
 
 // A short label beside the name, e.g. a battalion's rank.
-.list .list__tag {
+.list .list-tag {
   text-align: center;
   font-weight: 600;
   width: 1px;
 }
 
-.sort__arrow {
+.sort-arrow {
   font-size: 0.65em;
   width: 0.75em;
   text-align: center;
 }
 
-.list__total {
+.list-total {
   font-weight: 700;
   color: var(--accent);
 }
 
-.list__link {
+.list-link {
   color: inherit;
   text-decoration: underline;
   text-decoration-color: rgb(255 255 255 / 25%);
@@ -181,29 +181,29 @@ thead .list__bonus {
   }
 }
 
-thead .list__total {
+thead .list-total {
   background: #000000;
   color: #ffffff;
 }
 
 // Free text (e.g. a battalion's skill): a bold title over a wrapped, quieter description.
-.list .list__detail {
+.list .list-detail {
   text-align: left;
   white-space: normal;
   min-width: 14rem;
   max-width: 26rem;
 }
 
-.list td.list__detail {
+.list td.list-detail {
   vertical-align: top;
 }
 
-.detail__title {
+.detail-title {
   display: block;
   font-weight: 600;
 }
 
-.detail__text {
+.detail-text {
   display: block;
   margin-top: 0.1rem;
   font-size: 0.92em;
@@ -221,13 +221,13 @@ thead .list__total {
 }
 
 // The cell spans the whole table, so the text pins itself while the table pans.
-.group__label {
+.group-label {
   position: sticky;
   left: 0;
   display: inline-block;
 }
 
-.group__count {
+.group-count {
   margin-left: 0.5rem;
   opacity: 0.55;
   color: var(--text);
@@ -280,7 +280,7 @@ thead .list__total {
     display: none;
   }
 
-  .list__name {
+  .list-name {
     width: auto;
     max-width: 7rem;
     padding-right: 0.3rem;
@@ -289,7 +289,7 @@ thead .list__total {
   }
 
   // Free text doesn't fit beside the stats on a phone.
-  .list .list__detail {
+  .list .list-detail {
     display: none;
   }
 
@@ -310,7 +310,7 @@ thead .list__total {
     }
   }
 
-  .sort__arrow {
+  .sort-arrow {
     font-size: 0.85em;
   }
 }

@@ -33,9 +33,9 @@ describe('ClassPageComponent class switcher keyboard', () => {
       target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
       fixture.detectChanges();
     };
-    const toggle = () => host.querySelector<HTMLButtonElement>('.switcher__toggle')!;
-    const filter = () => host.querySelector<HTMLInputElement>('.switcher__filter')!;
-    const active = () => host.querySelector('.switcher__option--active')?.textContent!.trim();
+    const toggle = () => host.querySelector<HTMLButtonElement>('.switcher-toggle')!;
+    const filter = () => host.querySelector<HTMLInputElement>('.switcher-filter')!;
+    const active = () => host.querySelector('.switcher-option--active')?.textContent!.trim();
 
     return { fixture, component: fixture.componentInstance, host, navigate, press, toggle, filter, active };
   };

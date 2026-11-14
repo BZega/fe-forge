@@ -60,7 +60,7 @@ describe('CalculatorPageComponent comparison', () => {
   const field = (root: Element, label: string) =>
     root.querySelector<HTMLInputElement>(`input[aria-label="${label}"]`)!;
   const changeButtons = () =>
-    Array.from(dialog()!.querySelectorAll<HTMLButtonElement>('.summary__change'));
+    Array.from(dialog()!.querySelectorAll<HTMLButtonElement>('.summary-change'));
   const change = (side: number) => {
     changeButtons()[side].click();
     fixture.detectChanges();
@@ -95,19 +95,19 @@ describe('CalculatorPageComponent comparison', () => {
   });
 
   it('swaps the unit and build lines for one row of unit and class dropdowns in that box only', () => {
-    const box = dialog()!.querySelector('.summary__side--a')!;
-    expect(box.querySelector('.summary__label')).not.toBeNull();
+    const box = dialog()!.querySelector('.summary-side--a')!;
+    expect(box.querySelector('.summary-label')).not.toBeNull();
 
     change(0);
 
-    const rows = box.querySelectorAll('.summary__row');
+    const rows = box.querySelectorAll('.summary-row');
     expect(rows.length).toBe(1);
     expect(field(rows[0], 'Unit of the first build')).not.toBeNull();
     expect(field(rows[0], 'Class of the first build')).not.toBeNull();
-    expect(box.querySelector('.summary__label')).toBeNull();
-    expect(box.querySelector('.summary__build')).toBeNull();
-    expect(box.querySelector('.summary__foot .summary__change')!.textContent!.trim()).toBe('Done');
-    expect(dialog()!.querySelector('.summary__side--b app-searchable-select')).toBeNull();
+    expect(box.querySelector('.summary-label')).toBeNull();
+    expect(box.querySelector('.summary-build')).toBeNull();
+    expect(box.querySelector('.summary-foot .summary-change')!.textContent!.trim()).toBe('Done');
+    expect(dialog()!.querySelector('.summary-side--b app-searchable-select')).toBeNull();
   });
 
   it('stacks unit and class when they are the only pickers, without stretching them across the box', async () => {
@@ -115,10 +115,10 @@ describe('CalculatorPageComponent comparison', () => {
     const charioteer = first.classGroups().flatMap((group) => group.items).find((item) => item.name === 'Charioteer')!;
     change(0);
 
-    const box = dialog()!.querySelector('.summary__side--a')!;
+    const box = dialog()!.querySelector('.summary-side--a')!;
     const unit = () => field(box, 'Unit of the first build').closest('app-searchable-select')!.getBoundingClientRect();
     const unitClass = () => field(box, 'Class of the first build').closest('app-searchable-select')!.getBoundingClientRect();
-    const rowWidth = box.querySelector('.summary__row')!.getBoundingClientRect().width;
+    const rowWidth = box.querySelector('.summary-row')!.getBoundingClientRect().width;
 
     expect(unitClass().top).toBeGreaterThan(unit().bottom - 1);
     expect(unit().width).toBeLessThan(rowWidth);
@@ -141,16 +141,16 @@ describe('CalculatorPageComponent comparison', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const box = dialog()!.querySelector('.summary__side--a')!;
+    const box = dialog()!.querySelector('.summary-side--a')!;
     const level = box.querySelector<HTMLSelectElement>('select[aria-label="Class level of the first build"]')!;
-    expect(level.closest('.summary__row')).toBe(box.querySelectorAll('.summary__row')[0]);
+    expect(level.closest('.summary-row')).toBe(box.querySelectorAll('.summary-row')[0]);
 
     level.value = '35';
     level.dispatchEvent(new Event('change'));
     pickers()[2].valueChange.emit(first.mountOptions()[0].id);
     fixture.detectChanges();
 
-    const rows = box.querySelectorAll('.summary__row');
+    const rows = box.querySelectorAll('.summary-row');
     expect(rows.length).toBe(2);
     expect(field(rows[1], 'Horse mount of the first build')).not.toBeNull();
     expect(first.classLevel()).toBe(35);
@@ -169,7 +169,7 @@ describe('CalculatorPageComponent comparison', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const box = dialog()!.querySelector('.summary__side--a')!;
+    const box = dialog()!.querySelector('.summary-side--a')!;
     expect(field(box, 'Horse mount of the first build')).not.toBeNull();
 
     const wildHorse = first.mountOptions().find((mount) => mount.name === 'Wild Horse')!;
@@ -187,7 +187,7 @@ describe('CalculatorPageComponent comparison', () => {
     const pageBond = host.querySelectorAll('.panels app-growth-calculator')[0]
       .querySelector<HTMLSelectElement>('.picker--bond select')!;
     expect(pageBond.value).toBe('3');
-    expect(box.querySelectorAll('.summary__row')[1].querySelector('select[aria-label="Bond level of the first build"]')).not.toBeNull();
+    expect(box.querySelectorAll('.summary-row')[1].querySelector('select[aria-label="Bond level of the first build"]')).not.toBeNull();
   });
   it('switches the unit and class of each side, updating the comparison and the calculators', () => {
     const [first, second] = calculators();
@@ -204,7 +204,7 @@ describe('CalculatorPageComponent comparison', () => {
     expect(second.selectedClassId()).toBe(unitClass.id);
     expect(dialog()!.querySelector('h2')!.textContent).toContain(unit.name);
     expect(field(dialog()!, 'Class of the second build').value).toBe(unitClass.name);
-    expect(dialog()!.querySelector('.summary__side--a .summary__total')!.textContent!.trim())
+    expect(dialog()!.querySelector('.summary-side--a .summary-total')!.textContent!.trim())
       .toBe(`${growthTotal(first.build().total)}%`);
 
     const pageCalculators = host.querySelectorAll('.panels app-growth-calculator');

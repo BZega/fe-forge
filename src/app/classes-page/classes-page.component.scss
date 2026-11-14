@@ -13,7 +13,7 @@
   flex-wrap: wrap;
 }
 
-.view-tabs__tab {
+.view-tabs-tab {
   margin: 0 0 -1px;
   padding: 0 0 0.45rem;
   background: none;
@@ -37,8 +37,8 @@
   }
 }
 
-.view-tabs__tab--active,
-.view-tabs__tab--active:hover {
+.view-tabs-tab--active,
+.view-tabs-tab--active:hover {
   color: var(--accent);
   border-bottom-color: var(--accent);
 }

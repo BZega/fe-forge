@@ -88,23 +88,23 @@
   }
 }
 
-.picker-item__text {
+.picker-item-text {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
-.picker-item__name {
+.picker-item-name {
   font-size: 0.9rem;
   font-weight: 600;
 }
 
-.picker-item__description {
+.picker-item-description {
   font-size: 0.78rem;
   opacity: 0.65;
 }
 
-.picker-item__locked {
+.picker-item-locked {
   font-size: 0.74rem;
   font-style: italic;
   color: var(--accent);

@@ -1,14 +1,14 @@
 <article class="build" [class.build--placeholder]="!start()">
-  <header class="build__header">
-    <div class="build__title">
+  <header class="build-header">
+    <div class="build-title">
       <h2>{{ heading() }}</h2>
       @if (planSummary()) {
-        <span class="build__start" [title]="startSummary() ?? ''">{{ planSummary() }}</span>
+        <span class="build-start" [title]="startSummary() ?? ''">{{ planSummary() }}</span>
       }
     </div>
     @if (start()) {
-      <button type="button" class="build__edit" (click)="editRequested.emit()">Edit</button>
-      <button type="button" class="build__remove" aria-label="Remove this build" title="Remove this build" (click)="removeRequested.emit()">
+      <button type="button" class="build-edit" (click)="editRequested.emit()">Edit</button>
+      <button type="button" class="build-remove" aria-label="Remove this build" title="Remove this build" (click)="removeRequested.emit()">
         &times;
       </button>
     }
@@ -16,18 +16,18 @@
 
   @if (!start()) {
     <section class="results" aria-hidden="true">
-      <header class="results__header">
+      <header class="results-header">
         <h3>Lv </h3>
       </header>
 
       <ul class="rows">
         @for (stat of statKeys; track stat) {
           <li class="row">
-            <span class="row__label">{{ statLabels[stat] }}</span>
-            <span class="row__mean">—</span>
-            <span class="row__range">—</span>
-            <span class="row__bar"></span>
-            <span class="row__actual"><input type="number" placeholder="Actual" disabled /></span>
+            <span class="row-label">{{ statLabels[stat] }}</span>
+            <span class="row-mean">—</span>
+            <span class="row-range">—</span>
+            <span class="row-bar"></span>
+            <span class="row-actual"><input type="number" placeholder="Actual" disabled /></span>
           </li>
         }
       </ul>
@@ -49,11 +49,11 @@
 
   @if (rows().length > 0) {
     <section class="results" [attr.aria-label]="heading() + ' projected stats at Lv ' + level()">
-      <header class="results__header">
+      <header class="results-header">
         <label class="level-control">
-          <span class="level-control__prefix">Lv</span>
+          <span class="level-control-prefix">Lv</span>
           <input
-            class="level-control__number"
+            class="level-control-number"
             type="number"
             inputmode="numeric"
             [min]="start()!.level"
@@ -65,7 +65,7 @@
             (change)="setLevel($any($event.target))"
           />
           <input
-            class="level-control__slider"
+            class="level-control-slider"
             type="range"
             [min]="start()!.level"
             [max]="maxLevel"
@@ -90,30 +90,30 @@
       <ul class="rows">
         @for (row of rows(); track row.stat) {
           <li class="row" [attr.data-tone]="row.tone">
-            <span class="row__label">{{ row.label }}</span>
-            <span class="row__mean" [title]="'Standard deviation ' + fixed(row.summary.sd)">
+            <span class="row-label">{{ row.label }}</span>
+            <span class="row-mean" [title]="'Standard deviation ' + fixed(row.summary.sd)">
               {{ fixed(row.summary.mean) }} <small>± {{ fixed(row.summary.sd, 1) }}</small>
             </span>
-            <span class="row__range">
+            <span class="row-range">
               {{ row.summary.p25 }}–{{ row.summary.p75 }}
               @if (options().wideRange) {
                 <small>({{ row.summary.p10 }}–{{ row.summary.p90 }})</small>
               }
             </span>
             <span
-              class="row__bar"
+              class="row-bar"
               [title]="'Possible ' + row.summary.low + '–' + row.summary.high + '; middle 50% ' + row.summary.p25 + '–' + row.summary.p75"
             >
               @if (options().wideRange) {
-                <span class="row__band row__band--wide" [style.left.%]="row.bar.wideFrom" [style.width.%]="row.bar.wideTo - row.bar.wideFrom"></span>
+                <span class="row-band row-band--wide" [style.left.%]="row.bar.wideFrom" [style.width.%]="row.bar.wideTo - row.bar.wideFrom"></span>
               }
-              <span class="row__band" [style.left.%]="row.bar.from" [style.width.%]="row.bar.to - row.bar.from"></span>
-              <span class="row__mean-mark" [style.left.%]="row.bar.mean"></span>
+              <span class="row-band" [style.left.%]="row.bar.from" [style.width.%]="row.bar.to - row.bar.from"></span>
+              <span class="row-mean-mark" [style.left.%]="row.bar.mean"></span>
               @if (row.bar.actual !== null) {
-                <span class="row__actual-mark" [style.left.%]="row.bar.actual"></span>
+                <span class="row-actual-mark" [style.left.%]="row.bar.actual"></span>
               }
             </span>
-            <label class="row__actual">
+            <label class="row-actual">
               <input
                 type="number"
                 inputmode="numeric"
@@ -149,7 +149,7 @@
             [actual]="row.actual"
           />
           @if (row.verdict) {
-            <p class="histogram-panel__verdict">{{ row.label }} {{ row.actual }}: {{ row.verdict }}</p>
+            <p class="histogram-panel-verdict">{{ row.label }} {{ row.actual }}: {{ row.verdict }}</p>
           }
         }
       </section>

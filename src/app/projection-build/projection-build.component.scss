@@ -13,13 +13,13 @@
   box-shadow: 0 2px 10px rgb(0 0 0 / 25%);
 }
 
-.build__header {
+.build-header {
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
 }
 
-.build__title {
+.build-title {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -32,7 +32,7 @@
   }
 }
 
-.build__start {
+.build-start {
   font-size: 0.75rem;
   opacity: 0.65;
 }
@@ -45,7 +45,7 @@
     pointer-events: none;
   }
 
-  .row__mean {
+  .row-mean {
     color: inherit;
   }
 }
@@ -65,7 +65,7 @@
   }
 }
 
-.build__edit {
+.build-edit {
   flex: none;
   background: transparent;
   border: 1px solid var(--panel-border);
@@ -81,7 +81,7 @@
   }
 }
 
-.build__remove {
+.build-remove {
   flex: none;
   background: transparent;
   border: none;
@@ -97,7 +97,7 @@
   }
 }
 
-.row__actual input {
+.row-actual input {
   min-width: 0;
   background: #142c30;
   border: 1px solid var(--panel-border);
@@ -113,7 +113,7 @@
   }
 }
 
-.build__hint {
+.build-hint {
   margin: 0;
   font-size: 0.85rem;
   opacity: 0.65;
@@ -126,7 +126,7 @@
   gap: 0.5rem;
 }
 
-.results__header {
+.results-header {
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -138,7 +138,7 @@
   }
 }
 
-.results__note {
+.results-note {
   font-size: 0.72rem;
   opacity: 0.65;
 }
@@ -154,7 +154,7 @@
 }
 
 // Reads as the heading's number until it's clicked to type a level.
-.level-control__number {
+.level-control-number {
   width: 3.2rem;
   background: transparent;
   border: 1px solid transparent;
@@ -184,7 +184,7 @@
   }
 }
 
-.level-control__slider {
+.level-control-slider {
   flex: 1 1 auto;
   min-width: 3rem;
   accent-color: var(--accent);
@@ -209,7 +209,7 @@
   background: rgb(255 255 255 / 3%);
 }
 
-.row__label {
+.row-label {
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -217,7 +217,7 @@
   opacity: 0.8;
 }
 
-.row__mean {
+.row-mean {
   font-weight: 700;
   color: var(--accent);
   white-space: nowrap;
@@ -229,7 +229,7 @@
   }
 }
 
-.row__range {
+.row-range {
   font-size: 0.85rem;
   white-space: nowrap;
 
@@ -240,14 +240,14 @@
   }
 }
 
-.row__bar {
+.row-bar {
   position: relative;
   height: 0.7rem;
   border-radius: 999px;
   background: rgb(255 255 255 / 7%);
 }
 
-.row__band {
+.row-band {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -256,24 +256,24 @@
   background: rgb(240 192 74 / 50%);
 }
 
-.row__band--wide {
+.row-band--wide {
   background: rgb(240 192 74 / 18%);
 }
 
-.row__mean-mark,
-.row__actual-mark {
+.row-mean-mark,
+.row-actual-mark {
   position: absolute;
   transform: translateX(-50%);
 }
 
-.row__mean-mark {
+.row-mean-mark {
   top: -0.2rem;
   bottom: -0.2rem;
   width: 2px;
   background: var(--accent);
 }
 
-.row__actual-mark {
+.row-actual-mark {
   top: 50%;
   width: 0.75rem;
   height: 0.75rem;
@@ -283,14 +283,14 @@
   background: #4fc3f7;
 }
 
-.row__actual input {
+.row-actual input {
   width: 100%;
   padding: 0.3rem 0.2rem;
   text-align: center;
   border-color: rgb(79 195 247 / 45%);
 }
 
-.row__verdict {
+.row-verdict {
   grid-column: 2 / -1;
   font-size: 0.75rem;
 
@@ -299,24 +299,24 @@
   }
 }
 
-.row[data-tone='low'] .row__verdict {
+.row[data-tone='low'] .row-verdict {
   color: #ff9e80;
 }
 
-.row[data-tone='typical'] .row__verdict {
+.row[data-tone='typical'] .row-verdict {
   color: #cfd8dc;
 }
 
-.row[data-tone='high'] .row__verdict {
+.row[data-tone='high'] .row-verdict {
   color: #81e6a1;
 }
 
-.row[data-tone='impossible'] .row__verdict {
+.row[data-tone='impossible'] .row-verdict {
   color: #ff8d8d;
   font-style: italic;
 }
 
-.results__footer {
+.results-footer {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -331,20 +331,20 @@
   vertical-align: -0.1rem;
 }
 
-.legend__band {
+.legend-band {
   width: 1rem;
   height: 0.6rem;
   border-radius: 999px;
   background: rgb(240 192 74 / 50%);
 }
 
-.legend__mean {
+.legend-mean {
   width: 2px;
   height: 0.8rem;
   background: var(--accent);
 }
 
-.legend__actual {
+.legend-actual {
   width: 0.65rem;
   height: 0.65rem;
   border-radius: 50%;
@@ -373,7 +373,7 @@
   padding: 0.6rem 0.75rem 0.75rem;
 }
 
-.histogram-panel__verdict {
+.histogram-panel-verdict {
   margin: 0.5rem 0 0;
   font-size: 0.8rem;
 }
@@ -419,12 +419,12 @@
     padding: 0.3rem 0.4rem;
   }
 
-  .row__label {
+  .row-label {
     grid-row: 1 / 3;
     font-size: 0.7rem;
   }
 
-  .row__mean {
+  .row-mean {
     grid-column: 2;
     grid-row: 1;
     font-size: 0.9rem;
@@ -434,7 +434,7 @@
     }
   }
 
-  .row__range {
+  .row-range {
     grid-column: 2;
     grid-row: 2;
     font-size: 0.72rem;
@@ -446,13 +446,13 @@
     }
   }
 
-  .row__bar {
+  .row-bar {
     grid-column: 3;
     grid-row: 1 / 3;
     height: 0.6rem;
   }
 
-  .row__actual {
+  .row-actual {
     grid-column: 4;
     grid-row: 1 / 3;
 
@@ -462,7 +462,7 @@
     }
   }
 
-  .row__verdict {
+  .row-verdict {
     grid-column: 1 / -1;
     grid-row: 3;
     margin-top: 0.2rem;

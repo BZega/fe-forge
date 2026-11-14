@@ -1,12 +1,12 @@
 <div class="backdrop" (click)="close()"></div>
 
 <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="exam-title">
-  <header class="dialog__header">
+  <header class="dialog-header">
     <div>
-      <p class="dialog__eyebrow">Growth Mapper</p>
+      <p class="dialog-eyebrow">Growth Mapper</p>
       <h2 id="exam-title">{{ title() }}</h2>
     </div>
-    <button type="button" class="dialog__close" aria-label="Close" (click)="close()">
+    <button type="button" class="dialog-close" aria-label="Close" (click)="close()">
       &times;
     </button>
   </header>
@@ -16,8 +16,8 @@
       <button
         type="button"
         role="radio"
-        class="mode__option"
-        [class.mode__option--selected]="!reclassing()"
+        class="mode-option"
+        [class.mode-option--selected]="!reclassing()"
         [attr.aria-checked]="!reclassing()"
         (click)="setMode('exam')"
       >
@@ -26,8 +26,8 @@
       <button
         type="button"
         role="radio"
-        class="mode__option"
-        [class.mode__option--selected]="reclassing()"
+        class="mode-option"
+        [class.mode-option--selected]="reclassing()"
         [attr.aria-checked]="reclassing()"
         (click)="setMode('reclass')"
       >
@@ -37,12 +37,12 @@
   }
 
   @if (reclassing() ? reclassContext() : context(); as text) {
-    <p class="dialog__context">{{ text }}</p>
+    <p class="dialog-context">{{ text }}</p>
   }
 
   @if (reclassing()) {
     <div class="field field--reclass">
-      <span class="field__label">Reclass to</span>
+      <span class="field-label">Reclass to</span>
       @if (reclassGroups().length > 0) {
         <app-searchable-select
           label="Reclass to"
@@ -70,7 +70,7 @@
 
     <div class="fields">
       <div class="field">
-        <span class="field__label">Exam class</span>
+        <span class="field-label">Exam class</span>
         <app-searchable-select
           label="Exam class"
           [keyboard]="false"
@@ -83,7 +83,7 @@
       </div>
 
       <label class="field field--chance">
-        <span class="field__label">Chance</span>
+        <span class="field-label">Chance</span>
         <span class="chance" [class.chance--invalid]="chanceInvalid()">
           <input
             type="number"
@@ -97,7 +97,7 @@
             (input)="chanceText.set($any($event.target).value)"
             (keydown.enter)="confirm()"
           />
-          <span class="chance__unit">%</span>
+          <span class="chance-unit">%</span>
         </span>
       </label>
     </div>
@@ -107,13 +107,13 @@
     }
 
     <div class="field">
-      <span class="field__label">Result</span>
+      <span class="field-label">Result</span>
       <div class="outcome" role="radiogroup" aria-label="Exam result">
         <button
           type="button"
           role="radio"
-          class="outcome__option outcome__option--pass"
-          [class.outcome__option--selected]="outcome() === true"
+          class="outcome-option outcome-option--pass"
+          [class.outcome-option--selected]="outcome() === true"
           [attr.aria-checked]="outcome() === true"
           [disabled]="forced() === false"
           (click)="passed.set(true)"
@@ -123,8 +123,8 @@
         <button
           type="button"
           role="radio"
-          class="outcome__option outcome__option--fail"
-          [class.outcome__option--selected]="outcome() === false"
+          class="outcome-option outcome-option--fail"
+          [class.outcome-option--selected]="outcome() === false"
           [attr.aria-checked]="outcome() === false"
           [disabled]="forced() === true"
           (click)="passed.set(false)"
@@ -165,7 +165,7 @@
     </p>
   }
 
-  <footer class="dialog__footer">
+  <footer class="dialog-footer">
     <button type="button" class="button" (click)="close()">Cancel</button>
     <button
       type="button"

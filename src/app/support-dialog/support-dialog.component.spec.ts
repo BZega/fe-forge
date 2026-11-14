@@ -18,7 +18,7 @@ describe('SupportDialogComponent', () => {
 
   it('links to Venmo and Cash App in a new tab', () => {
     const { host } = open();
-    const links = Array.from(host.querySelectorAll<HTMLAnchorElement>('.support__link'));
+    const links = Array.from(host.querySelectorAll<HTMLAnchorElement>('.support-link'));
 
     expect(links.map((link) => link.href)).toEqual(['https://venmo.com/u/bzega', 'https://cash.app/$BZega']);
     expect(links.map((link) => link.textContent!.trim())).toEqual(['Venmo', 'Cash App']);
@@ -31,7 +31,7 @@ describe('SupportDialogComponent', () => {
     fixture.componentInstance.closed.subscribe(() => closes++);
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-    host.querySelector<HTMLButtonElement>('.dialog__close')!.click();
+    host.querySelector<HTMLButtonElement>('.dialog-close')!.click();
 
     expect(closes).toBe(2);
   });

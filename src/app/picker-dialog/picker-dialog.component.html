@@ -1,18 +1,18 @@
 <div class="backdrop" (click)="close()"></div>
 
 <div class="dialog dialog--picker" role="dialog" aria-modal="true" aria-labelledby="picker-title">
-  <header class="dialog__header">
+  <header class="dialog-header">
     <div>
-      <p class="dialog__eyebrow">Growth Mapper</p>
+      <p class="dialog-eyebrow">Growth Mapper</p>
       <h2 id="picker-title">{{ title() }}</h2>
     </div>
-    <button type="button" class="dialog__close" aria-label="Close" (click)="close()">
+    <button type="button" class="dialog-close" aria-label="Close" (click)="close()">
       &times;
     </button>
   </header>
 
   @if (context()) {
-    <p class="dialog__context">{{ context() }}</p>
+    <p class="dialog-context">{{ context() }}</p>
   }
 
   <div class="picker-bar">
@@ -42,13 +42,13 @@
             [disabled]="isDisabled(item)"
             (change)="toggle(item)"
           />
-          <span class="picker-item__text">
-            <span class="picker-item__name">{{ item.name }}</span>
+          <span class="picker-item-text">
+            <span class="picker-item-name">{{ item.name }}</span>
             @if (item.description) {
-              <span class="picker-item__description">{{ item.description }}</span>
+              <span class="picker-item-description">{{ item.description }}</span>
             }
             @if (item.locked) {
-              <span class="picker-item__locked">{{ item.locked }}</span>
+              <span class="picker-item-locked">{{ item.locked }}</span>
             }
           </span>
         </label>
@@ -58,7 +58,7 @@
     }
   </div>
 
-  <footer class="dialog__footer">
+  <footer class="dialog-footer">
     <button type="button" class="button" (click)="close()">Cancel</button>
     <button type="button" class="button button--primary" (click)="confirm()">Confirm</button>
   </footer>

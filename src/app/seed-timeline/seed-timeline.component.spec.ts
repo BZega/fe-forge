@@ -275,7 +275,7 @@ describe('SeedTimelineComponent', () => {
     expect(host.querySelector('app-seed-timeline')).not.toBeNull();
     expect(host.querySelector('.seed-group')).toBeNull();
 
-    const chips = () => Array.from(host.querySelectorAll<HTMLButtonElement>('.tgrid__fork .chip'));
+    const chips = () => Array.from(host.querySelectorAll<HTMLButtonElement>('.tgrid-fork .chip'));
     expect(chips().map((chip) => chip.textContent!.trim())).toEqual(['No branch', 'Diviner ✓', 'Gladiator ✓']);
 
     chips()[2].click();
@@ -289,7 +289,7 @@ describe('SeedTimelineComponent', () => {
       [2, false],
       [3, true],
     ]);
-    expect(host.querySelector('.tgrid__branch-label')!.textContent).toContain('Gladiator exam passed');
+    expect(host.querySelector('.tgrid-branch-label')!.textContent).toContain('Gladiator exam passed');
 
     const strCells = Array.from(host.querySelectorAll<HTMLButtonElement>('.tgrid .cell')).filter((cell) =>
       cell.getAttribute('aria-label')!.startsWith('Str'),
@@ -310,10 +310,10 @@ describe('SeedTimelineComponent', () => {
     timeline.focusBranch(state.seedMap().sections[1].id);
     fixture.detectChanges();
 
-    const labels = Array.from(host.querySelectorAll('.tgrid__label')).map((label) =>
+    const labels = Array.from(host.querySelectorAll('.tgrid-label')).map((label) =>
       Array.from(label.children).map((part) => part.textContent!.trim()).join(' '),
     );
     expect(labels.filter((label) => label.startsWith('Growth'))).toEqual(['Growth Noble/Commoner', 'Growth Gladiator']);
-    expect(host.querySelectorAll('.tgrid__growth').length).toBe(2 * STAT_KEYS.length);
+    expect(host.querySelectorAll('.tgrid-growth').length).toBe(2 * STAT_KEYS.length);
   });
 });

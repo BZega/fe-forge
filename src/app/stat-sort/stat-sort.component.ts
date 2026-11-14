@@ -6,8 +6,8 @@ export type StatSortDirection = 'asc' | 'desc';
 @Component({
   selector: 'app-stat-sort',
   template: `
-    <label class="stat-sort__label">
-      <select class="stat-sort__select" (change)="pick($any($event.target).value)">
+    <label class="stat-sort-label">
+      <select class="stat-sort-select" (change)="pick($any($event.target).value)">
         <option value="" [selected]="stat() === null">—</option>
         @for (key of stats(); track key) {
           <option [value]="key" [selected]="stat() === key">{{ labels[key] }}</option>
@@ -16,11 +16,11 @@ export type StatSortDirection = 'asc' | 'desc';
     </label>
 
     @if (stat()) {
-      <div class="stat-sort__arrows" role="group" aria-label="Sort direction">
+      <div class="stat-sort-arrows" role="group" aria-label="Sort direction">
         <button
           type="button"
-          class="stat-sort__arrow"
-          [class.stat-sort__arrow--active]="direction() === 'desc'"
+          class="stat-sort-arrow"
+          [class.stat-sort-arrow--active]="direction() === 'desc'"
           [attr.aria-pressed]="direction() === 'desc'"
           aria-label="Highest first"
           (click)="direction.set('desc')"
@@ -29,8 +29,8 @@ export type StatSortDirection = 'asc' | 'desc';
         </button>
         <button
           type="button"
-          class="stat-sort__arrow"
-          [class.stat-sort__arrow--active]="direction() === 'asc'"
+          class="stat-sort-arrow"
+          [class.stat-sort-arrow--active]="direction() === 'asc'"
           [attr.aria-pressed]="direction() === 'asc'"
           aria-label="Lowest first"
           (click)="direction.set('asc')"
@@ -47,7 +47,7 @@ export type StatSortDirection = 'asc' | 'desc';
       gap: 0.5rem;
     }
 
-    .stat-sort__label {
+    .stat-sort-label {
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -57,7 +57,7 @@ export type StatSortDirection = 'asc' | 'desc';
       white-space: nowrap;
     }
 
-    .stat-sort__select {
+    .stat-sort-select {
       background: #142c30;
       border: 1px solid var(--panel-border);
       border-radius: 6px;
@@ -73,12 +73,12 @@ export type StatSortDirection = 'asc' | 'desc';
       }
     }
 
-    .stat-sort__arrows {
+    .stat-sort-arrows {
       display: inline-flex;
       gap: 0.25rem;
     }
 
-    .stat-sort__arrow {
+    .stat-sort-arrow {
       width: 1.9rem;
       height: 1.9rem;
       background: transparent;
@@ -95,8 +95,8 @@ export type StatSortDirection = 'asc' | 'desc';
       }
     }
 
-    .stat-sort__arrow--active,
-    .stat-sort__arrow--active:hover {
+    .stat-sort-arrow--active,
+    .stat-sort-arrow--active:hover {
       border-color: var(--accent);
       color: var(--accent);
       opacity: 1;

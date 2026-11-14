@@ -1,5 +1,5 @@
 <header class="page-header">
-  <div class="page-header__title">
+  <div class="page-header-title">
     <h1>Projected Stats</h1>
     <app-help-dialog heading="Projected Stats" [paragraphs]="helpText" />
   </div>
@@ -31,9 +31,9 @@
         />
 
         @if (selectionMode() && isPickable(build.id)) {
-          <button type="button" class="panel__picker" (click)="togglePick(build.id)">
+          <button type="button" class="panel-picker" (click)="togglePick(build.id)">
             @if (isPicked(build.id)) {
-              <span class="panel__badge">{{ pickNumber(build.id) }}</span>
+              <span class="panel-badge">{{ pickNumber(build.id) }}</span>
               Selected
             } @else {
               Select

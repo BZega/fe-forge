@@ -4,17 +4,17 @@
   @let mapperRef = mapper();
 
   <section class="timeline" aria-label="Timeline">
-    <header class="timeline__bar">
-      <label class="timeline__picker">
-        <span class="timeline__picker-label">Timeline</span>
-        <select class="timeline__select" (change)="onTimelineChange($any($event.target).value)">
+    <header class="timeline-bar">
+      <label class="timeline-picker">
+        <span class="timeline-picker-label">Timeline</span>
+        <select class="timeline-select" (change)="onTimelineChange($any($event.target).value)">
           @for (option of timelines(); track option.id) {
             <option [value]="option.id" [selected]="option.id === focus.section.id">{{ option.label }}</option>
           }
         </select>
       </label>
 
-      <div class="timeline__actions">
+      <div class="timeline-actions">
         <button
           type="button"
           class="ghost-button"
@@ -43,16 +43,16 @@
     </header>
 
     <div class="tgrid" [style.--stat-count]="statKeys.length">
-      <div class="tgrid__corner"></div>
+      <div class="tgrid-corner"></div>
       @for (stat of statKeys; track stat) {
-        <div class="tgrid__head">{{ statLabels[stat] }}</div>
+        <div class="tgrid-head">{{ statLabels[stat] }}</div>
       }
-      <div class="tgrid__corner"></div>
+      <div class="tgrid-corner"></div>
 
       @for (item of items(); track item.key) {
         @if (asFork(item); as fork) {
-          <div class="tgrid__fork" role="group" [attr.aria-label]="'Branches at Lv ' + fork.level">
-            <span class="tgrid__fork-level">Lv {{ fork.level }}</span>
+          <div class="tgrid-fork" role="group" [attr.aria-label]="'Branches at Lv ' + fork.level">
+            <span class="tgrid-fork-level">Lv {{ fork.level }}</span>
             @for (option of fork.options; track option.sectionId) {
               <button
                 type="button"
@@ -68,27 +68,27 @@
         }
 
         @if (asBranch(item); as branch) {
-          <div class="tgrid__branch">
-            <span class="tgrid__branch-label">{{ branch.label }}</span>
-            <span class="tgrid__branch-detail">{{ branch.detail }}</span>
+          <div class="tgrid-branch">
+            <span class="tgrid-branch-label">{{ branch.label }}</span>
+            <span class="tgrid-branch-detail">{{ branch.detail }}</span>
           </div>
         }
 
         @if (asGrowth(item); as growthRow) {
-          <div class="tgrid__label" [title]="growthRow.className + ' growth rates'">
-            <span class="tgrid__level">Growth</span>
-            <span class="tgrid__class">{{ growthRow.className }}</span>
+          <div class="tgrid-label" [title]="growthRow.className + ' growth rates'">
+            <span class="tgrid-level">Growth</span>
+            <span class="tgrid-class">{{ growthRow.className }}</span>
           </div>
           @for (stat of statKeys; track stat) {
-            <div class="tgrid__growth" [class.negative]="growthRow.growth[stat] < 0">{{ growthRow.growth[stat] }}%</div>
+            <div class="tgrid-growth" [class.negative]="growthRow.growth[stat] < 0">{{ growthRow.growth[stat] }}%</div>
           }
-          <div class="tgrid__corner"></div>
+          <div class="tgrid-corner"></div>
         }
 
         @if (asLevel(item); as level) {
-          <div class="tgrid__label" [title]="level.className">
-            <span class="tgrid__level">Lv {{ level.level }}</span>
-            <span class="tgrid__class">{{ level.className }}</span>
+          <div class="tgrid-label" [title]="level.className">
+            <span class="tgrid-level">Lv {{ level.level }}</span>
+            <span class="tgrid-class">{{ level.className }}</span>
           </div>
 
           @for (stat of statKeys; track stat) {
@@ -109,7 +109,7 @@
 
           <button
             type="button"
-            class="tgrid__add"
+            class="tgrid-add"
             [title]="'Branch at Lv ' + level.level + ': take an exam or reclass'"
             [attr.aria-label]="'Branch at Lv ' + level.level"
             (click)="branchFrom(level)"
@@ -118,20 +118,20 @@
           </button>
 
           @if (level.note) {
-            <div class="tgrid__note">{{ level.note }}</div>
+            <div class="tgrid-note">{{ level.note }}</div>
           }
         }
       }
 
-      <div class="tgrid__caption">Lv {{ mapperRef.endLevelOf(focus) }} stats</div>
-      <div class="tgrid__label">Stats</div>
+      <div class="tgrid-caption">Lv {{ mapperRef.endLevelOf(focus) }} stats</div>
+      <div class="tgrid-label">Stats</div>
       @for (total of endTotals(focus); track $index) {
-        <div class="tgrid__total" [title]="mapperRef.statTotalTitle(total)">{{ total.value ?? '—' }}</div>
+        <div class="tgrid-total" [title]="mapperRef.statTotalTitle(total)">{{ total.value ?? '—' }}</div>
       }
-      <div class="tgrid__corner"></div>
+      <div class="tgrid-corner"></div>
     </div>
 
-    <footer class="timeline__footer">
+    <footer class="timeline-footer">
       <button
         type="button"
         class="ghost-button"

@@ -54,7 +54,7 @@ describe('SuggestionDialogComponent', () => {
     expect(url).toBe('https://formspree.io/f/testform');
     expect(JSON.parse(init.body as string).message).toBe('More class data please');
     expect(String(init.body)).not.toContain('@');
-    expect(host.querySelector('.suggestion__done')!.textContent).toContain('Thanks');
+    expect(host.querySelector('.suggestion-done')!.textContent).toContain('Thanks');
   });
 
   it('shows an error and keeps the text when sending fails', async () => {

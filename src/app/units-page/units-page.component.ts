@@ -11,7 +11,7 @@ import { SpoilerService } from '../services/spoiler.service';
   imports: [GrowthListComponent, HelpDialogComponent],
   template: `
     <header class="browse-header">
-      <div class="browse-header__title">
+      <div class="browse-header-title">
         <h1>Characters</h1>
         <app-help-dialog heading="Characters" [paragraphs]="helpText" />
       </div>

@@ -30,7 +30,7 @@
   border-radius: 8px;
 }
 
-.start-options__level {
+.start-options-level {
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -43,13 +43,13 @@
   }
 }
 
-.start-options__number {
+.start-options-number {
   width: 4rem;
   padding: 0.3rem 0.4rem;
   text-align: center;
 }
 
-.start-options__toggles {
+.start-options-toggles {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 1.1rem;
@@ -102,7 +102,7 @@
   gap: 0.3rem;
 }
 
-.start-stats__caption {
+.start-stats-caption {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;

@@ -29,6 +29,7 @@ export class AppComponent {
   readonly suggestionsOpen = signal(false);
   readonly hideSpoilers = this.spoilers.hidden;
   readonly hiddenTiers = this.spoilers.hiddenTiers;
+  readonly allSpoilersHidden = this.spoilers.allHidden;
   readonly spoilerTiers = SPOILER_TIERS;
   readonly spoilerMenuOpen = signal(false);
 
@@ -343,9 +344,19 @@ export class AppComponent {
     this.spoilers.toggle(tier);
   }
 
+  toggleAllSpoilers(): void {
+    this.spoilers.toggleAll();
+  }
+
+  openSpoilerSettings(): void {
+    this.menuOpen.set(true);
+    this.resourcesOpen.set(false);
+    this.spoilerMenuOpen.set(true);
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (event.target instanceof Element && !event.target.closest('.spoiler-menu')) {
+    if (event.target instanceof Element && !event.target.closest('.spoiler-menu, .spoiler-indicator')) {
       this.spoilerMenuOpen.set(false);
     }
 

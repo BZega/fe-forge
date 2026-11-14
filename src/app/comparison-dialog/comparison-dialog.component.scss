@@ -26,7 +26,7 @@
   padding: 1.25rem 1.5rem 1.5rem;
 }
 
-.dialog__header {
+.dialog-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -38,7 +38,7 @@
   }
 }
 
-.dialog__eyebrow {
+.dialog-eyebrow {
   margin: 0;
   font-size: 0.72rem;
   letter-spacing: 0.1em;
@@ -46,7 +46,7 @@
   color: var(--accent);
 }
 
-.dialog__close {
+.dialog-close {
   background: transparent;
   border: none;
   color: inherit;
@@ -63,7 +63,7 @@
   margin: 1rem 0 0.75rem;
 }
 
-.summary__side {
+.summary-side {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
@@ -81,7 +81,7 @@
   }
 }
 
-.summary__label {
+.summary-label {
   font-size: 0.72rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -89,30 +89,30 @@
 }
 
 // Editing a box: two rows of the usual compact dropdowns (Unit | Class | Level, then Mount | Bond Level).
-.summary__row {
+.summary-row {
   display: flex;
   align-items: center;
   gap: 0.4rem;
 }
 
-.summary__pick {
+.summary-pick {
   flex: 1 1 0;
   min-width: 0;
 }
 
 // Just a unit and a class: one above the other, at a comfortable width rather than the full box.
-.summary__row--stacked {
+.summary-row--stacked {
   flex-direction: column;
   align-items: flex-start;
 
-  .summary__pick {
+  .summary-pick {
     flex: none;
     width: min(100%, 13rem);
   }
 }
 
 // Matches the dark, compact look of the searchable dropdowns beside it.
-.summary__select {
+.summary-select {
   flex: none;
   height: 1.9rem;
   background: #142c30;
@@ -131,18 +131,18 @@
   }
 }
 
-.summary__side--editing {
+.summary-side--editing {
   gap: 0.4rem;
 }
 
-.summary__foot {
+.summary-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
 }
 
-.summary__change {
+.summary-change {
   flex: none;
   background: transparent;
   border: 1px solid var(--panel-border);
@@ -163,12 +163,12 @@
     font-weight: 600;
   }
 }
-.summary__build {
+.summary-build {
   font-size: 0.95rem;
   font-weight: 600;
 }
 
-.summary__total {
+.summary-total {
   font-size: 1.35rem;
   font-weight: 700;
   color: var(--accent);
@@ -182,7 +182,7 @@
   gap: 0.2rem;
 }
 
-.verdict__counts {
+.verdict-counts {
   font-size: 0.78rem;
   opacity: 0.7;
 }
@@ -234,13 +234,13 @@
   color: #ff8d8d;
 }
 
-.dialog__footer {
+.dialog-footer {
   display: flex;
   justify-content: flex-end;
   margin-top: 1.25rem;
 }
 
-.dialog__dismiss {
+.dialog-dismiss {
   background: var(--accent);
   border: none;
   border-radius: 6px;
@@ -259,7 +259,7 @@
     padding: 1rem;
   }
 
-  .dialog__header h2 {
+  .dialog-header h2 {
     font-size: 1.1rem;
   }
 
@@ -276,11 +276,11 @@
     }
   }
 
-  .dialog__footer {
+  .dialog-footer {
     margin-top: 1rem;
   }
 
-  .dialog__dismiss {
+  .dialog-dismiss {
     width: 100%;
   }
 }

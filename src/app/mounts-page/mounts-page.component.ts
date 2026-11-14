@@ -15,12 +15,12 @@ type MountView = 'growth' | 'bonus';
   imports: [GrowthListComponent, HelpDialogComponent, LayoutSwitchComponent, StatSortComponent],
   template: `
     <header class="browse-header">
-      <div class="browse-header__title">
+      <div class="browse-header-title">
         <h1>Mounts</h1>
         <app-help-dialog heading="Mounts" [paragraphs]="helpText()" />
       </div>
       @if (view() === 'bonus') {
-        <div class="browse-header__controls">
+        <div class="browse-header-controls">
           <app-layout-switch [(layout)]="layout" />
           @if (layout() === 'bonus') {
             <app-stat-sort [stats]="statKeys" [(stat)]="sortStat" [(direction)]="sortDirection" />
@@ -35,8 +35,8 @@ type MountView = 'growth' | 'bonus';
           <button
             type="button"
             role="tab"
-            class="view-tabs__tab"
-            [class.view-tabs__tab--active]="view() === tab.key"
+            class="view-tabs-tab"
+            [class.view-tabs-tab--active]="view() === tab.key"
             [attr.aria-selected]="view() === tab.key"
             [attr.tabindex]="view() === tab.key ? 0 : -1"
             (click)="view.set(tab.key)"
@@ -49,9 +49,9 @@ type MountView = 'growth' | 'bonus';
       </div>
 
       <label class="bond-picker">
-        <span class="bond-picker__label">Bond Level</span>
+        <span class="bond-picker-label">Bond Level</span>
         <select
-          class="bond-picker__select"
+          class="bond-picker-select"
           [value]="bondLevel()"
           (change)="onBondLevelChange($any($event.target).value)"
         >

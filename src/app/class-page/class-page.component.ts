@@ -268,7 +268,7 @@ export class ClassPageComponent {
       () => {
         this.filterBox()?.nativeElement.focus();
         this.switcher()
-          ?.nativeElement.querySelector('.switcher__option--current')
+          ?.nativeElement.querySelector('.switcher-option--current')
           ?.scrollIntoView({ block: 'nearest' });
       },
       { injector: this.injector },

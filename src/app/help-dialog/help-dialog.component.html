@@ -14,17 +14,17 @@
     <div class="backdrop" (click)="close()"></div>
 
     <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="help-dialog-title">
-      <header class="dialog__header">
+      <header class="dialog-header">
         <div>
-          <p class="dialog__eyebrow">Help</p>
+          <p class="dialog-eyebrow">Help</p>
           <h2 id="help-dialog-title">{{ heading() }}</h2>
         </div>
-        <button type="button" class="dialog__close" aria-label="Close help" (click)="close()">
+        <button type="button" class="dialog-close" aria-label="Close help" (click)="close()">
           &times;
         </button>
       </header>
 
-      <div class="help-dialog__body">
+      <div class="help-dialog-body">
         @for (paragraph of paragraphs(); track $index) {
           <p>{{ paragraph }}</p>
         }

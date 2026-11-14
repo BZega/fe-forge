@@ -31,14 +31,14 @@
   }
 }
 
-.browse-header__title {
+.browse-header-title {
   display: flex;
   align-items: center;
   gap: 0.65rem;
 }
 
 // Right-aligned, so the sort appearing beside the switch pushes the switch left.
-.browse-header__controls {
+.browse-header-controls {
   display: flex;
   align-items: center;
   justify-content: flex-end;

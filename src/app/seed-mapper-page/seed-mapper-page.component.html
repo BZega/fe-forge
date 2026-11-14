@@ -1,12 +1,12 @@
 <header class="page-header">
   <div>
-    <div class="page-header__title">
+    <div class="page-header-title">
       <h1>Growth Mapper</h1>
       <app-help-dialog heading="Growth Mapper" [paragraphs]="helpText" />
     </div>
   </div>
 
-  <div class="page-header__actions">
+  <div class="page-header-actions">
     @let active = loadedSave();
 
     @if (changeCount() > 0) {
@@ -62,7 +62,7 @@
   @if (timelineView()) {
     @if (sectionViews()[0]; as seedView) {
       <section class="seed seed--setup" aria-label="Seed setup">
-        <header class="seed__header">
+        <header class="seed-header">
           <h2>Seed</h2>
           <ng-container [ngTemplateOutlet]="unitPicker" />
           <div class="picker picker--inline">
@@ -102,7 +102,7 @@
       [id]="anchorOf(view)"
     >
       <section class="seed" [class.seed--exam]="!!exam">
-        <header class="seed__header">
+        <header class="seed-header">
           <h2>{{ view.title }}</h2>
 
           @if (exam && view.reclass) {
@@ -111,7 +111,7 @@
             <span class="tag" [class.tag--pass]="exam.passed" [class.tag--fail]="!exam.passed">
               {{ exam.passed ? 'Passed' : 'Failed' }}
             </span>
-            <span class="seed__summary">
+            <span class="seed-summary">
               {{ className(exam.classId) }} exam
             </span>
             <button type="button" class="ghost-button" title="Edit exam" (click)="editExam(view)">
@@ -133,7 +133,7 @@
 
           @if (usesWeapon(view)) {
             <select
-              class="picker__select"
+              class="picker-select"
               aria-label="Equipped weapon"
               title="Equipped weapon, for weapon-dependent abilities"
               [value]="section.weapon ?? ''"
@@ -194,7 +194,7 @@
 
         <div class="blocks">
           <article class="block">
-            <header class="block__header">
+            <header class="block-header">
               <h3>{{ view.title }}</h3>
               <span class="tag">Base</span>
             </header>
@@ -202,35 +202,35 @@
             <ng-container [ngTemplateOutlet]="classPickers" [ngTemplateOutletContext]="{ view: view }" />
 
             <div class="grid grid--actions" [style.--stat-count]="statKeys.length">
-              <div class="grid__corner"></div>
+              <div class="grid-corner"></div>
               @for (stat of statKeys; track stat) {
-                <div class="grid__head">{{ statLabels[stat] }}</div>
+                <div class="grid-head">{{ statLabels[stat] }}</div>
               }
-              <div class="grid__corner"></div>
+              <div class="grid-corner"></div>
 
-              <div class="grid__label">Growth</div>
+              <div class="grid-label">Growth</div>
               @for (stat of statKeys; track stat) {
-                <div class="grid__growth" [class.negative]="view.growth[stat] < 0">
+                <div class="grid-growth" [class.negative]="view.growth[stat] < 0">
                   {{ view.growth[stat] }}%
                 </div>
               }
-              <div class="grid__corner"></div>
+              <div class="grid-corner"></div>
 
               @if (exam) {
                 @let carried = startStatsOf(view);
 
-                <div class="grid__caption">
+                <div class="grid-caption">
                   Lv {{ startLevelOf(view) }} stats
-                  <span class="grid__caption-note">carried over from {{ view.parentTitle }}</span>
+                  <span class="grid-caption-note">carried over from {{ view.parentTitle }}</span>
                 </div>
-                <div class="grid__label">Stats</div>
+                <div class="grid-label">Stats</div>
                 @for (stat of statKeys; track stat; let statIndex = $index) {
                   <ng-container
                     [ngTemplateOutlet]="statTotal"
                     [ngTemplateOutletContext]="{ total: carried[statIndex] }"
                   />
                 }
-                <div class="grid__corner"></div>
+                <div class="grid-corner"></div>
               }
 
               @if (exam && view.exam) {
@@ -238,7 +238,7 @@
                   [ngTemplateOutlet]="examRow"
                   [ngTemplateOutletContext]="{ view: view, exam: exam }"
                 />
-                <div class="grid__corner"></div>
+                <div class="grid-corner"></div>
               }
 
               @for (row of section.rows; track row.id; let rowIndex = $index) {
@@ -252,10 +252,10 @@
                   @let boost = inlineBoostOf(view, rowIndex);
                   @let examOptions = inlineExamOptions(view, row);
 
-                  <div class="grid__label" [title]="'Uses the roll before Lv ' + levelOf(view, rowIndex)">
+                  <div class="grid-label" [title]="'Uses the roll before Lv ' + levelOf(view, rowIndex)">
                     <span class="level level--exam">{{ inlineExam.passed ? 'Exam' : 'Skip' }}</span>
                   </div>
-                  <div class="grid__inline">
+                  <div class="grid-inline">
                     <app-searchable-select
                       class="compact"
                       style="flex: 0 1 14rem; min-width: 0"
@@ -302,7 +302,7 @@
                   </div>
                   <button
                     type="button"
-                    class="level__remove"
+                    class="level-remove"
                     title="Remove this exam (keeps the level)"
                     aria-label="Remove this exam"
                     (click)="removeInlineExam(view, row)"
@@ -311,34 +311,34 @@
                   </button>
 
                   @if (hasInlineBoost(view, rowIndex)) {
-                    <div class="grid__label">Base</div>
+                    <div class="grid-label">Base</div>
                     @for (stat of statKeys; track stat) {
                       @if (boost[stat] > 0) {
                         <div class="floor-cell" [title]="inlineBoostTitle(view, row, rowIndex, stat)">+{{ boost[stat] }}</div>
                       } @else {
-                        <div class="grid__corner"></div>
+                        <div class="grid-corner"></div>
                       }
                     }
-                    <div class="grid__corner"></div>
+                    <div class="grid-corner"></div>
                   }
 
                   @if (inlineExam.passed && !inlineExam.keepClass) {
-                    <div class="grid__label">Growth</div>
+                    <div class="grid-label">Growth</div>
                     @for (stat of statKeys; track stat) {
-                      <div class="grid__growth" [class.negative]="(rowGrowths?.[stat] ?? 0) < 0">
+                      <div class="grid-growth" [class.negative]="(rowGrowths?.[stat] ?? 0) < 0">
                         {{ rowGrowths?.[stat] ?? 0 }}%
                       </div>
                     }
-                    <div class="grid__corner"></div>
+                    <div class="grid-corner"></div>
                   }
                 }
 
                 @if (row.reclassTo !== undefined) {
                   @let reclassChoices = reclassOptions(view, rowIndex);
-                  <div class="grid__label">
+                  <div class="grid-label">
                     <span class="level level--exam">Reclass</span>
                   </div>
-                  <div class="grid__inline">
+                  <div class="grid-inline">
                     <app-searchable-select
                       class="compact"
                       style="flex: 0 1 14rem; min-width: 0"
@@ -350,11 +350,11 @@
                       [value]="row.reclassTo"
                       (valueChange)="onReclassChange(view, row, $event)"
                     />
-                    <span class="grid__caption-note">from Lv {{ levelOf(view, rowIndex) }}</span>
+                    <span class="grid-caption-note">from Lv {{ levelOf(view, rowIndex) }}</span>
                   </div>
                   <button
                     type="button"
-                    class="level__remove"
+                    class="level-remove"
                     title="Remove this reclass"
                     aria-label="Remove this reclass"
                     (click)="removeReclass(view, row)"
@@ -362,21 +362,21 @@
                     &times;
                   </button>
 
-                  <div class="grid__label">Growth</div>
+                  <div class="grid-label">Growth</div>
                   @for (stat of statKeys; track stat) {
-                    <div class="grid__growth" [class.negative]="(rowGrowths?.[stat] ?? 0) < 0">
+                    <div class="grid-growth" [class.negative]="(rowGrowths?.[stat] ?? 0) < 0">
                       {{ rowGrowths?.[stat] ?? 0 }}%
                     </div>
                   }
-                  <div class="grid__corner"></div>
+                  <div class="grid-corner"></div>
                 }
 
-                <div class="grid__label">
+                <div class="grid-label">
                   <span class="level">Lv {{ levelOf(view, rowIndex) }}</span>
                   @if (rowIndex > 0) {
                     <button
                       type="button"
-                      class="level__remove"
+                      class="level-remove"
                       [title]="anchored ? 'An exam branches off at or right after this level' : 'Remove this level'"
                       aria-label="Remove this level"
                       [disabled]="anchored"
@@ -431,7 +431,7 @@
             @let options = comparatorClasses(view, comparator);
 
             <article class="block block--comparator">
-              <header class="block__header">
+              <header class="block-header">
                 <h3>{{ view.title }}</h3>
                 <span class="tag">Comparator {{ comparatorIndex + 1 }}</span>
                 <button
@@ -451,7 +451,7 @@
 
               <div class="pickers">
                 <div class="picker">
-                  <span class="picker__label">Class</span>
+                  <span class="picker-label">Class</span>
                   <app-searchable-select
                     label="Class"
                     placeholder="— Select a class —"
@@ -464,7 +464,7 @@
 
                 @if (mountsForClass(comparator.classId).length > 0) {
                   <div class="picker">
-                    <span class="picker__label">Mount</span>
+                    <span class="picker-label">Mount</span>
                     <app-searchable-select
                       label="Mount"
                       [items]="mountItems(comparator.classId, comparatorMountOf(comparator)?.id)"
@@ -478,9 +478,9 @@
                   @if (comparatorBonds.length > 0) {
                     @let comparatorLevel = comparatorMountLevel(comparator);
                     <label class="picker">
-                      <span class="picker__label">Bond Level</span>
+                      <span class="picker-label">Bond Level</span>
                       <select
-                        class="picker__select"
+                        class="picker-select"
                         [value]="comparatorLevel"
                         (change)="
                           onComparatorMountLevelChange(view, comparator, $any($event.target).value)
@@ -500,15 +500,15 @@
               @let comparatorGrowths = comparatorGrowth(comparator);
 
               <div class="grid" [style.--stat-count]="statKeys.length">
-                <div class="grid__corner"></div>
+                <div class="grid-corner"></div>
                 @for (stat of statKeys; track stat) {
-                  <div class="grid__head">{{ statLabels[stat] }}</div>
+                  <div class="grid-head">{{ statLabels[stat] }}</div>
                 }
 
-                <div class="grid__label">Growth</div>
+                <div class="grid-label">Growth</div>
                 @for (stat of statKeys; track stat) {
                   <div
-                    class="grid__growth"
+                    class="grid-growth"
                     [class.negative]="comparatorGrowths[stat] < 0"
                   >
                     {{ comparatorGrowths[stat] }}%
@@ -533,7 +533,7 @@
                     slotOf(view, rowIndex)
                   );
 
-                  <div class="grid__label">
+                  <div class="grid-label">
                     <span class="level">Lv {{ levelOf(view, rowIndex) }}</span>
                   </div>
 
@@ -563,7 +563,7 @@
           }
         </div>
 
-        <footer class="seed__footer">
+        <footer class="seed-footer">
           <button
             type="button"
             class="icon"
@@ -580,10 +580,10 @@
   }
 
   <section class="saves">
-    <header class="saves__header">
+    <header class="saves-header">
       <h2>Saves</h2>
 
-      <div class="saves__actions">
+      <div class="saves-actions">
         <button
           type="button"
           class="ghost-button"
@@ -622,7 +622,7 @@
 
     @if (visibleProblems().length > 0) {
       <div class="problems">
-        <p class="problems__title">Fix these before saving:</p>
+        <p class="problems-title">Fix these before saving:</p>
         <ul>
           @for (problem of visibleProblems(); track problem) {
             <li>{{ problem }}</li>
@@ -634,7 +634,7 @@
     @if (pending(); as action) {
       <div class="confirm" role="alertdialog">
         <span>{{ action.message }}</span>
-        <div class="confirm__buttons">
+        <div class="confirm-buttons">
           <button type="button" class="ghost-button" (click)="confirmPending()">
             Yes, continue
           </button>
@@ -646,11 +646,11 @@
     }
 
     @if (status(); as message) {
-      <p class="saves__status">{{ message }}</p>
+      <p class="saves-status">{{ message }}</p>
     }
 
     @if (saves().length === 0) {
-      <p class="saves__empty">
+      <p class="saves-empty">
         No saves yet. “Save to browser” keeps a copy in this browser; “Download
         JSON” gives you a file you can keep or share.
       </p>
@@ -658,8 +658,8 @@
       <ul class="save-list">
         @for (save of saves(); track save.id) {
           <li
-            class="save-list__item"
-            [class.save-list__item--active]="loadedSave()?.id === save.id"
+            class="save-list-item"
+            [class.save-list-item--active]="loadedSave()?.id === save.id"
           >
             @if (renamingId() === save.id) {
               <input
@@ -671,7 +671,7 @@
                 (keydown.enter)="commitRename()"
                 (keydown.escape)="cancelRename()"
               />
-              <div class="save-list__tools">
+              <div class="save-list-tools">
                 <button type="button" class="ghost-button" (click)="commitRename()">
                   Save name
                 </button>
@@ -684,11 +684,11 @@
 
               <button
                 type="button"
-                class="save-list__load"
+                class="save-list-load"
                 (click)="requestLoad(save)"
               >
-                <span class="save-list__name">{{ save.name }}</span>
-                <span class="save-list__meta">
+                <span class="save-list-name">{{ save.name }}</span>
+                <span class="save-list-meta">
                   @if (save.seed.unit) {
                     {{ save.seed.unit }} ·
                   }
@@ -697,7 +697,7 @@
                 </span>
               </button>
 
-              <div class="save-list__tools">
+              <div class="save-list-tools">
                 <button
                   type="button"
                   class="ghost-button"
@@ -747,14 +747,14 @@
     @if (total.value !== null) {
       <span>{{ total.value }}</span>
     } @else {
-      <span class="stat-value__unknown">{{ delta < 0 ? '' : '+' }}{{ delta }}</span>
+      <span class="stat-value-unknown">{{ delta < 0 ? '' : '+' }}{{ delta }}</span>
     }
   </div>
 </ng-template>
 
 <ng-template #endStats let-view="view" let-totals="totals" let-actions="actions">
-  <div class="grid__caption grid__caption--end">Lv {{ endLevelOf(view) }} stats</div>
-  <div class="grid__label">Stats</div>
+  <div class="grid-caption grid-caption--end">Lv {{ endLevelOf(view) }} stats</div>
+  <div class="grid-label">Stats</div>
   @for (stat of statKeys; track stat; let statIndex = $index) {
     <ng-container
       [ngTemplateOutlet]="statTotal"
@@ -762,13 +762,13 @@
     />
   }
   @if (actions) {
-    <div class="grid__corner"></div>
+    <div class="grid-corner"></div>
   }
 </ng-template>
 
 <ng-template #examRow let-view="view" let-exam="exam">
   @let boost = examBoostOf(view);
-  <div class="grid__label" [title]="'Used the Lv ' + (view.exam.level + 1) + ' roll'">
+  <div class="grid-label" [title]="'Used the Lv ' + (view.exam.level + 1) + ' roll'">
     <span class="level level--exam">{{ examLabel(view) }}</span>
   </div>
 
@@ -814,7 +814,7 @@
 
 <ng-template #startStats let-view="view">
   <div class="start-stats">
-    <div class="start-stats__heading">
+    <div class="start-stats-heading">
       <label class="stats-level">
         Starting stats at Lv
         <input
@@ -832,12 +832,12 @@
     </div>
 
     <div class="grid" [style.--stat-count]="statKeys.length">
-      <div class="grid__corner"></div>
+      <div class="grid-corner"></div>
       @for (stat of statKeys; track stat) {
-        <div class="grid__head">{{ statLabels[stat] }}</div>
+        <div class="grid-head">{{ statLabels[stat] }}</div>
       }
 
-      <div class="grid__label">Stats</div>
+      <div class="grid-label">Stats</div>
       @for (stat of statKeys; track stat) {
         <input
           class="stat-input"
@@ -860,12 +860,12 @@
 
   <div class="pickers">
     <div class="picker">
-      <span class="picker__label">
+      <span class="picker-label">
         Class
         @if (exam && !exam.passed) {
-          <span class="picker__note">(unchanged)</span>
+          <span class="picker-note">(unchanged)</span>
         } @else if (exam && view.section.classId === null) {
-          <span class="picker__note">(from exam)</span>
+          <span class="picker-note">(from exam)</span>
         }
       </span>
       <app-searchable-select
@@ -886,7 +886,7 @@
 <ng-template #mountPickers let-view="view">
   @if (mountsForClass(view.classId).length > 0) {
     <div class="picker">
-      <span class="picker__label">Mount</span>
+      <span class="picker-label">Mount</span>
       <app-searchable-select
         label="Mount"
         [items]="mountItems(view.classId, view.mount?.id)"
@@ -898,9 +898,9 @@
 
     @if (bondLevelsOf(view.mount).length > 0) {
       <label class="picker">
-        <span class="picker__label">Bond Level</span>
+        <span class="picker-label">Bond Level</span>
         <select
-          class="picker__select"
+          class="picker-select"
           [value]="view.mountLevel"
           (change)="onMountLevelChange(view, $any($event.target).value)"
         >

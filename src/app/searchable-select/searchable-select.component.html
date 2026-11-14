@@ -7,7 +7,7 @@
 >
   <input
     #search
-    class="field__input"
+    class="field-input"
     type="text"
     role="combobox"
     autocomplete="off"
@@ -23,12 +23,12 @@
     (input)="onSearch($event)"
     (keydown)="onKeydown($event)"
   />
-  <span class="field__caret" aria-hidden="true">▾</span>
+  <span class="field-caret" aria-hidden="true">▾</span>
 </div>
 
 @if (open()) {
   <div class="panel">
-    <ul class="panel__list" role="listbox">
+    <ul class="panel-list" role="listbox">
       @if (clearable() && query().trim() === '') {
         <li>
           <button
@@ -64,7 +64,7 @@
           </li>
         }
       } @empty {
-        <li class="panel__empty">No matches</li>
+        <li class="panel-empty">No matches</li>
       }
     </ul>
   </div>

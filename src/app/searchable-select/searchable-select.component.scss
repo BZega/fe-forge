@@ -46,7 +46,7 @@
   padding-bottom: 0;
 }
 
-.field__input {
+.field-input {
   flex: 1;
   min-width: 0;
   background: transparent;
@@ -72,7 +72,7 @@
   }
 }
 
-.field__caret {
+.field-caret {
   flex: none;
   font-size: 0.7rem;
   opacity: 0.6;
@@ -109,7 +109,7 @@
   width: var(--panel-width);
 }
 
-.panel__list {
+.panel-list {
   flex: 1;
   min-height: 0;
   overflow: auto;
@@ -126,7 +126,7 @@
   }
 }
 
-.panel__empty {
+.panel-empty {
   padding: 0.6rem;
   font-size: 0.85rem;
   opacity: 0.6;

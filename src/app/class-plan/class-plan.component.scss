@@ -2,15 +2,15 @@
   display: block;
 }
 
-.tier__legend {
+.tier-legend {
   font-size: 0.72rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   opacity: 0.75;
 }
 
-.plan__select,
-.tier__level input {
+.plan-select,
+.tier-level input {
   min-width: 0;
   background: #142c30;
   border: 1px solid var(--panel-border);
@@ -36,29 +36,29 @@
   border-radius: 8px;
 }
 
-.tier__row {
+.tier-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5rem;
 
-  .plan__select,
-  .plan__picker {
+  .plan-select,
+  .plan-picker {
     flex: 1 1 12rem;
     min-width: 0;
   }
 
-  .plan__picker {
+  .plan-picker {
     --dropdown-height: 12rem;
   }
 }
 
-.tier__row--sub {
+.tier-row--sub {
   padding-left: 0.75rem;
   border-left: 2px solid var(--panel-border);
 }
 
-.tier__add--sub {
+.tier-add--sub {
   margin-left: 0.75rem;
   font-size: 0.75rem;
   padding: 0.2rem 0.5rem;
@@ -70,61 +70,61 @@
     padding: 0.5rem 0.5rem 0.6rem;
   }
 
-  .tier__row {
+  .tier-row {
     flex-wrap: nowrap;
     gap: 0.35rem;
 
-    .plan__select,
-    .plan__picker {
+    .plan-select,
+    .plan-picker {
       flex: 1 1 0;
     }
 
-    .tier__bond {
+    .tier-bond {
       flex: 0 1 auto;
     }
   }
 
-  .tier__row--sub {
+  .tier-row--sub {
     padding-left: 0.4rem;
   }
 
-  .tier__level input {
+  .tier-level input {
     width: 2.6rem;
     margin-left: 0.2rem;
     padding: 0.35rem 0.1rem;
   }
 
-  .plan__select {
+  .plan-select {
     padding: 0.35rem 0.3rem;
   }
 
-  .tier__remove {
+  .tier-remove {
     flex: none;
     padding: 0 0.15rem;
   }
 
-  .tier__add--sub {
+  .tier-add--sub {
     margin-left: 0.4rem;
   }
 }
 
-.tier__row .tier__bond {
+.tier-row .tier-bond {
   flex: 0 0 auto;
 }
 
-.tier__from,
-.tier__level {
+.tier-from,
+.tier-level {
   font-size: 0.78rem;
   opacity: 0.75;
 }
 
-.tier__level input {
+.tier-level input {
   width: 4rem;
   margin-left: 0.3rem;
   text-align: center;
 }
 
-.tier__remove {
+.tier-remove {
   background: transparent;
   border: none;
   color: inherit;
@@ -138,7 +138,7 @@
   }
 }
 
-.tier__add {
+.tier-add {
   align-self: flex-start;
   background: transparent;
   border: 1px dashed var(--panel-border);

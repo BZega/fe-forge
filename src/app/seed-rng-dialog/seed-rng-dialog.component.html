@@ -1,12 +1,12 @@
 <div class="backdrop" (click)="close()"></div>
 
 <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="rng-title">
-  <header class="dialog__header">
+  <header class="dialog-header">
     <div>
-      <p class="dialog__eyebrow">Seed RNG</p>
+      <p class="dialog-eyebrow">Seed RNG</p>
       <h2 id="rng-title">{{ active()?.title }}</h2>
     </div>
-    <button type="button" class="dialog__close" aria-label="Close" (click)="close()">
+    <button type="button" class="dialog-close" aria-label="Close" (click)="close()">
       &times;
     </button>
   </header>
@@ -15,7 +15,7 @@
     <div class="tabs">
       <button
         type="button"
-        class="tabs__arrow"
+        class="tabs-arrow"
         aria-label="Scroll sections left"
         [disabled]="!canScrollBack()"
         (click)="scrollTabs(-1)"
@@ -25,7 +25,7 @@
 
       <div
         #strip
-        class="tabs__strip"
+        class="tabs-strip"
         role="tablist"
         aria-label="Sections"
         (scroll)="updateScroll()"
@@ -37,9 +37,9 @@
           <button
             type="button"
             role="tab"
-            class="tabs__tab"
+            class="tabs-tab"
             [attr.data-section]="section.id"
-            [class.tabs__tab--active]="section.id === activeId()"
+            [class.tabs-tab--active]="section.id === activeId()"
             [attr.aria-selected]="section.id === activeId()"
             [attr.tabindex]="section.id === activeId() ? 0 : -1"
             (click)="selected.emit(section.id)"
@@ -51,7 +51,7 @@
 
       <button
         type="button"
-        class="tabs__arrow"
+        class="tabs-arrow"
         aria-label="Scroll sections right"
         [disabled]="!canScrollForward()"
         (click)="scrollTabs(1)"
@@ -72,14 +72,14 @@
     <div class="grid" [style.--stat-count]="statKeys.length">
       <div></div>
       @for (stat of statKeys; track stat) {
-        <div class="grid__head">{{ statLabels[stat] }}</div>
+        <div class="grid-head">{{ statLabels[stat] }}</div>
       }
 
       @for (row of section.rows; track $index) {
-        <div class="grid__label" [class.grid__label--exam]="row.exam">
+        <div class="grid-label" [class.grid-label--exam]="row.exam">
           {{ row.label }}
           @if (row.passChance !== null) {
-            <span class="grid__pass" [title]="'Exam passed at ' + row.passChance + '%'">
+            <span class="grid-pass" [title]="'Exam passed at ' + row.passChance + '%'">
               ✓ {{ row.passChance }}%
             </span>
           }

@@ -40,7 +40,7 @@ main {
   z-index: 20;
 }
 
-.topnav__brand {
+.topnav-brand {
   color: var(--accent);
   font-family: var(--font-display);
   font-weight: 700;
@@ -52,11 +52,34 @@ main {
   white-space: nowrap;
 }
 
-.topnav__brand-short {
+.topnav-brand-short {
   display: none;
 }
 
-.topnav__toggle {
+.spoiler-indicator {
+  display: none;
+  align-items: center;
+  gap: 0.35rem;
+  height: 2.25rem;
+  padding: 0 0.6rem;
+  background: rgb(240 192 74 / 10%);
+  border: 1px solid var(--gold-line);
+  border-radius: 6px;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: currentColor;
+  }
+}
+
+.topnav-toggle {
   display: none;
   place-items: center;
   width: 2.25rem;
@@ -79,7 +102,7 @@ main {
   }
 }
 
-.topnav__links {
+.topnav-links {
   display: flex;
   align-items: center;
   gap: 0.35rem;
@@ -110,7 +133,7 @@ main {
   }
 }
 
-.topnav__spoilers {
+.topnav-spoilers {
   margin-left: 0.5rem;
   padding-left: 0.75rem;
   border-left: 1px solid var(--panel-border);
@@ -120,7 +143,7 @@ main {
   position: relative;
 }
 
-.resource-menu__trigger {
+.resource-menu-trigger {
   display: flex;
   align-items: center;
   gap: 0.35rem;
@@ -148,7 +171,7 @@ main {
   }
 }
 
-.resource-menu__panel {
+.resource-menu-panel {
   display: none;
   position: absolute;
   top: calc(100% + 0.5rem);
@@ -196,7 +219,7 @@ main {
   }
 }
 
-.spoiler-toggle__track {
+.spoiler-toggle-track {
   position: relative;
   flex: none;
   width: 1.8rem;
@@ -210,7 +233,7 @@ main {
   }
 }
 
-.spoiler-toggle__thumb {
+.spoiler-toggle-thumb {
   position: absolute;
   top: 0.125rem;
   left: 0.125rem;
@@ -229,11 +252,19 @@ main {
   position: relative;
 }
 
-.spoiler-menu__caret {
+.spoiler-menu-caret {
   font-size: 0.7em;
 }
 
-.spoiler-menu__panel {
+.spoiler-toggle.spoiler-toggle-all {
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--panel-border);
+  border-radius: 6px 6px 0 0;
+  font-weight: 600;
+}
+
+.spoiler-menu-panel {
   position: absolute;
   top: calc(100% + 0.5rem);
   right: 0;
@@ -253,7 +284,7 @@ main {
   }
 }
 
-.spoiler-menu__heading {
+.spoiler-menu-heading {
   margin: 0 0 0.25rem;
   padding: 0 0.5rem;
   font-size: 0.7rem;
@@ -268,26 +299,30 @@ main {
     padding: 0.6rem 0.75rem;
   }
 
-  .topnav__toggle {
+  .topnav-toggle {
     display: grid;
   }
 
-  .topnav__brand-full {
+  .spoiler-indicator {
+    display: inline-flex;
+  }
+
+  .topnav-brand-full {
     display: none;
   }
 
-  .topnav__brand-short {
+  .topnav-brand-short {
     display: inline;
   }
 
   // Expands inline inside the mobile menu instead of floating.
-  .resource-menu__trigger {
+  .resource-menu-trigger {
     width: 100%;
     padding: 0.65rem 0.75rem;
     font-size: 0.95rem;
   }
 
-  .resource-menu__panel {
+  .resource-menu-panel {
     position: static;
     min-width: 0;
     padding: 0 0 0 0.75rem;
@@ -296,7 +331,7 @@ main {
   }
 
   // Drops out of flow so the bar keeps its height while the menu is open.
-  .topnav__links {
+  .topnav-links {
     display: none;
     position: absolute;
     top: 100%;
@@ -320,7 +355,7 @@ main {
     }
   }
 
-  .topnav__spoilers {
+  .topnav-spoilers {
     margin: 0.25rem 0 0;
     padding: 0.4rem 0 0;
     border-left: none;
@@ -334,7 +369,7 @@ main {
   }
 
   // Expands inline inside the mobile menu instead of floating.
-  .spoiler-menu__panel {
+  .spoiler-menu-panel {
     position: static;
     min-width: 0;
     margin-top: 0.25rem;

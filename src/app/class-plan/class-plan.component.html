@@ -1,13 +1,13 @@
 <fieldset class="tier">
-  <legend class="tier__legend">Classes</legend>
+  <legend class="tier-legend">Classes</legend>
 
   @for (entry of plan(); track entry.id; let entryIndex = $index) {
     @let resolved = entryIndex === 0 ? startEntry()! : entry;
-    <div class="tier__row">
+    <div class="tier-row">
       @if (entryIndex === 0) {
-        <span class="tier__from">Lv {{ rowLevels()[0] }}</span>
+        <span class="tier-from">Lv {{ rowLevels()[0] }}</span>
         <app-searchable-select
-          class="plan__picker"
+          class="plan-picker"
           label="Starting class"
           [keyboard]="false"
           [groups]="rowClassItems()[0]"
@@ -18,7 +18,7 @@
         />
       } @else {
         @let bounds = switchBounds(entryIndex);
-        <label class="tier__level">
+        <label class="tier-level">
           Lv
           <input
             type="number"
@@ -32,7 +32,7 @@
           />
         </label>
         <app-searchable-select
-          class="plan__picker"
+          class="plan-picker"
           label="Reclass to"
           [keyboard]="false"
           placeholder="— Select a class —"
@@ -44,7 +44,7 @@
         />
         <button
           type="button"
-          class="tier__remove"
+          class="tier-remove"
           aria-label="Remove this reclass"
           title="Remove this reclass"
           (click)="removeClass(entry.id)"
@@ -56,9 +56,9 @@
 
     @if (mountsFor(resolved).length > 0) {
       @let mount = mountOf(resolved);
-      <div class="tier__row tier__row--sub">
+      <div class="tier-row tier-row--sub">
         <select
-          class="plan__select"
+          class="plan-select"
           aria-label="Mount"
           [value]="mount?.id"
           (change)="setMount(entry.id, $any($event.target).value)"
@@ -69,7 +69,7 @@
         </select>
         @if (mount && mount.bondLevels.length > 0) {
           <select
-            class="plan__select tier__bond"
+            class="plan-select tier-bond"
             aria-label="Bond level"
             [value]="bondLevelOf(resolved)"
             (change)="setBondLevel(entry.id, $any($event.target).value)"
@@ -84,8 +84,8 @@
       @for (change of mountChangesOf(entry); track change.id; let changeIndex = $index) {
         @let changeMount = changeMountOf(resolved, change);
         @let changeBounds = mountChangeBounds(entryIndex, changeIndex);
-        <div class="tier__row tier__row--change">
-          <label class="tier__level">
+        <div class="tier-row tier-row--change">
+          <label class="tier-level">
             Lv
             <input
               type="number"
@@ -99,7 +99,7 @@
             />
           </label>
           <select
-            class="plan__select"
+            class="plan-select"
             aria-label="Mount from this level"
             [value]="changeMount?.id"
             (change)="setChangeMount(entry.id, change.id, $any($event.target).value)"
@@ -110,7 +110,7 @@
           </select>
           @if (changeMount && changeMount.bondLevels.length > 0) {
             <select
-              class="plan__select tier__bond"
+              class="plan-select tier-bond"
               aria-label="Bond level from this level"
               [value]="changeBondLevelOf(resolved, change)"
               (change)="setChangeBondLevel(entry.id, change.id, $any($event.target).value)"
@@ -122,7 +122,7 @@
           }
           <button
             type="button"
-            class="tier__remove"
+            class="tier-remove"
             aria-label="Remove this mount change"
             title="Remove this mount change"
             (click)="removeMountChange(entry.id, change.id)"
@@ -135,7 +135,7 @@
       @if (canAddMountChange(entryIndex)) {
         <button
           type="button"
-          class="tier__add tier__add--sub"
+          class="tier-add tier-add--sub"
           title="Switch mount or bond level at a later level, staying in this class"
           (click)="addMountChange(entryIndex)"
         >
@@ -146,6 +146,6 @@
   }
 
   @if (canAddClass()) {
-    <button type="button" class="tier__add" (click)="addClass()">+ Reclass</button>
+    <button type="button" class="tier-add" (click)="addClass()">+ Reclass</button>
   }
 </fieldset>

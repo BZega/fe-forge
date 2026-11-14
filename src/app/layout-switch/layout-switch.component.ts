@@ -9,8 +9,8 @@ export type ListLayout = 'table' | 'bonus';
       @for (option of options; track option.key) {
         <button
           type="button"
-          class="layout-switch__option"
-          [class.layout-switch__option--active]="layout() === option.key"
+          class="layout-switch-option"
+          [class.layout-switch-option--active]="layout() === option.key"
           [attr.aria-pressed]="layout() === option.key"
           (click)="layout.set(option.key)"
         >
@@ -32,7 +32,7 @@ export type ListLayout = 'table' | 'bonus';
       overflow: hidden;
     }
 
-    .layout-switch__option {
+    .layout-switch-option {
       background: transparent;
       border: none;
       color: var(--text);
@@ -52,8 +52,8 @@ export type ListLayout = 'table' | 'bonus';
       }
     }
 
-    .layout-switch__option--active,
-    .layout-switch__option--active:hover {
+    .layout-switch-option--active,
+    .layout-switch-option--active:hover {
       background: rgb(240 192 74 / 15%);
       color: var(--accent);
       opacity: 1;

@@ -7,16 +7,16 @@
     <!-- Profile header -->
     <header class="hero">
       <div class="portrait" [attr.data-class-id]="current.id" aria-hidden="true">
-        <span class="portrait__glyph">{{ initials(current.name) }}</span>
+        <span class="portrait-glyph">{{ initials(current.name) }}</span>
       </div>
 
-      <div class="hero__body">
+      <div class="hero-body">
         <div class="switcher" #switcher>
           <h1>
             <button
               #toggle
               type="button"
-              class="switcher__toggle"
+              class="switcher-toggle"
               aria-haspopup="listbox"
               [attr.aria-expanded]="switcherOpen()"
               title="Switch to another class (↑/↓ to step through)"
@@ -24,15 +24,15 @@
               (keydown)="onToggleKey($event)"
             >
               {{ current.name }}
-              <span class="switcher__caret" aria-hidden="true">▾</span>
+              <span class="switcher-caret" aria-hidden="true">▾</span>
             </button>
           </h1>
 
           @if (switcherOpen()) {
-            <div class="switcher__panel">
+            <div class="switcher-panel">
               <input
                 #filterBox
-                class="switcher__filter"
+                class="switcher-filter"
                 type="text"
                 placeholder="Filter classes"
                 aria-label="Filter classes"
@@ -45,16 +45,16 @@
                 (keydown)="onFilterKey($event)"
               />
 
-              <div class="switcher__list" id="class-options" role="listbox" aria-label="Classes">
+              <div class="switcher-list" id="class-options" role="listbox" aria-label="Classes">
                 @for (group of switcherGroups(); track group.rank) {
-                  <p class="switcher__group">{{ group.rank }}</p>
+                  <p class="switcher-group">{{ group.rank }}</p>
                   @for (option of group.classes; track option.id) {
                     <a
-                      class="switcher__option"
+                      class="switcher-option"
                       role="option"
                       [id]="'class-option-' + option.id"
-                      [class.switcher__option--current]="option.id === current.id"
-                      [class.switcher__option--active]="option.id === highlightId()"
+                      [class.switcher-option--current]="option.id === current.id"
+                      [class.switcher-option--active]="option.id === highlightId()"
                       [attr.aria-selected]="option.id === highlightId()"
                       [routerLink]="['/classes', option.id]"
                       (click)="$event.preventDefault(); goTo(option.id)"
@@ -63,7 +63,7 @@
                     </a>
                   }
                 } @empty {
-                  <p class="switcher__empty">No classes match.</p>
+                  <p class="switcher-empty">No classes match.</p>
                 }
               </div>
             </div>
@@ -72,37 +72,37 @@
 
         <div class="badges">
           <span class="badge badge--rank" [attr.data-rank]="current.rank">
-            <span class="badge__label">Tier</span>
+            <span class="badge-label">Tier</span>
             <span>{{ current.rank }}</span>
           </span>
           @if (mountType() !== 'None') {
             <span class="badge" [class.badge--muted]="mountType() === 'None'">
-              <span class="badge__label">Mount Type</span>
+              <span class="badge-label">Mount Type</span>
               <span>{{ mountType() }}</span>
             </span>
           }
         </div>
 
         @for (line of descriptionLines(); track $index) {
-          <p class="hero__description">{{ line }}</p>
+          <p class="hero-description">{{ line }}</p>
         }
       </div>
     </header>
 
     <!-- Growth rates: primary card -->
     <section class="card growth" aria-labelledby="growth-title">
-      <div class="growth__feature" [attr.data-tone]="tone(current.total)">
-        <span class="growth__feature-label">Total growth</span>
-        <span class="growth__feature-value">{{ signed(current.total) }}%</span>
+      <div class="growth-feature" [attr.data-tone]="tone(current.total)">
+        <span class="growth-feature-label">Total growth</span>
+        <span class="growth-feature-value">{{ signed(current.total) }}%</span>
       </div>
 
-      <div class="growth__body">
+      <div class="growth-body">
         <h2 class="section-title" id="growth-title">Growth rates</h2>
         <ul class="pills pills--growth">
           @for (stat of statKeys; track stat) {
             <li class="pill" [attr.data-tone]="tone(current[stat])">
-              <span class="pill__label">{{ statLabels[stat] }}</span>
-              <span class="pill__value">{{ signed(current[stat]) }}%</span>
+              <span class="pill-label">{{ statLabels[stat] }}</span>
+              <span class="pill-value">{{ signed(current[stat]) }}%</span>
             </li>
           }
         </ul>
@@ -118,9 +118,9 @@
               <button
                 type="button"
                 role="tab"
-                class="stat-tabs__tab section-title"
+                class="stat-tabs-tab section-title"
                 [id]="'stat-tab-' + tab.key"
-                [class.stat-tabs__tab--active]="statTab() === tab.key"
+                [class.stat-tabs-tab--active]="statTab() === tab.key"
                 [attr.aria-selected]="statTab() === tab.key"
                 [attr.aria-controls]="'stat-panel-' + tab.key"
                 [attr.tabindex]="statTab() === tab.key ? 0 : -1"
@@ -139,8 +139,8 @@
                 <ul class="pills pills--compact">
                   @for (stat of bonusStatKeys; track stat) {
                     <li class="pill" [attr.data-tone]="tone(current.bonusStats[stat])">
-                      <span class="pill__label">{{ bonusStatLabels[stat] }}</span>
-                      <span class="pill__value">{{ signed(current.bonusStats[stat]) }}</span>
+                      <span class="pill-label">{{ bonusStatLabels[stat] }}</span>
+                      <span class="pill-value">{{ signed(current.bonusStats[stat]) }}</span>
                     </li>
                   }
                 </ul>
@@ -150,8 +150,8 @@
                   @for (stat of statKeys; track stat) {
                     @let floor = current.classFloorStats[stat];
                     <li class="pill" [attr.data-tone]="floor > 0 ? 'base' : 'zero'">
-                      <span class="pill__label">{{ statLabels[stat] }}</span>
-                      <span class="pill__value">{{ floor > 0 ? floor : '—' }}</span>
+                      <span class="pill-label">{{ statLabels[stat] }}</span>
+                      <span class="pill-value">{{ floor > 0 ? floor : '—' }}</span>
                     </li>
                   }
                 </ul>
@@ -180,17 +180,17 @@
                     (click)="toggleSkillTip(skill.key)"
                   >
                     <img
-                      class="skill__icon"
+                      class="skill-icon"
                       [src]="skillIcon(skill.key)"
                       [attr.data-skill]="skill.key"
                       alt=""
                       width="32"
                       height="32"
                     />
-                    <span class="skill__value" aria-hidden="true">
+                    <span class="skill-value" aria-hidden="true">
                       {{ skill.expBonus === 0 ? '—' : signed(skill.expBonus) }}
                     </span>
-                    <span class="skill__tip" aria-hidden="true">{{ skill.label }}</span>
+                    <span class="skill-tip" aria-hidden="true">{{ skill.label }}</span>
                   </button>
                 </li>
               }
@@ -204,7 +204,7 @@
 
         <div class="ability-groups">
           <div class="ability-group">
-            <h3 class="ability-group__title">
+            <h3 class="ability-group-title">
               Class abilities
             </h3>
             <ng-container
@@ -214,7 +214,7 @@
           </div>
 
           <div class="ability-group">
-            <h3 class="ability-group__title">
+            <h3 class="ability-group-title">
               Master abilities
             </h3>
             <ng-container
@@ -233,7 +233,7 @@
       <a class="back" [routerLink]="['/classes', previous.id]" title="Previous class (←)">&lsaquo; {{ previous.name }}</a>
     }
     @if (neighbours.next; as next) {
-      <a class="back class-steps__next" [routerLink]="['/classes', next.id]" title="Next class (→)">{{ next.name }} &rsaquo;</a>
+      <a class="back class-steps-next" [routerLink]="['/classes', next.id]" title="Next class (→)">{{ next.name }} &rsaquo;</a>
     }
   </nav>
 } @else {
@@ -253,14 +253,14 @@
           <span class="icon-slot icon-slot--ability" [attr.data-ability-id]="ability.id" aria-hidden="true">
             {{ ability.isCombatArt ? '✦' : initials(ability.name) }}
           </span>
-          <div class="ability__body">
-            <div class="ability__head">
-              <span class="ability__name">{{ ability.name }}</span>
+          <div class="ability-body">
+            <div class="ability-head">
+              <span class="ability-name">{{ ability.name }}</span>
               @if (ability.isCombatArt) {
                 <span class="tag tag--art">Combat art</span>
               }
             </div>
-            <p class="ability__description">{{ ability.description }}</p>
+            <p class="ability-description">{{ ability.description }}</p>
           </div>
         </li>
       }

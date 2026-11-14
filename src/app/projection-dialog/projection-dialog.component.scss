@@ -20,8 +20,8 @@
   }
 }
 
-.plan__select,
-.results__level-input {
+.plan-select,
+.results-level-input {
   min-width: 0;
   background: #142c30;
   border: 1px solid var(--panel-border);
@@ -41,7 +41,7 @@
   margin-top: 1rem;
 }
 
-.results__level {
+.results-level {
   display: grid;
   grid-template-columns: auto 1fr 4.5rem;
   align-items: center;
@@ -52,18 +52,18 @@
   }
 }
 
-.results__level-input {
+.results-level-input {
   text-align: center;
 }
 
-.results__summary {
+.results-summary {
   margin: 0.75rem 0 0;
   font-size: 0.85rem;
   opacity: 0.8;
 }
 
 // HP alone on top, then Str–Dex down the left and Def–Cha down the right.
-.results__stats {
+.results-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.4rem;
@@ -72,7 +72,7 @@
   list-style: none;
 }
 
-.results__stat {
+.results-stat {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -101,14 +101,14 @@
   }
 }
 
-.results__label {
+.results-label {
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   opacity: 0.75;
 }
 
-.results__value {
+.results-value {
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--accent);
@@ -116,10 +116,10 @@
 }
 
 @media (max-width: 640px) {
-  .results__level {
+  .results-level {
     grid-template-columns: 1fr 4.5rem;
 
-    .field__label {
+    .field-label {
       grid-column: 1 / -1;
     }
   }

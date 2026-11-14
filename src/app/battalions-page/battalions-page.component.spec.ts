@@ -13,7 +13,7 @@ describe('BattalionsPageComponent', () => {
   let spoilers: SpoilerService;
 
   const groups = () =>
-    Array.from(host.querySelectorAll('.group__label')).map((label) => label.textContent!.replace(/\s+/g, ' ').trim());
+    Array.from(host.querySelectorAll('.group-label')).map((label) => label.textContent!.replace(/\s+/g, ' ').trim());
   const expectedGroups = (shown: readonly Battalion[]) =>
     BATTALION_TYPE_ORDER.map((type) => [type, shown.filter((battalion) => battalion.type === type).length] as const)
       .filter(([, count]) => count > 0)
@@ -75,7 +75,7 @@ describe('BattalionsPageComponent', () => {
   });
 
   it('puts the stat sort to the right of the switch, with arrows once a stat is picked', () => {
-    const controls = () => host.querySelector('.browse-header__controls')!;
+    const controls = () => host.querySelector('.browse-header-controls')!;
     expect(controls().querySelector('app-stat-sort')).toBeNull();
 
     controls().querySelectorAll<HTMLButtonElement>('app-layout-switch button')[1].click();
@@ -85,9 +85,9 @@ describe('BattalionsPageComponent', () => {
       'app-layout-switch',
       'app-stat-sort',
     ]);
-    expect(controls().querySelector('.stat-sort__arrows')).toBeNull();
+    expect(controls().querySelector('.stat-sort-arrows')).toBeNull();
 
-    const select = controls().querySelector<HTMLSelectElement>('.stat-sort__select')!;
+    const select = controls().querySelector<HTMLSelectElement>('.stat-sort-select')!;
     expect(Array.from(select.options).map((option) => option.text)).not.toContain('HP');
     select.value = 'str';
     select.dispatchEvent(new Event('change'));
@@ -99,7 +99,7 @@ describe('BattalionsPageComponent', () => {
     });
     const firstGroup = strengths.filter((battalion) => battalion.type === strengths[0].type).map((b) => b.str);
     expect(firstGroup).toEqual([...firstGroup].sort((a, b) => b - a));
-    expect(controls().querySelectorAll('.stat-sort__arrow').length).toBe(2);
+    expect(controls().querySelectorAll('.stat-sort-arrow').length).toBe(2);
   });
 
   it('sorts each group by skill name from the Skill column', () => {
@@ -112,7 +112,7 @@ describe('BattalionsPageComponent', () => {
     const physicalCount = battalions.filter((battalion) => battalion.type === 'Physical').length;
     const skills = rows()
       .slice(0, physicalCount)
-      .map((row) => row.querySelector('.detail__title')!.textContent!.trim());
+      .map((row) => row.querySelector('.detail-title')!.textContent!.trim());
     expect(skills).toEqual([...skills].sort((a, b) => a.localeCompare(b)));
   });
 });

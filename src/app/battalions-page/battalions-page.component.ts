@@ -13,11 +13,11 @@ import { StatSortComponent, StatSortDirection } from '../stat-sort/stat-sort.com
   imports: [GrowthListComponent, HelpDialogComponent, LayoutSwitchComponent, StatSortComponent],
   template: `
     <header class="browse-header">
-      <div class="browse-header__title">
+      <div class="browse-header-title">
         <h1>Battalions</h1>
         <app-help-dialog heading="Battalions" [paragraphs]="helpText" />
       </div>
-      <div class="browse-header__controls">
+      <div class="browse-header-controls">
         <app-layout-switch [(layout)]="layout" />
         @if (layout() === 'bonus') {
           <app-stat-sort [stats]="statKeys" [(stat)]="sortStat" [(direction)]="sortDirection" />
@@ -45,13 +45,12 @@ export class BattalionsPageComponent {
   private readonly spoilers = inject(SpoilerService);
 
   readonly layout = signal<ListLayout>('table');
-  // Battalions never give HP.
   readonly statKeys = STAT_KEYS.filter((stat) => stat !== 'hp');
   readonly sortStat = signal<BonusStatKey | null>(null);
   readonly sortDirection = signal<StatSortDirection>('desc');
 
   readonly helpText = [
-    'Each battalion gives flat stat bonuses to its leader and unlocks a skill.',
+    'Each battalion gives flat stat bonuses to the unit it is assigned to and unlocks a skill that can be used in battle.',
     'Battalions are grouped by type; rank and skill details are shown in the table.',
   ];
 

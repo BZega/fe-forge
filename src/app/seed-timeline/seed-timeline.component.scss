@@ -12,7 +12,7 @@
   border-radius: 10px;
 }
 
-.timeline__bar {
+.timeline-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -20,7 +20,7 @@
   gap: 0.75rem;
 }
 
-.timeline__picker {
+.timeline-picker {
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -28,14 +28,14 @@
   min-width: 0;
 }
 
-.timeline__picker-label {
+.timeline-picker-label {
   font-size: 0.72rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   opacity: 0.75;
 }
 
-.timeline__select {
+.timeline-select {
   flex: 1;
   min-width: 0;
   background: #142c30;
@@ -51,8 +51,8 @@
   }
 }
 
-.timeline__actions,
-.timeline__footer {
+.timeline-actions,
+.timeline-footer {
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -64,11 +64,11 @@
   gap: 0.2rem;
 }
 
-.tgrid__corner {
+.tgrid-corner {
   background: transparent;
 }
 
-.tgrid__head {
+.tgrid-head {
   display: grid;
   place-items: center;
   background: #1b3639;
@@ -81,7 +81,7 @@
   padding: 0.25rem 0;
 }
 
-.tgrid__label {
+.tgrid-label {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -89,12 +89,12 @@
   font-size: 0.72rem;
 }
 
-.tgrid__level {
+.tgrid-level {
   font-weight: 700;
   text-transform: uppercase;
 }
 
-.tgrid__class {
+.tgrid-class {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -102,14 +102,14 @@
   opacity: 0.6;
 }
 
-.tgrid__fork,
-.tgrid__branch,
-.tgrid__note,
-.tgrid__caption {
+.tgrid-fork,
+.tgrid-branch,
+.tgrid-note,
+.tgrid-caption {
   grid-column: 1 / -1;
 }
 
-.tgrid__fork {
+.tgrid-fork {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -121,7 +121,7 @@
   border-radius: 0 6px 6px 0;
 }
 
-.tgrid__fork-level {
+.tgrid-fork-level {
   margin-right: 0.25rem;
   font-size: 0.7rem;
   font-weight: 700;
@@ -152,7 +152,7 @@
   font-weight: 600;
 }
 
-.tgrid__branch {
+.tgrid-branch {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
@@ -163,18 +163,18 @@
   background: #1b3639;
 }
 
-.tgrid__branch-label {
+.tgrid-branch-label {
   font-size: 0.8rem;
   font-weight: 700;
 }
 
-.tgrid__branch-detail,
-.tgrid__note {
+.tgrid-branch-detail,
+.tgrid-note {
   font-size: 0.7rem;
   opacity: 0.65;
 }
 
-.tgrid__note {
+.tgrid-note {
   padding-left: 6.7rem;
   margin-top: -0.1rem;
 }
@@ -213,7 +213,7 @@
   opacity: 0.55;
 }
 
-.tgrid__add {
+.tgrid-add {
   background: transparent;
   border: 1px dashed var(--panel-border);
   border-radius: 4px;
@@ -228,7 +228,7 @@
   }
 }
 
-.tgrid__caption {
+.tgrid-caption {
   margin-top: 0.5rem;
   font-size: 0.7rem;
   font-weight: 700;
@@ -237,7 +237,7 @@
   opacity: 0.75;
 }
 
-.tgrid__growth {
+.tgrid-growth {
   display: grid;
   place-items: center;
   background: #1f5fa9;
@@ -252,7 +252,7 @@
   }
 }
 
-.tgrid__total {
+.tgrid-total {
   display: grid;
   place-items: center;
   background: #1b3639;
@@ -297,11 +297,11 @@
     gap: 0.12rem;
   }
 
-  .tgrid__class {
+  .tgrid-class {
     display: none;
   }
 
-  .tgrid__note {
+  .tgrid-note {
     padding-left: 3.8rem;
   }
 
@@ -310,7 +310,7 @@
     padding: 0.3rem 0;
   }
 
-  .tgrid__growth {
+  .tgrid-growth {
     font-size: 0.6rem;
   }
 }

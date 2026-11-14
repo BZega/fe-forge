@@ -53,6 +53,7 @@ const SALVATION_CLASS_RANKS: ReadonlySet<string> = new Set(['Master', 'Divine'])
 export class SpoilerService {
   readonly hiddenTiers = signal<HiddenTiers>(read());
   readonly hidden = computed(() => Object.values(this.hiddenTiers()).some(Boolean));
+  readonly allHidden = computed(() => Object.values(this.hiddenTiers()).every(Boolean));
 
   constructor() {
     effect(() => {
@@ -74,6 +75,10 @@ export class SpoilerService {
 
   setAllHidden(hidden: boolean): void {
     this.hiddenTiers.set(allTiers(hidden));
+  }
+
+  toggleAll(): void {
+    this.setAllHidden(!this.allHidden());
   }
 
   toggle(tier: SpoilerTier): void {
