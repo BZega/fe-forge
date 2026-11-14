@@ -201,7 +201,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 2.4rem 5.6rem 4.4rem minmax(5rem, 1fr) 4.2rem;
+  grid-template-columns: 2.4rem 5.6rem max-content minmax(5rem, 1fr) 4.2rem;
   align-items: center;
   gap: 0.25rem 0.6rem;
   padding: 0.35rem 0.5rem;
@@ -229,7 +229,16 @@
   }
 }
 
+.row-details {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
 .row-range {
+  min-width: 0;
   font-size: 0.85rem;
   white-space: nowrap;
 
@@ -238,6 +247,13 @@
     font-size: 0.7rem;
     opacity: 0.6;
   }
+}
+
+.row-growth {
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .row-bar {
@@ -412,9 +428,8 @@
     padding: 0.75rem;
   }
 
-  // One compact row per stat: label, average over its middle range, the bar, then the actual box.
   .row {
-    grid-template-columns: 2rem 4.6rem minmax(0, 1fr) 3.2rem;
+    grid-template-columns: 2rem max-content minmax(0, 1fr) 3.2rem;
     gap: 0 0.5rem;
     padding: 0.3rem 0.4rem;
   }
@@ -435,15 +450,25 @@
   }
 
   .row-range {
-    grid-column: 2;
-    grid-row: 2;
     font-size: 0.72rem;
     opacity: 0.8;
+    white-space: normal;
+    overflow-wrap: anywhere;
 
     small {
       display: inline;
       margin-left: 0.2rem;
     }
+  }
+
+  .row-growth {
+    font-size: 0.72rem;
+  }
+
+  .row-details {
+    grid-column: 2;
+    grid-row: 2;
+    gap: 0.35rem;
   }
 
   .row-bar {
@@ -457,8 +482,8 @@
     grid-row: 1 / 3;
 
     input {
-      padding: 0.3rem 0.1rem;
-      font-size: 0.85rem;
+      padding: 0.3rem 0.05rem;
+      font-size: 0.75rem;
     }
   }
 

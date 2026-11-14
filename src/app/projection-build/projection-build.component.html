@@ -25,7 +25,10 @@
           <li class="row">
             <span class="row-label">{{ statLabels[stat] }}</span>
             <span class="row-mean">—</span>
-            <span class="row-range">—</span>
+            <span class="row-details">
+              <span class="row-range">—</span>
+              <span class="row-growth">—</span>
+            </span>
             <span class="row-bar"></span>
             <span class="row-actual"><input type="number" placeholder="Actual" disabled /></span>
           </li>
@@ -94,11 +97,20 @@
             <span class="row-mean" [title]="'Standard deviation ' + fixed(row.summary.sd)">
               {{ fixed(row.summary.mean) }} <small>± {{ fixed(row.summary.sd, 1) }}</small>
             </span>
-            <span class="row-range">
-              {{ row.summary.p25 }}–{{ row.summary.p75 }}
-              @if (options().wideRange) {
-                <small>({{ row.summary.p10 }}–{{ row.summary.p90 }})</small>
-              }
+            <span class="row-details">
+              <span class="row-range">
+                {{ row.summary.p25 }}–{{ row.summary.p75 }}
+                @if (options().wideRange) {
+                  <small>({{ row.summary.p10 }}–{{ row.summary.p90 }})</small>
+                }
+              </span>
+              <span
+                class="row-growth"
+                [title]="'Growth rate at Lv ' + level()"
+                [attr.aria-label]="row.label + ' growth rate at Lv ' + level() + ': ' + (row.growthRate === null ? 'unavailable' : row.growthRate + '%')"
+              >
+                {{ row.growthRate === null ? '—' : row.growthRate + '%' }}
+              </span>
             </span>
             <span
               class="row-bar"

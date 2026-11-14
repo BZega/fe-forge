@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { PlanStep } from '../class-plan/class-plan.component';
 import unitClassData from '../data/unit-classes.json';
-import { GrowthRates, STAT_KEYS, Unit, UnitClass } from '../models/growth.models';
+import { baseStatsOf, GrowthRates, STAT_KEYS, Unit, UnitClass } from '../models/growth.models';
 import { levelUpGrowth, projectStats } from '../models/recruitment.models';
 import { ProjectionOptions, ProjectionStart } from '../projection-start-dialog/projection-start-dialog.component';
 import { GrowthDataService } from '../services/growth-data.service';
@@ -99,6 +99,30 @@ describe('ProjectionBuildComponent', () => {
 
     // Noble/Commoner has no class bonus, so the same numbers project the same way.
     fromManual.forEach((mean, index) => expect(mean).toBeCloseTo(fromChapter[index], 10));
+  });
+
+  it('applies the starting class floor and bonus to manual Lv 1 base stats', () => {
+    const start = {
+      ...manualStart('Lysander', 1, baseStatsOf('Lysander')!),
+      baseStats: true,
+      steps: [{ fromLevel: 1, unitClass: byName('Ornius Rider'), mount: null, bondLevel: null }],
+      options: { ...options, level: 1 },
+    };
+    const { build } = open(start);
+    const speed = build.rows().find((row) => row.stat === 'spd')!;
+
+    expect(speed.summary.mean).toBe(11);
+  });
+
+  it('shows the active class growth rate at the selected level', () => {
+    const start = chapterStart('Cai');
+    const activeClass = byName('The Eternal');
+    const { build, host } = open({ ...start, steps: stepsFrom(start.level, [20, activeClass.name]) }, { level: 21 });
+    const strength = build.rows().find((row) => row.stat === 'str')!;
+    const expected = levelUpGrowth(start.unit, activeClass, 21, null, null).str;
+
+    expect(strength.growthRate).toBe(expected);
+    expect(host.querySelector('.row-growth')!.textContent!.trim()).toBe(`${expected}%`);
   });
 
   it('raises the averages when the guaranteed minimum is on', () => {

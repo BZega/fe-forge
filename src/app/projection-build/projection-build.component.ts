@@ -19,6 +19,7 @@ export interface StatRow {
   label: string;
   distribution: StatDistribution;
   summary: DistributionSummary;
+  growthRate: number | null;
   actual: number | null;
   rank: Ranking | null;
   verdict: string | null;
@@ -112,6 +113,14 @@ export class ProjectionBuildComponent {
       return start.stats;
     }
 
+    if (start.baseStats) {
+      const startingClass = stepAtLevel(this.steps(), start.level)?.unitClass;
+
+      return Object.fromEntries(
+        this.statKeys.map((stat) => [stat, Math.max(start.stats[stat], startingClass?.classFloorStats[stat] ?? 0)]),
+      ) as GrowthRates;
+    }
+
     const bonuses = this.bonusesAt(start.level);
 
     return Object.fromEntries(this.statKeys.map((stat) => [stat, start.stats[stat] - bonuses[stat]])) as GrowthRates;
@@ -169,6 +178,12 @@ export class ProjectionBuildComponent {
       return [];
     }
 
+    const start = this.start();
+    const step = start ? stepAtLevel(this.steps(), this.level()) : null;
+    const growth = start && step
+      ? levelUpGrowth(start.unit, step.unitClass, this.level(), step.mount, step.bondLevel)
+      : null;
+
     return this.statKeys.map((stat) => {
       const distribution = totals[stat];
       const summary = summarize(distribution);
@@ -183,6 +198,7 @@ export class ProjectionBuildComponent {
         label: this.statLabels[stat],
         distribution,
         summary,
+        growthRate: growth?.[stat] ?? null,
         actual,
         rank,
         ...assess(rank),
