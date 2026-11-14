@@ -143,6 +143,7 @@
     "The Cavalier": "https://eoddb.com/fefw/img/classes/cavalier.webp?v=3",
     "The Avatar": "https://eoddb.com/fefw/img/classes/avatar.webp?v=3"
   },
+  "abilityIcons": {},
   "skills": {
     "sword": {
       "neutral": "https://static.wikia.nocookie.net/fireemblem/images/c/ce/FE18_Sword_Level_icon.png/revision/latest",

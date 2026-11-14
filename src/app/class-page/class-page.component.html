@@ -257,7 +257,11 @@
       @for (ability of abilities; track ability.id) {
         <li class="ability" [class.ability--art]="ability.isCombatArt">
           <span class="icon-slot icon-slot--ability" [attr.data-ability-id]="ability.id" aria-hidden="true">
-            {{ ability.isCombatArt ? '✦' : initials(ability.name) }}
+            @if (abilityIcon(ability); as src) {
+              <img class="ability-icon" [src]="src" alt="" referrerpolicy="no-referrer" (error)="abilityIconFailed(ability.id)" />
+            } @else {
+              {{ ability.isCombatArt ? '✦' : initials(ability.name) }}
+            }
           </span>
           <div class="ability-body">
             <div class="ability-head">

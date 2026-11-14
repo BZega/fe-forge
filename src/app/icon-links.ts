@@ -5,6 +5,8 @@ import { SkillKey, SkillPreference } from './models/growth.models';
 const LINKS = data as unknown as {
   characters: Record<string, string>;
   classSprites: Record<string, string | null>;
+  // Keyed by ability name; filled in by tools/find-class-icons.js --write.
+  abilityIcons: Record<string, string | null>;
   skills: Record<SkillKey, Record<SkillPreference, string | null>>;
 };
 
@@ -14,6 +16,10 @@ export function portraitUrl(name: string): string | null {
 
 export function classSpriteUrl(name: string): string | null {
   return LINKS.classSprites[name] ?? null;
+}
+
+export function abilityIconUrl(name: string): string | null {
+  return LINKS.abilityIcons[name] ?? null;
 }
 
 export function skillIconUrl(skill: SkillKey, preference: SkillPreference = 'neutral'): string | null {

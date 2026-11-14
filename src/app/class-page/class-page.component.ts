@@ -3,7 +3,7 @@ import { afterNextRender, ChangeDetectionStrategy, Component, computed, ElementR
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
-import { classSpriteUrl, skillIconUrl, useFallbackIcon } from '../icon-links';
+import { abilityIconUrl, classSpriteUrl, skillIconUrl, useFallbackIcon } from '../icon-links';
 import { BONUS_STAT_KEYS, BONUS_STAT_LABELS, CLASS_RANK_ORDER, ClassAbility, SKILL_KEYS, SKILL_LABELS, SkillKey, STAT_KEYS, STAT_LABELS, UnitClass } from '../models/growth.models';
 import { GrowthDataService } from '../services/growth-data.service';
 import { SpoilerService } from '../services/spoiler.service';
@@ -78,6 +78,17 @@ export class ClassPageComponent {
   });
 
   readonly useFallbackIcon = useFallbackIcon;
+
+  // Ability icons that failed to load fall back to the text glyph.
+  readonly failedAbilityIcons = signal<ReadonlySet<number>>(new Set());
+
+  abilityIcon(ability: ClassAbility): string | null {
+    return this.failedAbilityIcons().has(ability.id) ? null : abilityIconUrl(ability.name);
+  }
+
+  abilityIconFailed(id: number): void {
+    this.failedAbilityIcons.update((ids) => new Set(ids).add(id));
+  }
 
   readonly usableSkills = computed(() => {
     const unitClass = this.unitClass();
