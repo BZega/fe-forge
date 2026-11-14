@@ -66,13 +66,11 @@ export interface RouteRequirement {
 export interface InventoryEntry {
   name: string;
   description: string;
-  /** Column label to value; an empty string means the stat doesn't apply. */
   values: Readonly<Record<string, string>>;
 }
 
 export interface InventoryGroup {
   label: string;
-  /** Only the columns at least one entry has a value for. */
   columns: readonly string[];
   entries: readonly InventoryEntry[];
 }
@@ -82,7 +80,6 @@ export interface RecruitmentChapter {
   level: number;
   className: string;
   skillRanks: Readonly<Partial<Record<SkillKey, string>>>;
-  /** Stats as listed in the file; Mov and Bld are worked out separately. */
   stats: GrowthRates;
   inventory: readonly InventoryGroup[];
   equippedAbilities: readonly Ability[];
@@ -112,7 +109,6 @@ export function buildFromStrength(strength: number): number {
   return Math.max(1, Math.floor(strength / 5));
 }
 
-/** Units who always ride their own mount, at this bond level, when their class has that mount type. */
 export const SIGNATURE_MOUNTS: Readonly<Record<string, { mount: string; bondLevel: number }>> = {
   Alexandra: { mount: 'Bucephalus', bondLevel: 3 },
   Io: { mount: 'Rocinan', bondLevel: 3 },
@@ -120,7 +116,6 @@ export const SIGNATURE_MOUNTS: Readonly<Record<string, { mount: string; bondLeve
 
 export interface ChapterGrowth {
   growth: GrowthRates;
-  /** The signature mount counted in, if any. */
   mount: { name: string; bondLevel: number } | null;
 }
 

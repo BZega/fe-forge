@@ -21,7 +21,6 @@ import statBoostAbilityData from '../data/stat-boost-abilities.json';
 
 @Injectable({ providedIn: 'root' })
 export class GrowthDataService {
-  // Preferences live in their own file, keyed by name, so refresh-data.js can't overwrite them.
   private readonly units: Unit[] = (unitData as Omit<Unit, 'skillPreference'>[])
     .map((unit) => ({
       ...unit,

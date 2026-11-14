@@ -1,7 +1,5 @@
 :host {
-  // Tallest the option list gets; app.component reads it to place the list before it opens.
   --dropdown-height: 16rem;
-  // Shortest the list gets, however little room is left.
   --dropdown-min-height: 8rem;
   position: relative;
   display: block;

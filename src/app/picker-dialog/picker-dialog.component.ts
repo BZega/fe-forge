@@ -4,11 +4,8 @@ export interface PickerItem {
   id: string;
   name: string;
   description?: string;
-  /** Always selected and can't be unticked. */
   fixed?: boolean;
-  /** Items sharing a family replace each other instead of being picked together. */
   family?: string;
-  /** Why the item can't be picked right now; shown in place of a checkbox action. */
   locked?: string;
 }
 
@@ -25,6 +22,7 @@ export interface PickerGroup {
 })
 export class PickerDialogComponent implements OnInit {
   readonly title = input.required<string>();
+  readonly eyebrow = input('Growth Mapper');
   readonly context = input('');
   readonly groups = input<readonly PickerGroup[]>([]);
   readonly selected = input<readonly string[]>([]);
@@ -64,7 +62,6 @@ export class PickerDialogComponent implements OnInit {
     return this.picked().includes(item.id);
   }
 
-  // A family member can always be swapped in, even when every slot is used.
   isDisabled(item: PickerItem): boolean {
     if (item.fixed || (item.locked && !this.isPicked(item))) {
       return true;

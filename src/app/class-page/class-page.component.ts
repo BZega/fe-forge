@@ -4,7 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { abilityIconUrl, classSpriteUrl, skillIconUrl, useFallbackIcon } from '../icon-links';
-import { BONUS_STAT_KEYS, BONUS_STAT_LABELS, CLASS_RANK_ORDER, ClassAbility, SKILL_KEYS, SKILL_LABELS, SkillKey, STAT_KEYS, STAT_LABELS, UnitClass } from '../models/growth.models';
+import { BONUS_STAT_KEYS, BONUS_STAT_LABELS, CLASS_RANK_ORDER, ClassAbility, ORIGIN_CLASS, SKILL_KEYS, SKILL_LABELS, SkillKey, STAT_KEYS, STAT_LABELS, UnitClass } from '../models/growth.models';
 import { GrowthDataService } from '../services/growth-data.service';
 import { SpoilerService } from '../services/spoiler.service';
 
@@ -68,18 +68,16 @@ export class ClassPageComponent {
     return unitClass ? this.api.mountTypeOfClass(unitClass.name) : 'None';
   });
 
-  // Resets when switching classes, so one broken link doesn't hide the next class's sprite.
-  readonly spriteFailed = linkedSignal({ source: () => this.unitClass()?.name, computation: () => false });
+  readonly spriteFailed = linkedSignal({ source: () => this.headerName(), computation: () => false });
 
   readonly sprite = computed(() => {
-    const name = this.unitClass()?.name;
+    const name = this.headerName();
 
     return name && !this.spriteFailed() ? classSpriteUrl(name) : null;
   });
 
   readonly useFallbackIcon = useFallbackIcon;
 
-  // Ability icons that failed to load fall back to the text glyph.
   readonly failedAbilityIcons = signal<ReadonlySet<number>>(new Set());
 
   abilityIcon(ability: ClassAbility): string | null {
@@ -111,6 +109,32 @@ export class ClassPageComponent {
       .filter(Boolean),
   );
 
+  readonly variants = computed(() => {
+    if (this.unitClass()?.name !== ORIGIN_CLASS) {
+      return [];
+    }
+
+    const [noble = '', commoner = ''] = this.descriptionLines();
+
+    return [
+      { name: 'Noble', description: noble },
+      { name: 'Commoner', description: commoner },
+      { name: 'God', description: 'WIP' },
+    ];
+  });
+
+  readonly variantIndex = linkedSignal({ source: () => this.unitClass()?.id, computation: () => 0 });
+
+  readonly variant = computed(() => this.variants()[this.variantIndex()] ?? null);
+
+  readonly headerName = computed(() => this.variant()?.name ?? this.unitClass()?.name ?? null);
+
+  readonly headerLines = computed(() => {
+    const variant = this.variant();
+
+    return variant ? [variant.description] : this.descriptionLines();
+  });
+
   readonly classAbilities = computed(() =>
     this.lookUp(this.unitClass()?.classAbilities ?? []),
   );
@@ -119,7 +143,6 @@ export class ClassPageComponent {
     this.lookUp(this.unitClass()?.masterAbilities ?? []),
   );
 
-  /** Ids that are missing from the abilities data are skipped rather than shown blank. */
   private lookUp(ids: readonly number[]): ClassAbility[] {
     const byId = new Map(this.abilities().map((ability) => [ability.id, ability]));
 
@@ -178,17 +201,14 @@ export class ClassPageComponent {
     })).filter((group) => group.classes.length > 0);
   });
 
-  // Same order as the switcher: by tier, then as listed in the data.
   private readonly orderedClasses = computed(() =>
     CLASS_RANK_ORDER.flatMap((rank) =>
       this.spoilers.filter(this.classes()).filter((unitClass) => unitClass.rank === rank),
     ),
   );
 
-  /** The open switcher's highlighted option; Enter opens it. */
   readonly highlightId = signal<number | null>(null);
 
-  // No wrapping here: the first and last classes just have one link.
   readonly adjacentClasses = computed(() => {
     const list = this.orderedClasses();
     const index = list.findIndex((unitClass) => unitClass.id === this.classId());
@@ -202,7 +222,6 @@ export class ClassPageComponent {
   @HostListener('document:keydown', ['$event'])
   onArrowKey(event: KeyboardEvent): void {
     const target = event.target as HTMLElement | null;
-    // Arrow keys already mean something in fields and on the stat tabs.
     const busy = target?.closest('input, textarea, select, [contenteditable="true"], [role="tab"]');
 
     if (busy || event.defaultPrevented || this.switcherOpen() || event.altKey || event.ctrlKey || event.metaKey) {
@@ -256,7 +275,6 @@ export class ClassPageComponent {
     );
   }
 
-  // With the switcher closed, ↑/↓ on the class name step straight to the previous/next class.
   onToggleKey(event: KeyboardEvent): void {
     if (this.switcherOpen() || (event.key !== 'ArrowDown' && event.key !== 'ArrowUp')) {
       return;
@@ -274,7 +292,6 @@ export class ClassPageComponent {
     this.router.navigate(['/classes', list[(index + step + list.length) % list.length].id]);
   }
 
-  /** Opens a class from the switcher and puts focus back on the class name, ready for ↑/↓. */
   goTo(classId: number): void {
     this.closeSwitcher();
     this.router.navigate(['/classes', classId]);

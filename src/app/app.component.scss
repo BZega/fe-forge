@@ -20,7 +20,6 @@ main {
     height: 0;
   }
 
-  // Room to scroll fields at the bottom of the page above the on-screen keyboard.
   &::after {
     content: '';
     flex: none;
@@ -40,7 +39,6 @@ main {
   z-index: 20;
 }
 
-// Sits under the nav (z-index 20) and over the page while the mobile menu is open.
 .topnav-backdrop {
   position: fixed;
   inset: 0;
@@ -323,7 +321,6 @@ main {
     display: inline;
   }
 
-  // Expands inline inside the mobile menu instead of floating.
   .resource-menu-trigger {
     width: 100%;
     padding: 0.65rem 0.75rem;
@@ -338,7 +335,6 @@ main {
     box-shadow: none;
   }
 
-  // Drops out of flow so the bar keeps its height while the menu is open.
   .topnav-links {
     display: none;
     position: absolute;
@@ -376,7 +372,6 @@ main {
     padding: 0.5rem 0.75rem;
   }
 
-  // Expands inline inside the mobile menu instead of floating.
   .spoiler-menu-panel {
     position: static;
     min-width: 0;

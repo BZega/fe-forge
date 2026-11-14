@@ -11,11 +11,8 @@ interface TimelineLevel {
   className: string;
   marks: GrowthRates;
   auto: Record<StatKey, boolean>;
-  /** Only the focused branch's own level ups with growth rates no other branch has for that roll. */
   editable: boolean;
-  /** Why a row can't be edited here: where its marks come from. */
   source: string | null;
-  /** A reclass or exam saved inline in an older seed, shown as a note on the row. */
   note: string | null;
 }
 
@@ -53,10 +50,6 @@ interface TimelineOption {
   label: string;
 }
 
-/**
- * Branch-focused Seed Mapper view: one Lv 1–99 line at a time, built from the seed's
- * sections, with a switcher wherever exams or reclasses branch off.
- */
 @Component({
   selector: 'app-seed-timeline',
   templateUrl: './seed-timeline.component.html',
@@ -64,7 +57,6 @@ interface TimelineOption {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeedTimelineComponent {
-  /** The page owns the seed's derived data (rolls, growths, totals); the timeline only lays it out. */
   readonly mapper = input.required<SeedMapperPageComponent>();
 
   readonly statKeys = STAT_KEYS;
@@ -79,7 +71,6 @@ export class SeedTimelineComponent {
   );
 
   constructor() {
-    // A branch made from the timeline comes into focus straight away.
     effect(() => {
       const created = this.mapper().createdBranchId();
 
@@ -204,7 +195,6 @@ export class SeedTimelineComponent {
     const items: TimelineItem[] = [];
     let shownGrowth: string | null = null;
 
-    // Growth rates are shown at the start and again wherever a class change alters them.
     const pushLevel = (view: SectionView, rowIndex: number) => {
       const growth = mapper.rowGrowth(view, rowIndex);
       const growthKey = growth && this.statKeys.map((stat) => growth[stat]).join(',');

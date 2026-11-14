@@ -27,16 +27,13 @@ export class SearchableSelectComponent {
   readonly label = input('');
   readonly disabled = input(false);
   readonly clearable = input(true);
-  /** False keeps phones from opening the on-screen keyboard; the list is picked from by tapping. */
   readonly keyboard = input(true);
-  /** Group the list opens at when nothing is selected yet. */
   readonly focusGroup = input<string | null>(null);
 
   readonly valueChange = output<number | null>();
 
   readonly open = signal(false);
   readonly query = signal('');
-  /** A keyboard-less list was tapped again to search by typing; the keyboard is up, so the list stays tiny. */
   readonly typing = signal(false);
   readonly typingMinLength = TYPING_MIN_LENGTH;
 
@@ -101,20 +98,42 @@ export class SearchableSelectComponent {
       }
     });
 
-    // While open in a modal, the floating list follows its field as the modal scrolls or the window resizes.
     effect((onCleanup) => {
       if (!this.open() || !this.inDialog()) {
         return;
       }
 
-      const follow = () => this.measureRoom();
-      document.addEventListener('scroll', follow, true);
-      window.addEventListener('resize', follow);
-      onCleanup(() => {
-        document.removeEventListener('scroll', follow, true);
-        window.removeEventListener('resize', follow);
-      });
+      let frame = 0;
+      const follow = () => {
+        this.followField();
+        frame = requestAnimationFrame(follow);
+      };
+      frame = requestAnimationFrame(follow);
+      onCleanup(() => cancelAnimationFrame(frame));
     });
+  }
+
+  private panelOrigin = { x: 0, y: 0 };
+
+  private followField(): void {
+    this.measureRoom();
+
+    const host = this.host.nativeElement as HTMLElement;
+    const panel = host.querySelector<HTMLElement>('.panel');
+
+    if (!panel) {
+      return;
+    }
+
+    const field = host.getBoundingClientRect();
+    const shown = panel.getBoundingClientRect();
+    const dx = shown.left - field.left;
+    const dy = shown.top - (field.bottom + PANEL_OFFSET);
+
+    if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+      this.panelOrigin = { x: this.panelOrigin.x + dx, y: this.panelOrigin.y + dy };
+      this.measureRoom();
+    }
   }
 
   private inDialog(): boolean {
@@ -144,8 +163,6 @@ export class SearchableSelectComponent {
     }
   }
 
-  // Room below the field to the bottom of the screen, so the list doesn't run off the page. In a modal the
-  // list floats over it (fixed) at the field, so it isn't clipped by the modal's scroll area.
   private measureRoom(): void {
     const host = this.host.nativeElement as HTMLElement;
     const viewport = window.visualViewport;
@@ -157,8 +174,8 @@ export class SearchableSelectComponent {
 
     if (this.inDialog()) {
       host.setAttribute('data-floating', '');
-      host.style.setProperty('--panel-top', `${field.bottom + 4}px`);
-      host.style.setProperty('--panel-left', `${field.left}px`);
+      host.style.setProperty('--panel-top', `${field.bottom + PANEL_OFFSET - this.panelOrigin.y}px`);
+      host.style.setProperty('--panel-left', `${field.left - this.panelOrigin.x}px`);
       host.style.setProperty('--panel-width', `${field.width}px`);
     }
   }
@@ -169,7 +186,6 @@ export class SearchableSelectComponent {
 
   onFieldClick(event: MouseEvent): void {
     if (this.openBeforePress) {
-      // Tapping the text box of an already-open, keyboard-less list switches it to typing.
       if (!this.keyboard() && !this.typing() && event.target === this.searchBox()?.nativeElement) {
         this.startTyping();
 
@@ -196,7 +212,6 @@ export class SearchableSelectComponent {
     this.query.set('');
     this.activeIndex.set(0);
     element.value = '';
-    // The keyboard only appears on focus, so refocus (still within the tap) once typing is allowed.
     element.removeAttribute('inputmode');
     element.blur();
     element.focus();
@@ -291,7 +306,6 @@ export class SearchableSelectComponent {
     return -1;
   }
 
-  // Scroll only the option list; scrollIntoView would also drag the page on mobile.
   private scrollActiveIntoView(groupToTop = false): void {
     afterNextRender(
       () => {
@@ -342,9 +356,8 @@ function clamp(index: number, length: number): number {
   return Math.min(Math.max(index, 0), Math.max(length - 1, 0));
 }
 
-// The list's 0.25rem offset below the field plus a little breathing room above the screen edge.
 const LIST_GAP = 12;
+const PANEL_OFFSET = 4;
 
-// While typing with the keyboard up, results wait for a few letters and stay short enough to fit above it.
 const TYPING_MIN_LENGTH = 3;
 const TYPING_MAX_RESULTS = 2;

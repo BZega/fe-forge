@@ -296,9 +296,6 @@
   }
 }
 
-// Phones always lay the pickers out in two rows, so a calculator never changes height. Unmounted
-// classes stack Unit over Class; mounted ones put Unit | Class on row 1 and Mount | Bond Level on
-// row 2, with a class Level sharing the right half of row 2.
 .pickers-reserve {
   display: none;
 }

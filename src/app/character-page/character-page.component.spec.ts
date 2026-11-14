@@ -110,7 +110,7 @@ describe('CharacterPageComponent recruitment', () => {
     select.dispatchEvent(new Event('change'));
     fixture.detectChanges();
 
-    expect([...text('.profile-class'), pill('stats-title', 'Lv')]).toEqual(['Noble/Commoner', '23']);
+    expect([...text('.profile-class'), pill('stats-title', 'Lv')]).toEqual(['Commoner', '23']);
   });
 
   it('switches to the chosen route, starting at its first chapter', () => {

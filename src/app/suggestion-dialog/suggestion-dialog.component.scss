@@ -28,7 +28,6 @@
   opacity: 0.55;
 }
 
-// Off-screen rather than display: none, which some bots skip.
 .suggestion-trap {
   position: absolute;
   left: -9999px;

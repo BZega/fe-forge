@@ -7,15 +7,12 @@ export interface GrowthListRow {
   name: string;
   growth: Partial<Record<BonusStatKey, number>>;
   total: number;
-  /** Shown in an extra column after the name when the list has a tagHeader. */
   tag?: GrowthListTag;
-  /** Shown in an extra column after Total when the list has a detailHeader. */
   detail?: GrowthListDetail;
 }
 
 export interface GrowthListTag {
   label: string;
-  /** Sort position; higher sorts first. */
   order: number;
 }
 
@@ -55,14 +52,10 @@ export class GrowthListComponent {
   readonly valueSuffix = input('%');
   readonly zeroDisplay = input('0');
   readonly tagHeader = input<string | null>(null);
-  /** Shown after Total on wider screens; phones leave it out to keep the stats readable. */
   readonly detailHeader = input<string | null>(null);
-  /** Stats that never apply to this list's rows (e.g. HP for battalions), left out of the table. */
   readonly statKeys = input<readonly BonusStatKey[]>(STAT_KEYS);
   readonly omitStats = input<readonly BonusStatKey[]>([]);
-  /** Lists each row's non-zero bonuses in one Stat Bonus column instead of a column per stat. */
   readonly bonusLayout = input(false);
-  /** Stat-list sort, chosen in the page header. */
   readonly bonusSortStat = input<BonusStatKey | null>(null);
   readonly bonusSortDirection = input<SortDirection>('desc');
 
@@ -78,7 +71,6 @@ export class GrowthListComponent {
     return this.bonusLayout() && stat !== null && this.visibleStats().includes(stat) ? stat : null;
   });
 
-  // Name, the stats and Total (or the one Stat Bonus column), plus whichever optional columns are shown.
   readonly columnCount = computed(
     () =>
       (this.bonusLayout() ? 2 : this.visibleStats().length + 2) +

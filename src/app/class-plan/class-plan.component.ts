@@ -21,10 +21,8 @@ export function classUnlockLevel(unitClass: UnitClass): number {
   return ANY_LEVEL_CLASS_NAMES.has(unitClass.name) ? 1 : RANK_UNLOCK_LEVELS[unitClass.rank];
 }
 
-// Levels players usually reclass at; ranks become available earlier (RANK_UNLOCK_LEVELS).
 const USUAL_RECLASS_LEVELS: readonly number[] = [5, 20, 35, 45];
 
-// The rank a class list opens at for a level, highest first; falls back down when a rank has no classes.
 const SNAP_RANKS: readonly { rank: ClassRank; from: number }[] = [
   { rank: 'Master', from: 45 },
   { rank: 'Advanced', from: 35 },
@@ -32,7 +30,6 @@ const SNAP_RANKS: readonly { rank: ClassRank; from: number }[] = [
   { rank: 'Beginner', from: 1 },
 ];
 
-/** The rank group a class list opens at for a level, among the groups (labelled by rank) on offer. */
 export function snapRank(level: number, groups: readonly { label: string }[]): ClassRank | null {
   return SNAP_RANKS.find(({ rank, from }) => level >= from && groups.some((group) => group.label === rank))?.rank ?? null;
 }
@@ -45,7 +42,6 @@ export interface PlanEntry {
   fromLevel: number;
   mountId: number | null;
   bondLevel: number | null;
-  /** Later switches of mount or bond level while staying in this class. */
   mountChanges?: readonly MountChange[];
 }
 
@@ -56,7 +52,6 @@ export interface MountChange {
   bondLevel: number | null;
 }
 
-/** A class the unit levels in from `fromLevel` on, with the mount it rides. */
 export interface PlanStep {
   fromLevel: number;
   unitClass: UnitClass;
@@ -64,10 +59,6 @@ export interface PlanStep {
   bondLevel: number | null;
 }
 
-/**
- * The starting class and reclasses of a stat projection: each reclass has its own level, classes are
- * gated by rank unlock levels, and mounted classes pick a mount and bond level.
- */
 @Component({
   selector: 'app-class-plan',
   imports: [SearchableSelectComponent],
@@ -79,12 +70,9 @@ export class ClassPlanComponent implements OnInit {
   private readonly api = inject(GrowthDataService);
   private readonly spoilers = inject(SpoilerService);
 
-  // Not required: a parent may read `steps` (through viewChild) before the bindings first land.
   readonly unit = input<Unit | null>(null);
   readonly startLevel = input(1);
-  /** The class the unit is in at the start; Noble/Commoner when unknown. */
   readonly joiningClassName = input<string | null>(null);
-  /** A plan to edit again (e.g. reopening a build); a fresh one otherwise. */
   readonly initialPlan = input<readonly PlanEntry[] | null>(null);
 
   private readonly classes = toSignal(this.api.getClasses(), { initialValue: [] as UnitClass[] });
@@ -112,7 +100,6 @@ export class ClassPlanComponent implements OnInit {
     return first ? { ...first, classId: this.startClassId() } : null;
   });
 
-  // Each reclass sits after the one before it, even when a later start raises the starting level.
   readonly rowLevels = computed(() => {
     let previous = this.startLevel();
 
@@ -219,7 +206,6 @@ export class ClassPlanComponent implements OnInit {
     this.patch(id, { classId: value === '' ? null : Number(value), mountId: null, bondLevel: null, mountChanges: [] });
   }
 
-  // The bond level carries over; a mount without that level (or none, like plain Ornius) falls back on its own.
   setMount(id: number, value: string): void {
     this.patch(id, { mountId: Number(value) });
   }
@@ -271,10 +257,6 @@ export class ClassPlanComponent implements OnInit {
     return bondLevelOf(mount, entry.bondLevel ?? fallback)?.level ?? null;
   }
 
-  /**
-   * The mount (and bond level) last ridden of this class's mount type earlier in the plan, so a reclass
-   * between classes of one mount type (or back to one after another type) keeps the mount it had.
-   */
   private inheritedMount(entry: PlanEntry): { mount: Mount | null; bondLevel: number | null } | null {
     const plan = this.plan();
     const position = plan.findIndex((candidate) => candidate.id === entry.id);
@@ -319,7 +301,6 @@ export class ClassPlanComponent implements OnInit {
     return { min: levels[position - 1] + 1, max: (levels[position + 1] ?? MAX_PROJECTION_LEVEL) - 1 };
   }
 
-  /** Moves a reclass between its neighbours; a class not yet unlocked at the new level is cleared. */
   setReclassLevel(id: number, level: number): number {
     const position = this.plan().findIndex((entry) => entry.id === id);
 
@@ -357,7 +338,6 @@ export class ClassPlanComponent implements OnInit {
     return entry.mountChanges ?? [];
   }
 
-  /** Levels a mount change can be at: after the class's start (or the change before it) and before the next reclass. */
   mountChangeBounds(position: number, changeIndex: number): { min: number; max: number } {
     const changes = this.mountChangesOf(this.plan()[position]);
     const after = changeIndex > 0 ? changes[changeIndex - 1].fromLevel : this.rowLevels()[position];
@@ -373,7 +353,6 @@ export class ClassPlanComponent implements OnInit {
     return last < (this.rowLevels()[position + 1] ?? MAX_PROJECTION_LEVEL) - 1;
   }
 
-  // A new change starts a few levels on, on the same mount at the next bond level when there is one.
   addMountChange(position: number): void {
     if (!this.canAddMountChange(position)) {
       return;
@@ -443,7 +422,6 @@ export class ClassPlanComponent implements OnInit {
     );
   }
 
-  // Mount changes that no longer fall within their class's levels (after a reclass moved) are dropped.
   private pruneMountChanges(): void {
     const levels = this.rowLevels();
 
@@ -459,7 +437,6 @@ export class ClassPlanComponent implements OnInit {
     );
   }
 
-  /** The plan's classes and mount changes in level order; reclasses still waiting for a class are skipped. */
   readonly steps = computed<PlanStep[]>(() => {
     const levels = this.rowLevels();
 
@@ -483,7 +460,6 @@ export class ClassPlanComponent implements OnInit {
     });
   });
 
-  // Deferred: mobile browsers place the caret after focus, which would undo an immediate select.
   selectValue(event: FocusEvent): void {
     const field = event.target as HTMLInputElement;
 

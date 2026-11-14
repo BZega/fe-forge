@@ -44,7 +44,6 @@ describe('SeedMapperPageComponent starting stats', () => {
     component.onUnitChange(unitId('Cai'));
     expect(state.seedMap().startStats).toEqual({ hp: 27, str: 10, mag: 7, spd: 8, dex: 8, def: 6, res: 5, lck: 6, cha: 5 });
 
-    // Gender variants use their character's row.
     component.onUnitChange(unitId('Eshmel (F)'));
     expect(state.seedMap().startStats.str).toBe(12);
 
@@ -92,7 +91,6 @@ describe('SeedMapperPageComponent starting stats', () => {
   it('carries equipped abilities into a new exam and keeps them through save and load', () => {
     const seedId = state.seedMap().sections[0].id;
     state.setAbilities(seedId, ['Divine Might']);
-    // Branch before the seed's last level, so loading keeps it as its own section.
     state.addLevel(seedId);
     const examId = state.addExam(seedId, state.seedMap().sections[0].rows[0].id, {
       classId: gladiator.id,
@@ -287,7 +285,6 @@ describe('SeedMapperPageComponent starting stats', () => {
     const hunter = () => classes.find((unitClass) => unitClass.name === 'Hunter')!;
     const reclassDraft = (classId: number) => ({ classId, chance: 100, passed: true, reclass: true });
 
-    // Seed: Gladiator with two level ups, Str rising on the first.
     beforeEach(() => {
       state.setUnit(unitId('Hong Hua'));
       allow('Gladiator', 'Hunter');

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, HostListener, input, OnInit, output, signal, viewChild } from '@angular/core';
 import { ClassPlanComponent, MAX_PROJECTION_LEVEL, PlanStep } from '../class-plan/class-plan.component';
-import { mountBonusAt, STAT_KEYS, STAT_LABELS, Unit } from '../models/growth.models';
+import { classLabel, mountBonusAt, STAT_KEYS, STAT_LABELS, Unit } from '../models/growth.models';
 import { levelUpGrowth, projectStats, RecruitmentChapter, stepAtLevel } from '../models/recruitment.models';
 
 @Component({
@@ -12,11 +12,10 @@ import { levelUpGrowth, projectStats, RecruitmentChapter, stepAtLevel } from '..
 })
 export class ProjectionDialogComponent implements OnInit {
   readonly unit = input.required<Unit>();
+  readonly classLabel = classLabel;
   readonly chapters = input.required<readonly RecruitmentChapter[]>();
   readonly initialChapter = input<number | null>(null);
-  /** False when the start isn't a recruitment chapter (e.g. the Seed Mapper's current stats). */
   readonly chapterPicker = input(true);
-  /** A plan made elsewhere (the start modal): the dialog opens on its results, and Back asks to return. */
   readonly plannedSteps = input<readonly PlanStep[] | null>(null);
 
   readonly closed = output<void>();
@@ -26,7 +25,6 @@ export class ProjectionDialogComponent implements OnInit {
   readonly statLabels = STAT_LABELS;
   readonly maxLevel = MAX_PROJECTION_LEVEL;
 
-  /** Kept alive on the results page, so Back returns to the same plan. */
   readonly planEditor = viewChild(ClassPlanComponent);
 
   private readonly steps = computed(() => this.plannedSteps() ?? this.planEditor()?.steps() ?? []);
@@ -113,7 +111,6 @@ export class ProjectionDialogComponent implements OnInit {
     return value.toFixed(2);
   }
 
-  // Deferred: mobile browsers place the caret after focus, which would undo an immediate select.
   selectValue(event: FocusEvent): void {
     const field = event.target as HTMLInputElement;
 

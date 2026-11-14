@@ -11,7 +11,6 @@ export class SeedSaveStorageService {
 
   readonly saves = this.saveList.asReadonly();
 
-  /** How many stored saves were deleted on start-up because they no longer fit the format. */
   readonly droppedOnLoad = this.dropped;
 
   get(id: string): SeedSave | null {
@@ -91,7 +90,6 @@ export class SeedSaveStorageService {
     try {
       const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
 
-      // Carry saves over from before the rebrand.
       if (legacy !== null) {
         if (localStorage.getItem(STORAGE_KEY) === null) {
           localStorage.setItem(STORAGE_KEY, legacy);

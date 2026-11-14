@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { PlanStep } from '../class-plan/class-plan.component';
 import unitClassData from '../data/unit-classes.json';
-import { baseStatsOf, GrowthRates, STAT_KEYS, Unit, UnitClass } from '../models/growth.models';
+import { baseStatsOf, GrowthRates, STAT_KEYS, StatKey, Unit, UnitClass } from '../models/growth.models';
 import { levelUpGrowth, projectStats } from '../models/recruitment.models';
 import { ProjectionOptions, ProjectionStart } from '../projection-start-dialog/projection-start-dialog.component';
 import { GrowthDataService } from '../services/growth-data.service';
@@ -91,13 +91,12 @@ describe('ProjectionBuildComponent', () => {
     expect(result()!.label).toBe('Cai');
   });
 
-  it('projects manual stats as shown in game, removing the starting class bonus first', () => {
+  it('projects manual stats the same way as chapter stats', () => {
     const start = chapterStart('Cai');
     const shown = Object.fromEntries(STAT_KEYS.map((stat) => [stat, start.stats[stat]])) as GrowthRates;
     const fromChapter = open(start).build.rows().map((row) => row.summary.mean);
     const fromManual = open(manualStart('Cai', start.level, shown)).build.rows().map((row) => row.summary.mean);
 
-    // Noble/Commoner has no class bonus, so the same numbers project the same way.
     fromManual.forEach((mean, index) => expect(mean).toBeCloseTo(fromChapter[index], 10));
   });
 
@@ -114,6 +113,21 @@ describe('ProjectionBuildComponent', () => {
     expect(speed.summary.mean).toBe(11);
   });
 
+  it('adds the starting class bonus to manual stats entered at a later level', () => {
+    const trooper = byName('Celestial Trooper');
+    const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, 40])) as GrowthRates;
+    const start = {
+      ...manualStart('Lysander', 68, stats),
+      steps: [{ fromLevel: 68, unitClass: trooper, mount: null, bondLevel: null }],
+      options: { ...options, level: 68 },
+    };
+    const { build } = open(start);
+
+    for (const row of build.rows()) {
+      expect(row.summary.mean).toBe(Math.max(40, trooper.classFloorStats[row.stat]) + trooper.bonusStats[row.stat]);
+    }
+  });
+
   it('shows the active class growth rate at the selected level', () => {
     const start = chapterStart('Cai');
     const activeClass = byName('The Eternal');
@@ -125,6 +139,88 @@ describe('ProjectionBuildComponent', () => {
     expect(host.querySelector('.row-growth')!.textContent!.trim()).toBe(`${expected}%`);
   });
 
+  it('takes the starting class, mount and equipped abilities off in-game manual stats', () => {
+    const rider = byName('Ornius Rider');
+    const insight = { name: 'Divine Insight', description: '', boosts: { spd: 10 } };
+    const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, 40])) as GrowthRates;
+    const start = {
+      ...manualStart('Lysander', 20, stats),
+      inGameStats: true,
+      abilities: [insight],
+      steps: [
+        { fromLevel: 20, unitClass: rider, mount: null, bondLevel: null },
+        { fromLevel: 21, unitClass: byName('Noble/Commoner'), mount: null, bondLevel: null },
+      ],
+    };
+    const spd = (level: number, view: 'base' | 'inGame' = 'inGame') => {
+      const { build } = open(start, { level });
+      build.view.set(view);
+
+      return build.rows().find((row) => row.stat === 'spd')!.summary;
+    };
+
+    expect(spd(20, 'base').mean).toBe(40 - 10 - rider.bonusStats.spd);
+    expect(spd(20).mean).toBe(40);
+    expect(spd(21).low).toBe(40 - rider.bonusStats.spd);
+  });
+
+  it('switches between base and in-game views, with equipped abilities only in game', () => {
+    const rider = byName('Ornius Rider');
+    const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, 20])) as GrowthRates;
+    const start = {
+      ...manualStart('Lysander', 10, stats),
+      steps: [{ fromLevel: 10, unitClass: rider, mount: null, bondLevel: null }],
+      options: { ...options, level: 10 },
+    };
+    const { build, fixture, result } = open(start);
+    const spd = () => build.rows().find((row) => row.stat === 'spd')!.summary.mean;
+
+    expect(spd()).toBe(20 + rider.bonusStats.spd);
+    build.onAbilitiesConfirmed(['Divine Insight']);
+    expect(spd()).toBe(30 + rider.bonusStats.spd);
+
+    build.view.set('base');
+    expect(spd()).toBe(20);
+    fixture.detectChanges();
+    expect(result()!.totals.spd.min).toBe(30 + rider.bonusStats.spd);
+  });
+
+  it('places in-game actuals from the build dialog in both views', () => {
+    const rider = byName('Ornius Rider');
+    const insight = { name: 'Divine Insight', description: '', boosts: { spd: 10 } };
+    const actualStats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, stat === 'spd' ? 30 : null]));
+    const start = {
+      ...manualStart('Lysander', 1, baseStatsOf('Lysander')!),
+      baseStats: true,
+      actual: { level: 10, stats: actualStats as Record<StatKey, number | null>, inGame: true },
+      abilities: [insight],
+      steps: [{ fromLevel: 1, unitClass: rider, mount: null, bondLevel: null }],
+      options: { ...options, level: 10 },
+    };
+    const { build } = open(start);
+    const spd = () => build.rows().find((row) => row.stat === 'spd')!;
+
+    expect(spd().actual).toBe(30);
+    expect(build.rows().find((row) => row.stat === 'str')!.actual).toBeNull();
+
+    build.view.set('base');
+    expect(spd().actual).toBe(30 - 10 - rider.bonusStats.spd);
+    expect(spd().rank).not.toBeNull();
+
+    expect(open(start, { level: 11 }).build.rows().every((row) => row.actual === null)).toBeTrue();
+  });
+
+  it('lines up every growth rate and bar, whatever the values', () => {
+    const { fixture, host } = open(chapterStart('Cai'), { wideRange: true });
+    fixture.detectChanges();
+    const edges = (selector: string, edge: (box: DOMRect) => number) =>
+      new Set(Array.from(host.querySelectorAll(selector)).map((element) => Math.round(edge(element.getBoundingClientRect()))));
+
+    expect(edges('.row-growth', (box) => box.left).size).toBe(1);
+    expect(edges('.row-bar', (box) => box.left).size).toBe(1);
+    expect(edges('.row-bar', (box) => box.width).size).toBe(1);
+  });
+
   it('raises the averages when the guaranteed minimum is on', () => {
     const start = chapterStart('Cai');
     const total = (build: ProjectionBuildComponent) => build.rows().reduce((sum, row) => sum + row.summary.mean, 0);
@@ -132,20 +228,23 @@ describe('ProjectionBuildComponent', () => {
     expect(total(open(start, { minimum: true, partOneEndLevel: 20 }).build)).toBeGreaterThan(total(open(start).build));
   });
 
+  const withActual = (start: ProjectionStart, stats: Partial<Record<StatKey, number>>): ProjectionStart => ({
+    ...start,
+    actual: {
+      level: start.options.level,
+      stats: Object.fromEntries(STAT_KEYS.map((stat) => [stat, stats[stat] ?? null])) as Record<StatKey, number | null>,
+      inGame: false,
+    },
+  });
+
   it('rates an actual stat against the outcomes', () => {
-    const { build, fixture, host } = open(chapterStart('Cai'));
-    const str = () => build.rows().find((row) => row.stat === 'str')!;
-    const field = host.querySelector<HTMLInputElement>('input[aria-label="Actual Str at Lv 30"]')!;
+    const start = chapterStart('Cai');
+    const str = (value: number) => open(withActual(start, { str: value })).build.rows().find((row) => row.stat === 'str')!;
+    const high = open(start).build.rows().find((row) => row.stat === 'str')!.summary;
 
-    field.value = String(str().summary.high);
-    field.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    expect(str().tone).toBe('high');
-    expect(str().verdict).toMatch(/^Well above average\W+better than \d+% of outcomes$/);
-
-    field.value = String(str().summary.low - 1);
-    field.dispatchEvent(new Event('change'));
-    expect(str().tone).toBe('impossible');
+    expect(str(high.high).tone).toBe('high');
+    expect(str(high.high).verdict).toMatch(/^Well above average\W+better than \d+% of outcomes$/);
+    expect(str(high.low - 1).tone).toBe('impossible');
   });
 
   it('always shows the histogram, for the stat picked', () => {
@@ -166,10 +265,11 @@ describe('ProjectionBuildComponent', () => {
     expect(values()[0]).toBeGreaterThan(str().summary.low);
     expect(values().at(-1)).toBeLessThan(str().summary.high);
 
-    build.actualStats.update((stats) => ({ ...stats, str: 99 }));
-    fixture.detectChanges();
-    expect(values().at(-1)).toBe(99);
-    expect(host.querySelector('.histogram-bar--actual')!.getAttribute('title')).toContain('Str 99');
+    const withStr = open(withActual(chapterStart('Cai'), { str: 99 }));
+    withStr.fixture.detectChanges();
+    const shown = Array.from(withStr.host.querySelectorAll('.histogram-bar')).map((bar) => Number(bar.getAttribute('title')!.match(/Str (\d+)/)![1]));
+    expect(shown.at(-1)).toBe(99);
+    expect(withStr.host.querySelector('.histogram-bar--actual')!.getAttribute('title')).toContain('Str 99');
   });
 
   it("raises stats below a new class's floors when reclassing into it", () => {

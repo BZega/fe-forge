@@ -23,10 +23,8 @@ export class ExamDialogComponent implements OnInit {
     null,
   );
   readonly initialMode = input<BranchMode>('exam');
-  /** Off when editing, since an exam and a reclass sit on different rolls. */
   readonly canSwitchMode = input(true);
   readonly strBounds = input<RollBounds>({ lower: null, upper: null });
-  /** The level the new class applies from; the class lists open at the rank usual for it. */
   readonly level = input<number | null>(null);
 
   readonly classFocus = computed(() => this.focusFor(this.classGroups()));
@@ -45,7 +43,6 @@ export class ExamDialogComponent implements OnInit {
   readonly classId = signal<number | null>(null);
   readonly chanceText = signal('');
   readonly passed = signal<boolean | null>(null);
-  /** On a pass, whether the unit moves into the exam class or only unlocks it. */
   readonly switchClass = signal(true);
 
   readonly reclassing = computed(() => this.mode() === 'reclass');
@@ -65,7 +62,6 @@ export class ExamDialogComponent implements OnInit {
 
   readonly knownRange = computed(() => describeBounds(this.strBounds()));
 
-  // Bounds only come from reliable level ups (more than 2 stats) and other exams, so they can decide it.
   readonly forced = computed(() => {
     const chance = this.chance();
 
@@ -93,7 +89,6 @@ export class ExamDialogComponent implements OnInit {
     }
   }
 
-  // Exam and reclass offer different classes, so the pick doesn't carry over.
   setMode(mode: BranchMode): void {
     if (mode !== this.mode()) {
       this.mode.set(mode);

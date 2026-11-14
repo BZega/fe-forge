@@ -14,7 +14,6 @@ const STORAGE_KEY = 'fe-forge.hidden-spoiler-tiers';
 const PRE_REBRAND_STORAGE_KEY = 'fe-growth.hidden-spoiler-tiers';
 const LEGACY_STORAGE_KEY = 'fe-growth.hide-spoilers';
 
-// Characters, mounts and individual classes, by name.
 const NAMED_TIERS: Readonly<Record<string, SpoilerTier>> = {
   Nathan: 'war',
   Creek: 'war',
@@ -93,7 +92,6 @@ export class SpoilerService {
       return tiers[namedTier];
     }
 
-    // DLC classes are also Master rank, so they only show once both Salvation Arc and DLC are revealed.
     if (DLC_CLASS_NAMES.has(item.name) && tiers.dlc) {
       return true;
     }
@@ -105,7 +103,6 @@ export class SpoilerService {
     return items.filter((item) => !this.isSpoiler(item));
   }
 
-  // Keeps the current choice listed so saved selections still display.
   filterKeeping<T extends { id: number; name: string; rank?: string }>(items: readonly T[], keepId: number | null | undefined): T[] {
     return items.filter((item) => item.id === keepId || !this.isSpoiler(item));
   }
@@ -128,7 +125,6 @@ function read(): HiddenTiers {
       };
     }
 
-    // Carry over the old single toggle.
     return allTiers(localStorage.getItem(LEGACY_STORAGE_KEY) !== 'false');
   } catch {
     return allTiers(true);

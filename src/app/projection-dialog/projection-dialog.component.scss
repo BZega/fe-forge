@@ -1,4 +1,3 @@
-// While the on-screen keyboard is open (e.g. for a reclass level), centre the modal in the space above it.
 :host {
   padding-bottom: calc(1.5rem + var(--keyboard-inset, 0px));
 }
@@ -62,7 +61,6 @@
   opacity: 0.8;
 }
 
-// HP alone on top, then Str–Dex down the left and Def–Cha down the right.
 .results-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;

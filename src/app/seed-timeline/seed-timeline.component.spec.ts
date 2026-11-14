@@ -20,7 +20,6 @@ describe('Seed timeline branches', () => {
   const seed = () => state.seedMap().sections[0];
   const view = (sectionId: number) => page.sectionViews().find((candidate) => candidate.section.id === sectionId)!;
   const seedView = () => page.sectionViews()[0];
-  // Seed rows run Lv 2 to Lv 14; index 10 is Lv 12.
   const lv12 = () => seed().rows[10].id;
   const exam = (name: string, passed = true) =>
     state.addBranch(seed().id, lv12(), { classId: classId(name), chance: 40, passed })!;
@@ -45,9 +44,7 @@ describe('Seed timeline branches', () => {
     const failed = view(exam('Diviner', false));
 
     for (const branch of [diviner, gladiator, failed]) {
-      // The exam uses the roll the seed's Lv 13 would have used...
       expect(branch.exam!.slot).toBe(page.slotOf(seedView(), 11));
-      // ...so each branch's Lv 13 shares the seed's Lv 14 roll.
       expect(page.slotOf(branch, 0)).toBe(page.slotOf(seedView(), 12));
       expect(page.levelOf(branch, 0)).toBe(13);
     }
@@ -69,7 +66,6 @@ describe('Seed timeline branches', () => {
     const failed = view(exam('Diviner', false));
     const owner = page.rowOwner(failed, 0);
 
-    // A failed exam keeps the seed's class, so its Lv 13 rises like the seed's Lv 14.
     expect(owner.view.section.id).toBe(seed().id);
     expect(owner.rowIndex).toBe(12);
 
@@ -109,10 +105,8 @@ describe('Seed timeline branches', () => {
     expect(switched.classId).toBe(classId('Ornius Rider'));
     expect(page.availableClasses(stayed).map((unitClass) => unitClass.name)).toContain('Ornius Rider');
     expect(Object.values(page.examBoostOf(stayed)).every((boost) => boost === 0)).toBeTrue();
-    // Still a pass: the Str roll was at or below the chance.
     expect(page.rollsAt(stayed.exam!.slot)[1].text).toBe('≤40%');
 
-    // An inline exam can stay too, and both survive save and load.
     state.addExamLevel(seed().id, { classId: classId('Diviner'), chance: 30, passed: true, keepClass: true });
     expect(page.rowClassId(seedView(), seed().rows.length - 1)).toBe(classId('Gladiator'));
 
@@ -131,18 +125,15 @@ describe('Seed timeline branches', () => {
       const row = state.seedMap().sections.find((section) => section.id === sectionId)!.rows[rowIndex];
       stats.forEach((stat) => state.toggleStat(sectionId, row.id, stat));
     };
-    // The seed's Lv 13 (row 11) uses the roll an exam at Lv 12 would take.
     const lv13Slot = () => page.slotOf(seedView(), 11);
 
     it("shows '?' for a roll only a 1–2 stat level up used, and doesn't force an exam on it", () => {
-      // Str didn't rise, but only 2 stats did, so the guaranteed minimum may have picked them.
       mark(seed().id, 11, 'hp', 'def');
 
       expect(page.rollsAt(lv13Slot())[str].text).toBe('?');
       page.openBranchAt(seedView(), 11);
       expect(page.examDialog()!.strBounds).toEqual({ lower: null, upper: null });
 
-      // A third stat makes it a reliable level up: Str stayed above its growth.
       mark(seed().id, 11, 'spd');
       const strGrowth = page.rowGrowth(seedView(), 11)!.str;
 
@@ -156,11 +147,9 @@ describe('Seed timeline branches', () => {
       const blank = { id: -1, marks: { ...ZERO_GROWTH } };
       const autoStr = () => page.effectiveRow(easyStr, blank, lv13Slot()).auto.str;
 
-      // Only 2 stats: the guaranteed minimum may have picked them, so nothing is filled in.
       mark(seed().id, 11, 'str', 'def');
       expect(autoStr()).toBeFalse();
 
-      // A Hunter branch on the same roll rising 3 stats is reliable, so it fills the others in.
       state.addAvailableClass(classId('Hunter'));
       const hunter = state.addBranch(seed().id, lv12(), { classId: classId('Hunter'), chance: 0, passed: true, reclass: true })!;
       mark(hunter, 0, 'str', 'dex', 'def');
@@ -190,7 +179,6 @@ describe('Seed timeline branches', () => {
       state.addLevel(seed().id);
     }
 
-    // Seed row 14 is Lv 16, past the Speciality unlock at Lv 15.
     page.openBranchAt(seedView(), 14);
     expect(page.examDialog()!.level).toBe(16);
     expect(ranks()).toContain('Speciality');
@@ -265,7 +253,6 @@ describe('SeedTimelineComponent', () => {
 
   it('shows one timeline with a switcher where exams branch off, locking rows the branch shares', () => {
     const { fixture, page, host } = render();
-    // Branch in place of the seed's second level (Lv 3).
     const afterRow = seed().rows[0].id;
     state.addBranch(seed().id, afterRow, { classId: classId('Diviner'), chance: 40, passed: true });
     state.addBranch(seed().id, afterRow, { classId: classId('Gladiator'), chance: 40, passed: true });

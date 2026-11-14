@@ -48,12 +48,10 @@ describe('stat distributions', () => {
   });
 
   it('spreads the guaranteed minimum evenly over stats that could rise but did not', () => {
-    // Two stats at 10%: with a minimum of 1, a level up with neither rising raises one of them.
     const one = levelUpChances(growthOf({ str: 10, mag: 10 }), 1);
     expect(one.str.chance).toBeCloseTo(0.1 + 0.9 * (0.9 * 0.5), 12);
     expect(one.hp.chance).toBe(0);
 
-    // With a minimum of 2 and only two stats able to rise, both always do.
     const two = levelUpChances(growthOf({ str: 10, mag: 10 }), 2);
     expect(two.str.chance).toBeCloseTo(1, 12);
     expect(two.mag.chance).toBeCloseTo(1, 12);
@@ -86,7 +84,6 @@ describe('stat distributions', () => {
 
   it('reads percentiles, ranges and the rank of an actual value', () => {
     const { str } = projectDistributions(growthOf({ str: 0 }), 1, 3, { growthAt: () => growthOf({ str: 50 }) });
-    // 0: 25%, 1: 50%, 2: 25%
     expect([0.1, 0.25, 0.26, 0.75, 0.76, 0.9].map((q) => quantile(str, q))).toEqual([0, 0, 1, 1, 2, 2]);
 
     const rank = rankOf(str, 2);

@@ -71,7 +71,6 @@
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-behavior: smooth;
-  // The arrow buttons, wheel and keys scroll it, so the bar itself stays hidden.
   scrollbar-width: none;
   -ms-overflow-style: none;
 
@@ -193,7 +192,6 @@
   opacity: 0.3;
 }
 
-// Only bad level ups (2 stats or fewer) saw this roll, so nothing is known about it.
 .roll--unknown {
   border-style: dashed;
   color: var(--accent);

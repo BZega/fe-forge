@@ -1,14 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-
-/**
- * Refreshes the bundled growth data from a running FE.Growth.API.
- *
- *   1. start the API (https profile)
- *   2. node tools/refresh-data.js [apiBaseUrl]
- *
- * Defaults to the http profile so no dev certificate is needed.
- */
 const BASE = (process.argv[2] ?? 'http://localhost:5081').replace(/\/$/, '') + '/api';
 const OUT = path.join(__dirname, '..', 'src', 'app', 'data');
 
@@ -28,13 +19,16 @@ const write = (name, data) =>
     get('/mounts'),
   ]);
 
-  // Port of ClassMountLookup, keyed by name so it survives id changes.
   const mountTypes = {};
   for (const unitClass of classes) {
     mountTypes[unitClass.name] = await get(`/unitclasses/${unitClass.id}/mount-type`);
   }
 
-  write('units.json', [...units].sort((a, b) => a.name.localeCompare(b.name)));
+  const current = JSON.parse(fs.readFileSync(path.join(OUT, 'units.json'), 'utf8'));
+  const origins = new Map(current.map((unit) => [unit.name, unit.origin]));
+  const withOrigin = units.map(({ id, name, ...rest }) => ({ id, name, origin: origins.get(name) ?? 'Commoner', ...rest }));
+
+  write('units.json', withOrigin.sort((a, b) => a.name.localeCompare(b.name)));
   write('unit-classes.json', classes);
   write('mounts.json', mounts);
   write('class-mount-types.json', mountTypes);

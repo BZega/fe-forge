@@ -1,26 +1,15 @@
 import { GrowthRates, STAT_KEYS, StatKey } from './growth.models';
 
-/** Chance of each value of a stat: `probs[i]` is the chance of `min + i`. */
 export interface StatDistribution {
   min: number;
   probs: number[];
 }
 
-/** One level up for one stat: it always rises by `sure`, plus 1 more with `chance`. */
 export interface LevelUpChance {
   sure: number;
   chance: number;
 }
 
-/**
- * Chance of each stat rising on one level up. A growth rate of 100% or more always gives the whole
- * hundreds, with the rest as a chance of one more; zero or negative growth never rises.
- *
- * When `minimum` > 0, a level up that raises fewer stats than that gets extra ones. Which stats the
- * game picks isn't known, so they're assumed to be spread evenly over the stats with a positive growth
- * rate that didn't rise. Each stat's chance stays exact under that assumption: the others' rolls only
- * matter through how many of them rose, which is worked out exactly.
- */
 export function levelUpChances(growth: GrowthRates, minimum = 0): Record<StatKey, LevelUpChance> {
   const sure = (stat: StatKey) => (growth[stat] > 0 ? Math.floor(growth[stat] / 100) : 0);
   const roll = (stat: StatKey) => (growth[stat] > 0 ? (growth[stat] % 100) / 100 : 0);
@@ -33,7 +22,6 @@ export function levelUpChances(growth: GrowthRates, minimum = 0): Record<StatKey
     let extra = 0;
 
     if (minimum > 0 && sure(stat) === 0 && growth[stat] > 0) {
-      // How many of the other eligible stats rose, exactly (a Poisson binomial).
       const others = eligible.filter((other) => other !== stat).map(risen);
       const count = countDistribution(others);
       const pool = eligible.length;
@@ -51,7 +39,6 @@ export function levelUpChances(growth: GrowthRates, minimum = 0): Record<StatKey
   return result;
 }
 
-/** Chance that exactly k of independent events with these chances happen, for each k. */
 function countDistribution(chances: readonly number[]): number[] {
   let counts = [1];
 
@@ -84,7 +71,6 @@ export function addLevelUp(distribution: StatDistribution, { sure, chance }: Lev
   return trim({ min: distribution.min + sure, probs });
 }
 
-/** A class floor raises every lower value to the floor. */
 export function applyFloor(distribution: StatDistribution, floor: number): StatDistribution {
   const below = floor - distribution.min;
 
@@ -102,7 +88,6 @@ export function shift(distribution: StatDistribution, by: number): StatDistribut
   return { min: distribution.min + by, probs: distribution.probs };
 }
 
-// Drops zero-chance values from both ends, so ranges and histograms only cover possible values.
 function trim(distribution: StatDistribution): StatDistribution {
   let start = 0;
   let end = distribution.probs.length;
@@ -119,15 +104,11 @@ function trim(distribution: StatDistribution): StatDistribution {
 }
 
 export interface ProjectionRules {
-  /** The level up's growth rates from `level` to `level + 1`; null leaves the stats as they are. */
   growthAt: (level: number) => GrowthRates | null;
-  /** Class floors applied on reaching `level` (a reclass), before its level up; null for none. */
   floorsAt?: (level: number) => GrowthRates | null;
-  /** The guaranteed minimum of stats for the level up from `level`; 0 for none. */
   minimumAt?: (level: number) => number;
 }
 
-/** Exact distribution of each stat at `endLevel`, from known stats at `startLevel`. */
 export function projectDistributions(
   start: GrowthRates,
   startLevel: number,
@@ -191,14 +172,12 @@ export function summarize(distribution: StatDistribution): DistributionSummary {
   };
 }
 
-/** The smallest value with at least `q` of the outcomes at or below it. */
 export function quantile(distribution: StatDistribution, q: number): number {
   let total = 0;
 
   for (let index = 0; index < distribution.probs.length; index++) {
     total += distribution.probs[index];
 
-    // A hair of slack absorbs floating-point error at exact boundaries.
     if (total >= q - 1e-9) {
       return distribution.min + index;
     }
@@ -212,10 +191,8 @@ export function chanceOf(distribution: StatDistribution, value: number): number 
 }
 
 export interface Ranking {
-  /** Chance of an outcome below the value. */
   below: number;
   equal: number;
-  /** Mid-rank percentile (0–100): ties count half. */
   percentile: number;
 }
 
@@ -233,7 +210,6 @@ export function rankOf(distribution: StatDistribution, value: number): Ranking {
   return { below, equal, percentile: (below + equal / 2) * 100 };
 }
 
-/** Chance that a value from `a` beats one from `b`, and that they tie (the two are independent). */
 export function compareDistributions(a: StatDistribution, b: StatDistribution): { win: number; tie: number } {
   let win = 0;
   let tie = 0;

@@ -1,9 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, linkedSignal, output, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MAX_PROJECTION_LEVEL } from '../class-plan/class-plan.component';
-import { GrowthRates, mountBonusAt, STAT_KEYS, STAT_LABELS, StatKey, sumGrowth, toGrowth } from '../models/growth.models';
+import { abilitiesFor, abilityBoosts, abilityPickerGroups, classLabel, GrowthRates, MAX_EQUIPPED_ABILITIES, mountBonusAt, SKILL_LABELS, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, sumGrowth, toGrowth, WEAPON_KEYS, WeaponKey } from '../models/growth.models';
 import { levelUpGrowth, routeLabel, stepAtLevel } from '../models/recruitment.models';
 import { DistributionSummary, projectDistributions, quantile, rankOf, Ranking, shift, StatDistribution, summarize } from '../models/stat-distribution';
+import { PickerDialogComponent } from '../picker-dialog/picker-dialog.component';
 import { DEFAULT_PROJECTION_OPTIONS, ProjectionStart } from '../projection-start-dialog/projection-start-dialog.component';
+import { GrowthDataService } from '../services/growth-data.service';
 import { StatHistogramComponent } from '../stat-histogram/stat-histogram.component';
 
 export interface BuildResult {
@@ -24,23 +27,20 @@ export interface StatRow {
   rank: Ranking | null;
   verdict: string | null;
   tone: 'low' | 'typical' | 'high' | 'impossible' | null;
-  /** Positions across the row's range bar, in percent. */
   bar: { wideFrom: number; wideTo: number; from: number; to: number; mean: number; actual: number | null };
 }
 
 const emptyStats = (): StatInputs => Object.fromEntries(STAT_KEYS.map((stat) => [stat, null])) as StatInputs;
 
-/** One character's projected stat distributions from its start and class plan, against its actual stats. */
 @Component({
   selector: 'app-projection-build',
-  imports: [StatHistogramComponent],
+  imports: [PickerDialogComponent, StatHistogramComponent],
   templateUrl: './projection-build.component.html',
   styleUrl: './projection-build.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectionBuildComponent {
   readonly heading = input.required<string>();
-  /** Null shows an empty, greyed-out card until a build is added. */
   readonly start = input<ProjectionStart | null>(null);
 
   readonly options = computed(() => this.start()?.options ?? DEFAULT_PROJECTION_OPTIONS);
@@ -48,7 +48,6 @@ export class ProjectionBuildComponent {
   readonly editRequested = output<void>();
   readonly removeRequested = output<void>();
   readonly resultChange = output<BuildResult | null>();
-  /** The level picked on the card, to save into the build's options. */
   readonly levelChange = output<number>();
 
   readonly maxLevel = MAX_PROJECTION_LEVEL;
@@ -57,8 +56,36 @@ export class ProjectionBuildComponent {
   readonly statLabels = STAT_LABELS;
   readonly placeholderBars = Array.from({ length: 17 }, (_, index) => Math.round(100 * Math.exp(-(((index - 8) / 3.2) ** 2) / 2)));
 
-  readonly actualStats = signal<StatInputs>(emptyStats());
   readonly histogramStat = signal<StatKey>('str');
+
+  readonly view = signal<'base' | 'inGame'>('inGame');
+
+  private readonly api = inject(GrowthDataService);
+  private readonly statBoostAbilities = toSignal(this.api.getStatBoostAbilities(), { initialValue: [] as StatBoostAbility[] });
+
+  readonly maxAbilities = MAX_EQUIPPED_ABILITIES;
+  readonly weaponKeys = WEAPON_KEYS;
+  readonly weaponLabels = SKILL_LABELS;
+  readonly abilityOptions = computed(() => abilitiesFor(this.statBoostAbilities(), this.start()?.name ?? null));
+  readonly abilityGroups = computed(() => abilityPickerGroups(this.abilityOptions()));
+  private readonly abilityNames = linkedSignal<readonly string[]>(() => (this.start()?.abilities ?? []).map((ability) => ability.name));
+  readonly weapon = linkedSignal<WeaponKey | null>(() => this.start()?.weapon ?? null);
+  readonly abilityPickerOpen = signal(false);
+
+  readonly equippedAbilities = computed(() =>
+    this.abilityOptions().filter((ability) => this.abilityNames().includes(ability.name)),
+  );
+  readonly equippedAbilityNames = computed(() => this.equippedAbilities().map((ability) => ability.name));
+  readonly needsWeapon = computed(() => this.equippedAbilities().some((ability) => ability.weaponBoosts));
+
+  onAbilitiesConfirmed(names: string[]): void {
+    this.abilityNames.set(names);
+    this.abilityPickerOpen.set(false);
+  }
+
+  setWeapon(value: string): void {
+    this.weapon.set(WEAPON_KEYS.find((weapon) => weapon === value) ?? null);
+  }
 
   readonly startSummary = computed(() => {
     const start = this.start();
@@ -68,15 +95,16 @@ export class ProjectionBuildComponent {
     }
 
     if (start.source === 'manual') {
-      return start.baseStats ? 'Manual · Lv 1 base stats' : `Manual · Lv ${start.level} stats`;
+      return start.baseStats
+        ? 'Manual · Lv 1 base stats'
+        : `Manual · Lv ${start.level} ${start.inGameStats ? 'in-game' : 'base'} stats`;
     }
 
-    return `Recruitment · ${routeLabel(start.routeKey ?? '')} · Chapter ${start.chapterNumber} · Lv ${start.level} ${start.className ?? ''}`.trim();
+    return `Recruitment · ${routeLabel(start.routeKey ?? '')} · Chapter ${start.chapterNumber} · Lv ${start.level} ${start.className ? classLabel(start.className, start.unit) : ''}`.trim();
   });
 
   private readonly steps = computed(() => this.start()?.steps ?? []);
 
-  /** The class the build starts in and the one it's in at the projected level; one name when they match. */
   readonly planSummary = computed(() => {
     const steps = this.steps();
     const first = steps[0]?.unitClass;
@@ -113,20 +141,19 @@ export class ProjectionBuildComponent {
       return start.stats;
     }
 
-    if (start.baseStats) {
-      const startingClass = stepAtLevel(this.steps(), start.level)?.unitClass;
+    if (start.inGameStats) {
+      const bonuses = sumGrowth(this.bonusesAt(start.level), abilityBoosts(start.abilities ?? [], start.weapon ?? null));
 
-      return Object.fromEntries(
-        this.statKeys.map((stat) => [stat, Math.max(start.stats[stat], startingClass?.classFloorStats[stat] ?? 0)]),
-      ) as GrowthRates;
+      return Object.fromEntries(this.statKeys.map((stat) => [stat, start.stats[stat] - bonuses[stat]])) as GrowthRates;
     }
 
-    const bonuses = this.bonusesAt(start.level);
+    const startingClass = stepAtLevel(this.steps(), start.level)?.unitClass;
 
-    return Object.fromEntries(this.statKeys.map((stat) => [stat, start.stats[stat] - bonuses[stat]])) as GrowthRates;
+    return Object.fromEntries(
+      this.statKeys.map((stat) => [stat, Math.max(start.stats[stat], startingClass?.classFloorStats[stat] ?? 0)]),
+    ) as GrowthRates;
   });
 
-  // Reclassing into a class for the first time raises stats below its floors (as passing its exam does).
   private readonly reclassFloors = computed(() => {
     const floors = new Map<number, GrowthRates>();
     const seen = new Set<number>();
@@ -142,8 +169,7 @@ export class ProjectionBuildComponent {
     return floors;
   });
 
-  /** Each stat's chance of each value at the chosen level, as shown in game (with class and mount bonuses). */
-  readonly totals = computed<Record<StatKey, StatDistribution> | null>(() => {
+  private readonly baseTotals = computed<Record<StatKey, StatDistribution> | null>(() => {
     const start = this.start();
     const base = this.baseStats();
 
@@ -155,7 +181,7 @@ export class ProjectionBuildComponent {
     const options = this.options();
     const level = this.level();
     const reclassFloors = this.reclassFloors();
-    const distributions = projectDistributions(base, start.level, level, {
+    return projectDistributions(base, start.level, level, {
       growthAt: (at) => {
         const step = stepAtLevel(steps, at);
 
@@ -164,11 +190,54 @@ export class ProjectionBuildComponent {
       floorsAt: (at) => reclassFloors.get(at) ?? null,
       minimumAt: (at) => (options.minimum ? (at < options.partOneEndLevel ? 2 : 1) : 0),
     });
-    const bonuses = this.bonusesAt(level);
+  });
+
+  private readonly inGameTotals = computed<Record<StatKey, StatDistribution> | null>(() => {
+    const base = this.baseTotals();
+
+    if (!base) {
+      return null;
+    }
+
+    const bonuses = sumGrowth(this.bonusesAt(this.level()), abilityBoosts(this.equippedAbilities(), this.weapon()));
 
     return Object.fromEntries(
-      this.statKeys.map((stat) => [stat, shift(distributions[stat], bonuses[stat])]),
+      this.statKeys.map((stat) => [stat, shift(base[stat], bonuses[stat])]),
     ) as Record<StatKey, StatDistribution>;
+  });
+
+  readonly totals = computed(() => (this.view() === 'base' ? this.baseTotals() : this.inGameTotals()));
+
+  readonly actualStats = computed<StatInputs>(() => {
+    const start = this.start();
+    const actual = start?.actual;
+
+    if (!actual) {
+      return emptyStats();
+    }
+
+    const bonuses = actual.inGame
+      ? sumGrowth(this.bonusesAt(actual.level), abilityBoosts(start.abilities ?? [], start.weapon ?? null))
+      : toGrowth(null);
+
+    return Object.fromEntries(
+      this.statKeys.map((stat) => [stat, actual.stats[stat] === null ? null : actual.stats[stat]! - bonuses[stat]]),
+    ) as StatInputs;
+  });
+
+  private readonly viewBonus = computed(() =>
+    this.view() === 'base'
+      ? toGrowth(null)
+      : sumGrowth(this.bonusesAt(this.level()), abilityBoosts(this.equippedAbilities(), this.weapon())),
+  );
+
+  private readonly shownActuals = computed(() => {
+    const bonus = this.viewBonus();
+    const actuals = this.start()?.actual?.level === this.level() ? this.actualStats() : emptyStats();
+
+    return Object.fromEntries(
+      this.statKeys.map((stat) => [stat, actuals[stat] === null ? null : actuals[stat]! + bonus[stat]]),
+    ) as StatInputs;
   });
 
   readonly rows = computed<StatRow[]>(() => {
@@ -187,7 +256,7 @@ export class ProjectionBuildComponent {
     return this.statKeys.map((stat) => {
       const distribution = totals[stat];
       const summary = summarize(distribution);
-      const actual = this.actualStats()[stat];
+      const actual = this.shownActuals()[stat];
       const rank = actual === null ? null : rankOf(distribution, actual);
       const low = Math.min(quantile(distribution, 0.005), actual ?? Infinity);
       const high = Math.max(quantile(distribution, 0.995), actual ?? -Infinity);
@@ -217,22 +286,13 @@ export class ProjectionBuildComponent {
   readonly histogramRow = computed(() => this.rows().find((row) => row.stat === this.histogramStat()) ?? null);
 
   readonly result = computed<BuildResult | null>(() => {
-    const totals = this.totals();
+    const totals = this.inGameTotals();
 
     return totals ? { label: this.heading(), level: this.level(), totals } : null;
   });
 
   constructor() {
     effect(() => this.resultChange.emit(this.result()));
-  }
-
-  setActual(stat: StatKey, event: Event): void {
-    const field = event.target as HTMLInputElement;
-    const value = Math.round(Number(field.value));
-    const next = field.value.trim() === '' || !Number.isFinite(value) || value < 0 ? null : value;
-
-    this.actualStats.update((stats) => ({ ...stats, [stat]: next }));
-    field.value = next === null ? '' : String(next);
   }
 
   setLevel(field: HTMLInputElement): void {
@@ -251,14 +311,6 @@ export class ProjectionBuildComponent {
         field.select();
       }
     });
-  }
-
-  clearActual(): void {
-    this.actualStats.set(emptyStats());
-  }
-
-  hasActual(): boolean {
-    return this.statKeys.some((stat) => this.actualStats()[stat] !== null);
   }
 
   fixed(value: number, digits = 2): string {

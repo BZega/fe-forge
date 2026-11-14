@@ -54,7 +54,6 @@ export interface InlineExamDto {
   unitClass: string | null;
   chance: number;
   passed: boolean;
-  /** A pass that stayed in the current class; absent in older saves. */
   keepClass?: boolean;
 }
 
@@ -92,9 +91,7 @@ export interface ExamDto {
   unitClass: string | null;
   chance: number;
   passed: boolean;
-  /** A branch that reclasses instead of taking an exam; absent in older saves. */
   reclass?: boolean;
-  /** A pass that stayed in the current class; absent in older saves. */
   keepClass?: boolean;
 }
 
@@ -133,7 +130,6 @@ export const CURRENT_SAVE_VERSION = 2;
 
 export class IncompatibleSaveError extends Error {}
 
-/** Units renamed since saves were written; old names load as the new unit. */
 const RENAMED_UNITS: Readonly<Record<string, string>> = {
   Eshmel: 'Eshmel (M)',
 };
@@ -258,7 +254,6 @@ function readSeedMap(raw: unknown): SeedMapDto {
   };
 }
 
-// Missing in saves written before the field existed, so an absent list reads as empty.
 function readNames(raw: unknown): string[] {
   return Array.isArray(raw)
     ? raw.flatMap((name) => {
@@ -337,7 +332,6 @@ function readComparators(raw: unknown): ComparatorDto[] {
   return Array.isArray(raw) ? raw.map(readComparator) : [];
 }
 
-// Saves from before inline exams have none; invalid entries are dropped rather than failing the load.
 function readInlineExams(raw: unknown, rowCount: number): InlineExamDto[] {
   if (!Array.isArray(raw)) {
     return [];
@@ -368,7 +362,6 @@ function readInlineExams(raw: unknown, rowCount: number): InlineExamDto[] {
   });
 }
 
-// Saves from before reclassing have none; entries pointing past the section's levels are dropped.
 function readReclasses(raw: unknown, rowCount: number): ReclassDto[] {
   if (!Array.isArray(raw)) {
     return [];

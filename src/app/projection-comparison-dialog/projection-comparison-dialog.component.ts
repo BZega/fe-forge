@@ -9,13 +9,11 @@ interface ComparisonRow {
   a: DistributionSummary;
   b: DistributionSummary;
   difference: number;
-  /** Chance the first build ends higher, ties, or ends lower. */
   win: number;
   tie: number;
   lose: number;
 }
 
-/** Two projected builds side by side: averages, middle 50% and the chance each ends higher. */
 @Component({
   selector: 'app-projection-comparison-dialog',
   templateUrl: './projection-comparison-dialog.component.html',

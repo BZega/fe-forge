@@ -11,7 +11,6 @@
   color-scheme: dark;
 }
 
-// Native <select> option lists are drawn by the browser and ignore component styles.
 option,
 optgroup {
   background: var(--panel);
@@ -22,7 +21,6 @@ optgroup {
   box-sizing: border-box;
 }
 
-// Text cursors (pointer and caret) only belong where you can type.
 html {
   cursor: default;
   caret-color: transparent;
@@ -39,7 +37,6 @@ html,
 body {
   margin: 0;
   height: 100%;
-  // The app shell owns its own scrolling, so the document never scrolls.
   overflow: hidden;
   overscroll-behavior: none;
   background:

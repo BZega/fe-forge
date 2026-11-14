@@ -36,12 +36,10 @@ export interface SectionView {
   title: string;
   classId: number | null;
   mount: Mount | null;
-  /** Pair bond level with `mount`; null when the mount has none. */
   mountLevel: number | null;
   growth: GrowthRates;
   parentTitle: string | null;
   exam: { slot: number; level: number } | null;
-  /** Branched off by reclassing rather than an exam, so no roll was used. */
   reclass: boolean;
   firstSlot: number;
   firstLevel: number;
@@ -81,9 +79,7 @@ interface Progress {
 
 interface SectionProgress {
   start: SectionStart;
-  /** Totals after each level up. */
   after: Progress[];
-  /** Class base-stat boost from the inline exam before each level up (zero when there's none). */
   boosts: GrowthRates[];
 }
 
@@ -113,16 +109,12 @@ interface ExamDialogState {
   initialMode: BranchMode;
   canSwitchMode: boolean;
   strBounds: RollBounds;
-  /** The level the exam or reclass class applies from. */
   level: number;
   parentId: number;
   afterRowId: number | null;
   sectionId: number | null;
-  /** The level up a reclass starts on; null adds a new level after the last one. */
   reclassRowId: number | null;
-  /** From Exam / Reclass: an exam is added inline at the end of the section instead of branching. */
   inline: boolean;
-  /** From the timeline: exams and reclasses become branches beside any already at this level. */
   branch?: boolean;
 }
 
@@ -180,7 +172,6 @@ export class SeedMapperPageComponent {
     initialValue: [] as UnitClass[],
   });
 
-  // Starting stats are entered as the unit joins, in this class, so class bonuses are measured from it.
   private readonly startingClass = computed(
     () => this.classes().find((unitClass) => unitClass.name === ALWAYS_AVAILABLE_CLASS) ?? null,
   );
@@ -189,7 +180,6 @@ export class SeedMapperPageComponent {
     initialValue: [] as StatBoostAbility[],
   });
 
-  // Character-only abilities (e.g. Mu's Warrior's Blood) are offered just to that character.
   private readonly unitAbilities = computed(() => {
     const unit = this.api.unitById(this.seedMap().unitId);
     const key = unit ? characterKey(unit.name) : null;
@@ -207,7 +197,6 @@ export class SeedMapperPageComponent {
     initialValue: [] as ClassAbility[],
   });
 
-  /** Classes whose mastery teaches each ability, by ability name; abilities no class teaches are absent. */
   private readonly abilityClasses = computed(() => {
     const result = new Map<string, UnitClass[]>();
 
@@ -222,7 +211,6 @@ export class SeedMapperPageComponent {
     return result;
   });
 
-  // A class's mastery ability can only be equipped once that class is in the section's pool.
   private missingClassesFor(ability: StatBoostAbility, sectionId: number): UnitClass[] {
     const teachers = this.abilityClasses().get(ability.name);
     const pool = new Set((this.availableBySection().get(sectionId) ?? []).map((unitClass) => unitClass.id));
@@ -236,7 +224,6 @@ export class SeedMapperPageComponent {
     this.groupClasses(this.spoilers.filter(this.usableClasses())),
   );
 
-  /** Classes the chosen unit may take (gender and mount restrictions applied). */
   private readonly usableClasses = computed(() =>
     this.api.classesForUnit(this.api.unitById(this.seedMap().unitId)),
   );
@@ -399,7 +386,6 @@ export class SeedMapperPageComponent {
         const from = this.positionAfter(parent, section.exam.afterRowId);
         const reclass = section.exam.reclass === true;
 
-        // An exam uses the next roll itself; a reclass leaves it to the next level up.
         view = {
           section,
           title: reclass ? `Reclass ${++reclassNumber}` : `Exam ${++examNumber}`,
@@ -436,7 +422,6 @@ export class SeedMapperPageComponent {
     return views;
   });
 
-  // Each level up's class and growth, following reclasses within the section.
   private readonly rowClasses = computed(() => {
     const result = new Map<number, { classId: number | null; growth: GrowthRates }[]>();
 
@@ -464,12 +449,10 @@ export class SeedMapperPageComponent {
     return result;
   });
 
-  /** The roll a level up uses: inline exams before it each use one roll of their own. */
   slotOf(view: SectionView, rowIndex: number): number {
     return levelSlot(view.firstSlot, view.section.rows, rowIndex);
   }
 
-  /** The class used for a level up; `rowIndex` -1 means the section's starting class. */
   rowClassId(view: SectionView, rowIndex: number): number | null {
     return this.rowClasses().get(view.section.id)?.[rowIndex]?.classId ?? view.classId;
   }
@@ -480,7 +463,6 @@ export class SeedMapperPageComponent {
       : (this.rowClasses().get(view.section.id)?.[rowIndex]?.growth ?? view.growth);
   }
 
-  // The section's mount carries over to a reclass when the new class can ride it.
   private mountFor(view: SectionView, classId: number | null): { mount: Mount | null; level: number | null } {
     if (classId === view.classId) {
       return { mount: view.mount, level: view.mountLevel };
@@ -793,7 +775,6 @@ export class SeedMapperPageComponent {
     return { ceilings, readings };
   });
 
-  // Only fills in a stat once a reliable level up (more than 2 stats) on the same roll sets a ceiling.
   effectiveRow(growth: GrowthRates | null, row: SeedRow, slot: number): EffectiveRow {
     const { ceilings: bySlot, readings } = this.hitCeilings();
     const ceilings = (readings.get(slot) ?? 0) >= MIN_READINGS_TO_FILL ? bySlot.get(slot) : undefined;
@@ -835,7 +816,6 @@ export class SeedMapperPageComponent {
         block.rows.forEach((row, rowIndex) => {
           const slot = this.slotOf(view, rowIndex);
 
-          // A bad level up may have had stats added by the guaranteed minimum, so it says nothing about the roll.
           if (!isReliable(row)) {
             uncertain.add(slot);
             return;
@@ -864,7 +844,6 @@ export class SeedMapperPageComponent {
         });
       }
 
-      // Negative ids keep inline exams apart from exam sections.
       view.section.rows.forEach((row, rowIndex) => {
         if (row.exam) {
           add(this.slotOf(view, rowIndex) - 1, STR_INDEX, {
@@ -932,8 +911,6 @@ export class SeedMapperPageComponent {
     return gains;
   }
 
-  // Walks each section's level ups in order, so passed inline exams can raise stats to the class's
-  // base stats from what the unit has at that point, and exam branches start from the right totals.
   private readonly progress = computed(() => {
     const result = new Map<number, SectionProgress>();
     const views = this.sectionViews();
@@ -1059,7 +1036,6 @@ export class SeedMapperPageComponent {
       return this.totals(gains, start.floorBoosts, comparator.classId, mount, view.section);
     }
 
-    // After a reclass or inline exam, the end stats use the class (and its bonuses) the section ends in.
     const classId = this.rowClassId(view, rows.length - 1);
     const { mount, level } = this.mountFor(view, classId);
     const end = this.progress().get(view.section.id)?.after.at(-1) ?? start;
@@ -1146,8 +1122,6 @@ export class SeedMapperPageComponent {
     return parts.join('; ');
   }
 
-  // Names in saves that are no longer in the data file, not this character's, or whose class
-  // isn't available are skipped; of an ability and its upgrade, only the last one equipped counts.
   private equippedAbilitiesOf(names: readonly string[], sectionId: number): StatBoostAbility[] {
     const byFamily = new Map<string, StatBoostAbility>();
 
@@ -1208,7 +1182,6 @@ export class SeedMapperPageComponent {
 
   // --- events ------------------------------------------------------------
 
-  // At Lv 1 a picked character starts from their base stats; from another level the stats are entered by hand.
   onUnitChange(id: number | null): void {
     this.state.setUnit(id);
 
@@ -1315,7 +1288,6 @@ export class SeedMapperPageComponent {
       return;
     }
 
-    // A level that already branches gets another branch beside the existing ones.
     if (this.hasExamAt(view, rowIndex)) {
       this.openBranchAt(view, rowIndex);
     } else {
@@ -1323,10 +1295,8 @@ export class SeedMapperPageComponent {
     }
   }
 
-  /** The newest branch made from the timeline, so it can be brought into focus. */
   readonly createdBranchId = signal<number | null>(null);
 
-  /** Opens the exam / reclass dialog to branch in place of (or, for a reclass, from) the level up at `rowIndex`. */
   openBranchAt(view: SectionView, rowIndex: number): void {
     if (!this.canTakeExam(view)) {
       return;
@@ -1356,7 +1326,6 @@ export class SeedMapperPageComponent {
     });
   }
 
-  /** Classes already taken (by exam or reclass) by the branches at this point. */
   private branchClassIds(view: SectionView, afterRowId: number | null): Set<number> {
     return new Set(
       this.seedMap()
@@ -1376,8 +1345,6 @@ export class SeedMapperPageComponent {
     return `${this.slotOf(view, rowIndex)}|${growth === null ? 'none' : this.statKeys.map((stat) => growth[stat]).join(',')}`;
   }
 
-  // Level ups with the same roll and growth rates rise the same way: the first one (in section
-  // order) holds the marks and the rest follow it.
   private readonly rowOwners = computed(() => {
     const owners = new Map<string, { view: SectionView; rowIndex: number }>();
     const sharers = new Map<string, { sectionId: number; rowId: number }[]>();
@@ -1397,12 +1364,10 @@ export class SeedMapperPageComponent {
     return { owners, sharers };
   });
 
-  /** The level up whose marks this one follows; itself when it holds its own. */
   rowOwner(view: SectionView, rowIndex: number): { view: SectionView; rowIndex: number } {
     return this.rowOwners().owners.get(this.growthKey(view, rowIndex)) ?? { view, rowIndex };
   }
 
-  /** Marks a stat on a level up and on every other level up with the same roll and growth rates. */
   setSharedMark(view: SectionView, rowIndex: number, stat: StatKey, risen: boolean): void {
     const targets = this.rowOwners().sharers.get(this.growthKey(view, rowIndex)) ?? [
       { sectionId: view.section.id, rowId: view.section.rows[rowIndex].id },
@@ -1411,8 +1376,6 @@ export class SeedMapperPageComponent {
     this.state.setMarks(targets, stat, risen ? 1 : 0);
   }
 
-  // From +, an exam branches off in place of the level up at `rowIndex`; from Exam / Reclass it's
-  // added inline as a new level. A reclass always starts on that level, in the same section.
   private openExam(view: SectionView, rowIndex: number, inline: boolean): void {
     const row = this.rowBefore(view, rowIndex);
     const from = this.positionAfter(view, row?.id ?? null);
@@ -1543,7 +1506,6 @@ export class SeedMapperPageComponent {
     return { slot: levelSlot(view.firstSlot, view.section.rows, index), level: view.firstLevel + index };
   }
 
-  // Classes the unit doesn't have yet, unlocked by `level` (see RANK_UNLOCK_LEVELS); `keepId` stays listed.
   private examClassGroups(
     view: SectionView,
     level: number,
@@ -1559,7 +1521,6 @@ export class SeedMapperPageComponent {
     );
   }
 
-  // A reclass switches to another class the unit already has (and has unlocked by that level), other than the one it's leaving.
   reclassOptions(view: SectionView, rowIndex: number, taken: ReadonlySet<number> = new Set()): SelectItemGroup[] {
     const leaving = this.rowClassId(view, rowIndex - 1);
     const level = this.levelOf(view, rowIndex);
@@ -1583,12 +1544,10 @@ export class SeedMapperPageComponent {
     this.state.setReclass(view.section.id, row.id, null);
   }
 
-  // Classes the unit doesn't have yet and has unlocked by that level, plus the one this exam is already for.
   inlineExamOptions(view: SectionView, row: SeedRow): SelectItemGroup[] {
     return this.examClassGroups(view, this.levelOf(view, view.section.rows.indexOf(row)), new Set(), row.exam?.classId ?? null);
   }
 
-  /** The rank a class list opens at for the level a class applies from. */
   focusRank(groups: readonly SelectItemGroup[], level: number): string | null {
     return snapRank(level, groups);
   }
@@ -1638,7 +1597,6 @@ export class SeedMapperPageComponent {
 
   // --- projection ---------------------------------------------------------
 
-  /** The unit and its stats at the end of a section, as the start of a stat projection. */
   readonly projection = signal<{ unit: Unit; start: RecruitmentChapter } | null>(null);
 
   canProject(view: SectionView): boolean {
@@ -1672,7 +1630,6 @@ export class SeedMapperPageComponent {
     const base = this.seedMap().startStats;
     const stats = { ...ZERO_GROWTH };
 
-    // Without class, mount or ability bonuses: the projection adds the bonuses of the class it ends in.
     for (const stat of this.statKeys) {
       stats[stat] = (base[stat] ?? 0) - (startingBonus?.[stat] ?? 0) + gains[stat];
     }
@@ -2087,7 +2044,6 @@ function branchKey(sectionId: number, rowId: number | null): string {
   return `${sectionId}:${rowId ?? 'exam'}`;
 }
 
-/** A level up that raised more stats than the guaranteed minimum could have added. */
 function isReliable(row: SeedRow): boolean {
   return STAT_KEYS.filter((stat) => row.marks[stat] > 0).length > MAX_UNRELIABLE_GAINS;
 }
@@ -2114,7 +2070,6 @@ function ridden(mount: Mount | null, level: number | null): RiddenMount {
   };
 }
 
-/** An ability and its upgrades share the name of the base ability. */
 function familyOf(ability: StatBoostAbility): string {
   return ability.upgradeOf ?? ability.name;
 }

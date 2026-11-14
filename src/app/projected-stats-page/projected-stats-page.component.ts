@@ -10,7 +10,6 @@ interface Build {
 }
 
 interface StartDialogState {
-  /** The build being edited; null adds a new one. */
   editId: number | null;
 }
 
@@ -24,7 +23,7 @@ interface StartDialogState {
 export class ProjectedStatsPageComponent {
   readonly helpText = [
     'Use + Build to add a character: choose Manual (their Lv 1 base stats, or stats you enter at any level) or Recruitment (the stats they join with). In the same window, plan their classes (each reclass has its own level, and classes unlock by rank) and set the level and options for that build. Edit reopens it.',
-    'Each stat shows its average, spread (standard deviation), middle 50% of outcomes, and growth rate at the build’s level, with a histogram of every outcome. Enter the stats you actually got to see how lucky they were.',
+    'Each stat shows its average, spread (standard deviation), middle 50% of outcomes, and growth rate at the build’s level, with a histogram of every outcome. Add the stats you actually got in the build, as base or in-game stats, to see how lucky they were at that level.',
     'The chances are calculated exactly from the growth rates, level by level, not simulated. Reclassing into a class for the first time raises stats below its class floors.',
     'With Guaranteed minimum on, a level up that raises too few stats (fewer than 2 in Part I, 1 after) gets extra ones. Which stats the game picks isn’t known, so they’re assumed to be spread evenly over the stats that could have risen; turn it off to see plain independent rolls.',
     'Rolls are fixed per save (see the Growth Mapper), but until you know them each is treated as an even 0–99 roll.',
@@ -35,7 +34,6 @@ export class ProjectedStatsPageComponent {
   readonly builds = signal<Build[]>([]);
   private readonly results = signal<ReadonlyMap<number, BuildResult | null>>(new Map());
 
-  // The character's name, numbered when the same character has several builds.
   readonly headings = computed(() => {
     const builds = this.builds();
     const totals = new Map<string, number>();

@@ -53,7 +53,6 @@ export class ComparisonDialogComponent {
     () => this.statKeys.filter((stat) => this.delta()[stat] === 0).length,
   );
 
-  // Escape backs out one step: an open dropdown closes itself first, then the pickers, then the dialog.
   @HostListener('document:keydown.escape', ['$event'])
   onEscape(event: KeyboardEvent): void {
     if (event.defaultPrevented) {

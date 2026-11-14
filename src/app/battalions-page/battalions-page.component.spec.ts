@@ -4,7 +4,6 @@ import { Battalion, BATTALION_TYPE_ORDER } from '../models/growth.models';
 import { SpoilerService } from '../services/spoiler.service';
 import { BattalionsPageComponent } from './battalions-page.component';
 
-// Expectations come from the data file, so editing battalions.json doesn't break these tests.
 const battalions = battalionData as Battalion[];
 
 describe('BattalionsPageComponent', () => {
@@ -46,7 +45,6 @@ describe('BattalionsPageComponent', () => {
       cell.innerText.replace(/\s+/g, ' ').trim(),
     );
 
-    // Rank | Str Mag Spd Dex Def Res Lck Cha | Total | Skill (no battalion gives HP)
     expect(cells).toEqual([
       first.rank,
       ...[first.str, first.mag, first.spd, first.dex, first.def, first.res, first.lck, first.cha].map(String),

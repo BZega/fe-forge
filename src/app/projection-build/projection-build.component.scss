@@ -37,7 +37,6 @@
   opacity: 0.65;
 }
 
-// The empty card before any build: same layout, greyed out.
 .build--placeholder {
   .results {
     opacity: 0.4;
@@ -97,22 +96,6 @@
   }
 }
 
-.row-actual input {
-  min-width: 0;
-  background: #142c30;
-  border: 1px solid var(--panel-border);
-  border-radius: 6px;
-  color: inherit;
-  font: inherit;
-  font-size: 0.88rem;
-  padding: 0.4rem 0.5rem;
-
-  &:focus {
-    border-color: var(--accent);
-    outline: none;
-  }
-}
-
 .build-hint {
   margin: 0;
   font-size: 0.85rem;
@@ -153,7 +136,6 @@
   font-weight: 700;
 }
 
-// Reads as the heading's number until it's clicked to type a level.
 .level-control-number {
   width: 3.2rem;
   background: transparent;
@@ -201,7 +183,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 2.4rem 5.6rem max-content minmax(5rem, 1fr) 4.2rem;
+  grid-template-columns: 2.4rem 6rem 6.75rem minmax(5rem, 1fr);
   align-items: center;
   gap: 0.25rem 0.6rem;
   padding: 0.35rem 0.5rem;
@@ -230,10 +212,9 @@
 }
 
 .row-details {
-  display: flex;
+  display: grid;
+  grid-template-columns: 4.25rem 2.5rem;
   align-items: center;
-  justify-content: flex-start;
-  gap: 0.45rem;
   min-width: 0;
 }
 
@@ -299,13 +280,6 @@
   background: #4fc3f7;
 }
 
-.row-actual input {
-  width: 100%;
-  padding: 0.3rem 0.2rem;
-  text-align: center;
-  border-color: rgb(79 195 247 / 45%);
-}
-
 .row-verdict {
   grid-column: 2 / -1;
   font-size: 0.75rem;
@@ -367,20 +341,56 @@
   background: #4fc3f7;
 }
 
-.link-button {
-  flex: none;
-  margin-left: auto;
-  background: transparent;
-  border: none;
-  color: var(--accent);
-  cursor: pointer;
-  font: inherit;
-  padding: 0;
-  text-decoration: underline;
+.view-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+  font-size: 0.78rem;
 }
 
-.link-button--hidden {
-  visibility: hidden;
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  overflow: hidden;
+
+  button {
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    padding: 0.2rem 0.7rem;
+  }
+}
+
+.view-toggle .view-toggle--active {
+  background: rgb(240 192 74 / 18%);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.ghost-button,
+.view-weapon {
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  color: inherit;
+  font: inherit;
+  padding: 0.2rem 0.55rem;
+}
+
+.ghost-button {
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--accent);
+  }
+}
+
+.view-weapon {
+  background: #142c30;
 }
 
 .histogram-panel {
@@ -429,8 +439,8 @@
   }
 
   .row {
-    grid-template-columns: 2rem max-content minmax(0, 1fr) 3.2rem;
-    gap: 0 0.5rem;
+    grid-template-columns: 2rem 5.5rem 2.3rem minmax(0, 1fr);
+    gap: 0 0.35rem;
     padding: 0.3rem 0.4rem;
   }
 
@@ -450,6 +460,8 @@
   }
 
   .row-range {
+    grid-column: 2;
+    grid-row: 2;
     font-size: 0.72rem;
     opacity: 0.8;
     white-space: normal;
@@ -462,29 +474,21 @@
   }
 
   .row-growth {
-    font-size: 0.72rem;
+    grid-column: 3;
+    grid-row: 1 / 3;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: left;
   }
 
   .row-details {
-    grid-column: 2;
-    grid-row: 2;
-    gap: 0.35rem;
+    display: contents;
   }
 
   .row-bar {
-    grid-column: 3;
-    grid-row: 1 / 3;
-    height: 0.6rem;
-  }
-
-  .row-actual {
     grid-column: 4;
     grid-row: 1 / 3;
-
-    input {
-      padding: 0.3rem 0.05rem;
-      font-size: 0.75rem;
-    }
+    height: 0.6rem;
   }
 
   .row-verdict {

@@ -198,7 +198,7 @@
                 <div class="sheet-col">
                   <section aria-labelledby="stats-title">
                     <div class="profile">
-                      <span class="profile-class summary-value">{{ view.chapter.className }}</span>
+                      <span class="profile-class summary-value">{{ classLabel(view.chapter.className, unit()) }}</span>
                       <ng-container *ngTemplateOutlet="statRows; context: { $implicit: view.profile }" />
                     </div>
                   </section>

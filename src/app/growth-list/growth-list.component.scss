@@ -9,7 +9,6 @@
   font-style: italic;
 }
 
-// One wrapped column of non-zero bonuses instead of a column per stat.
 .list .list-bonus {
   text-align: left;
   white-space: normal;
@@ -50,7 +49,6 @@ thead .list-bonus {
   flex: 1;
   min-height: 0;
   overflow: auto;
-  // Stops the elastic overscroll past the first and last row.
   overscroll-behavior: none;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -101,7 +99,6 @@ thead .list-bonus {
   tbody tr:not(.group):hover {
     td,
     th {
-      // Works over the solid tier fills as well as the plain cells.
       filter: brightness(1.22);
       border-bottom-color: rgb(240 192 74 / 45%);
     }
@@ -116,7 +113,6 @@ thead .list-bonus {
 .list-name {
   text-align: left;
   font-weight: 600;
-  // Shrinks the column to the longest name so the stat columns take the slack.
   width: 1px;
   padding-right: 1.25rem;
 }
@@ -150,7 +146,6 @@ thead .list-bonus {
   }
 }
 
-// A short label beside the name, e.g. a battalion's rank.
 .list .list-tag {
   text-align: center;
   font-weight: 600;
@@ -186,7 +181,6 @@ thead .list-total {
   color: #ffffff;
 }
 
-// Free text (e.g. a battalion's skill): a bold title over a wrapped, quieter description.
 .list .list-detail {
   text-align: left;
   white-space: normal;
@@ -220,7 +214,6 @@ thead .list-total {
   text-transform: uppercase;
 }
 
-// The cell spans the whole table, so the text pins itself while the table pans.
 .group-label {
   position: sticky;
   left: 0;
@@ -241,7 +234,6 @@ thead .list-total {
   color: #7ee08a;
 }
 
-// Graded text rather than filled cells, to match the sign colouring on the other lists.
 .tier-best {
   color: #7ee08a;
   font-weight: 700;
@@ -275,7 +267,6 @@ thead .list-total {
     }
   }
 
-  // The column headings already say these are percentages.
   .unit {
     display: none;
   }
@@ -288,12 +279,10 @@ thead .list-total {
     overflow-wrap: anywhere;
   }
 
-  // Free text doesn't fit beside the stats on a phone.
   .list .list-detail {
     display: none;
   }
 
-  // Stacking the arrow keeps each column as narrow as its label.
   .sort {
     flex-direction: column;
     gap: 0;

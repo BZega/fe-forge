@@ -7,9 +7,7 @@ import { GrowthDataService } from './growth-data.service';
 export interface SeedRow {
   id: number;
   marks: GrowthRates;
-  /** Reclass into this class before this level up; it applies from here to the section's end. */
   reclassTo?: number;
-  /** An exam taken just before this level up; it uses a roll of its own. */
   exam?: InlineExam;
 }
 
@@ -17,7 +15,6 @@ export interface InlineExam {
   classId: number | null;
   chance: number;
   passed: boolean;
-  /** Passed but stayed in the current class; the exam class is only unlocked. */
   keepClass?: boolean;
 }
 
@@ -35,9 +32,7 @@ export interface SeedExam {
   classId: number | null;
   chance: number;
   passed: boolean;
-  /** A reclass branch: switches class without an exam, so it uses no roll of its own. */
   reclass?: boolean;
-  /** Passed but stayed in the current class; the exam class is only unlocked. */
   keepClass?: boolean;
 }
 
@@ -47,9 +42,7 @@ export interface SeedSection {
   classId: number | null;
   mountId: number | null;
   mountLevel: number;
-  /** Names of equipped stat-boosting abilities. */
   abilities: string[];
-  /** Weapon type equipped, for abilities whose boost depends on it. */
   weapon: WeaponKey | null;
   rows: SeedRow[];
   comparators: SeedComparator[];
@@ -67,13 +60,10 @@ export interface ExamDraft {
   classId: number;
   chance: number;
   passed: boolean;
-  /** Set by the dialog when it's a reclass rather than an exam. */
   reclass?: boolean;
-  /** A pass that stays in the current class. */
   keepClass?: boolean;
 }
 
-/** Whether a passed exam moves the unit into the exam class (rather than only unlocking it). */
 export function switchesClass(exam: { passed: boolean; keepClass?: boolean }): boolean {
   return exam.passed && !exam.keepClass;
 }
@@ -88,7 +78,6 @@ export function effectiveClassId(
 ): number | null {
   const exam = section.exam;
 
-  // A failed exam, or a pass that stays put, keeps whatever class the parent had at that level, reclasses included.
   if (exam && !switchesClass(exam)) {
     const parent = sections.find((candidate) => candidate.id === exam.parentId);
 
@@ -98,7 +87,6 @@ export function effectiveClassId(
   return exam ? (section.classId ?? exam.classId) : section.classId;
 }
 
-/** The class a row switches to before its level up, if any: a reclass or a passed inline exam. */
 export function rowSwitchesTo(row: SeedRow): number | null {
   if (row.exam) {
     return switchesClass(row.exam) ? row.exam.classId : null;
@@ -107,7 +95,6 @@ export function rowSwitchesTo(row: SeedRow): number | null {
   return row.reclassTo ?? null;
 }
 
-/** The section's class after the given level up, following any reclasses up to and including it. */
 export function classAtRow(
   sections: readonly SeedSection[],
   section: SeedSection,
@@ -139,7 +126,6 @@ export function availableClassIds(
   let current: SeedSection | undefined = section;
   let untilRowId: number | null | undefined;
 
-  // Classes passed into along the way count: inline exams up to the branch point, and exam sections.
   while (current) {
     const rows = untilRowId === null ? [] : current.rows;
 
@@ -398,7 +384,6 @@ export class SeedMapperStateService {
     }));
   }
 
-  /** Fills every starting stat at once (one change), e.g. from a character's base stats. */
   setStartStats(stats: GrowthRates): void {
     this.mutate((map) => ({
       ...map,
@@ -478,7 +463,6 @@ export class SeedMapperStateService {
     }));
   }
 
-  /** Sets one stat's mark on several level ups at once, e.g. ones that share a roll and growth rates. */
   setMarks(targets: readonly { sectionId: number; rowId: number }[], stat: StatKey, value: number): void {
     const bySection = new Map<number, Set<number>>();
 
@@ -503,7 +487,6 @@ export class SeedMapperStateService {
     }));
   }
 
-  /** Reclass before the given level up; null removes the reclass. A row holds a reclass or an exam, not both. */
   setReclass(sectionId: number, rowId: number, classId: number | null): void {
     this.patch(sectionId, (section) => ({
       ...section,
@@ -513,7 +496,6 @@ export class SeedMapperStateService {
     }));
   }
 
-  /** Adds a level up that starts with a reclass. */
   addReclassLevel(sectionId: number, classId: number): void {
     this.addLevel(sectionId);
 
@@ -524,7 +506,6 @@ export class SeedMapperStateService {
     }
   }
 
-  /** Takes (or changes) an exam just before the given level up; null removes it. */
   setInlineExam(sectionId: number, rowId: number, exam: InlineExam | null): void {
     this.patch(sectionId, (section) => ({
       ...section,
@@ -534,7 +515,6 @@ export class SeedMapperStateService {
     }));
   }
 
-  /** Adds a level up that starts with an exam. */
   addExamLevel(sectionId: number, exam: InlineExam): void {
     this.addLevel(sectionId);
 
@@ -646,10 +626,6 @@ export class SeedMapperStateService {
     return section.id;
   }
 
-  /**
-   * Branches off after the given level up, alongside any branches already there: exams at the same
-   * point all use the same roll and share the level ups after it. A reclass draft uses no roll.
-   */
   addBranch(parentId: number, afterRowId: number | null, draft: ExamDraft): number | null {
     const parent = this.mapState().sections.find((section) => section.id === parentId);
 
@@ -922,11 +898,6 @@ function withExam(row: SeedRow, exam: InlineExam | null): SeedRow {
   return exam === null ? rest : { ...rest, exam: { ...exam } };
 }
 
-/**
- * Older saves kept every exam as its own section. One that starts right after the last level of
- * the section it came from is just the seed carrying on, so it becomes an inline exam there —
- * unless that would lose something only the exam section had.
- */
 function foldEndExams(sections: SeedSection[]): SeedSection[] {
   let result = sections;
   let folded = true;
@@ -944,7 +915,6 @@ function foldEndExams(sections: SeedSection[]): SeedSection[] {
           ).length
         : 0;
 
-      // Reclass branches and same-level alternatives stay separate branches.
       if (!exam || !parent || exam.reclass || siblings > 1 || !canFold(section, parent, exam)) {
         continue;
       }

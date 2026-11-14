@@ -42,6 +42,32 @@ describe('ClassPageComponent class switcher keyboard', () => {
 
   const second = ordered[1];
 
+  it('toggles the Noble/Commoner header between Noble, Commoner and God', () => {
+    const origin = (unitClassData as UnitClass[]).find((unitClass) => unitClass.name === 'Noble/Commoner')!;
+    const page = open(origin.id);
+    const tabs = () => Array.from(page.host.querySelectorAll<HTMLButtonElement>('.hero-variants [role="tab"]'));
+    const text = () => Array.from(page.host.querySelectorAll('.hero-description')).map((line) => line.textContent!.trim());
+
+    expect(tabs().map((tab) => tab.textContent!.trim())).toEqual(['Noble', 'Commoner', 'God']);
+    expect(text()).toEqual([origin.description.split('/')[0]]);
+    expect(page.host.querySelector('.portrait-glyph')!.textContent!.trim()).toBe('NO');
+
+    tabs()[1].click();
+    page.fixture.detectChanges();
+    expect(text()).toEqual([origin.description.split('/')[1]]);
+
+    tabs()[2].click();
+    page.fixture.detectChanges();
+    expect(text()).toEqual(['WIP']);
+    expect(page.host.querySelector('.portrait-glyph')!.textContent!.trim()).toBe('GO');
+  });
+
+  it('has no origin toggle on other classes', () => {
+    const page = open(second.id);
+
+    expect(page.host.querySelector('.hero-variants')).toBeNull();
+  });
+
   it('starts on the current class and moves the highlight with the up and down arrows', () => {
     const page = open(second.id);
     page.toggle().click();

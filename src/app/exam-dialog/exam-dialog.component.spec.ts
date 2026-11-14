@@ -66,7 +66,6 @@ describe('ExamDialogComponent reclass mode', () => {
     expect(buttons().map((button) => button.disabled)).toEqual([true, false]);
     expect(dialog.outcome()).toBeFalse();
 
-    // With no reliable reading (e.g. only a 1–2 stat level up), nothing is forced.
     open();
     dialog.classId.set(9);
     dialog.chanceText.set('47');

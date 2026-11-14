@@ -18,7 +18,6 @@ describe('recruitment rules', () => {
     units = await firstValueFrom(api.getUnits());
   });
 
-  // Matches the recruitment data: Str 9 is Bld 1, 10 is 2, 15 is 3, 31 and 33 are 6.
   it('works out Bld as Str / 5 rounded down, never below 1', () => {
     expect([0, 1, 5, 9, 10, 14, 15, 31, 33, 35].map(buildFromStrength)).toEqual([1, 1, 1, 1, 2, 2, 3, 6, 6, 7]);
   });

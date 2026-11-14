@@ -6,7 +6,7 @@ import { map } from 'rxjs/operators';
 import { GrowthCalculatorComponent } from '../growth-calculator/growth-calculator.component';
 import { portraitUrl, skillIconUrl, useFallbackIcon } from '../icon-links';
 import { ProjectionDialogComponent } from '../projection-dialog/projection-dialog.component';
-import { BOOSTED_GROWTH_VARIANTS, characterKey, diffGrowth, growthTotal, Mount, SKILL_KEYS, SKILL_LABELS, SkillKey, SkillPreference, STAT_KEYS, STAT_LABELS, sumGrowth, toGrowth, Unit, UnitClass } from '../models/growth.models';
+import { BOOSTED_GROWTH_VARIANTS, characterKey, classLabel, diffGrowth, growthTotal, Mount, SKILL_KEYS, SKILL_LABELS, SkillKey, SkillPreference, STAT_KEYS, STAT_LABELS, sumGrowth, toGrowth, Unit, UnitClass } from '../models/growth.models';
 import { BASE_MOVE, buildFromStrength, chapterGrowth, RouteRequirement } from '../models/recruitment.models';
 import { CalculatorStateService } from '../services/calculator-state.service';
 import { GrowthDataService } from '../services/growth-data.service';
@@ -48,6 +48,7 @@ export class CharacterPageComponent {
 
   readonly statKeys = STAT_KEYS;
   readonly statLabels = STAT_LABELS;
+  readonly classLabel = classLabel;
 
   private readonly units = toSignal(this.api.getUnits(), {
     initialValue: [] as Unit[],
@@ -85,10 +86,8 @@ export class CharacterPageComponent {
     return unit ? this.recruitmentData.forUnit(unit.name) : null;
   });
 
-  // A route only shows once it has at least one chapter's data.
   readonly routes = computed(() => this.recruitment()?.routes.filter((route) => route.chapters.length > 0) ?? []);
 
-  // Keeps the chosen route when it's still available, otherwise falls back to the first one.
   readonly activeRouteKey = linkedSignal<readonly { key: string }[], string | null>({
     source: this.routes,
     computation: (routes, previous) =>
@@ -164,7 +163,6 @@ export class CharacterPageComponent {
 
   readonly projectionOpen = signal(false);
 
-  /** The unit whose growths drive projections (Mu*'s for Mu). */
   readonly projectionUnit = computed(() => {
     const unit = this.unit();
 
@@ -174,7 +172,6 @@ export class CharacterPageComponent {
   readonly slotA = computed(() => `character-${this.unitId()}-1`);
   readonly slotB = computed(() => `character-${this.unitId()}-2`);
 
-  // Mu and Mu* both use Mu*'s growths here, measured against Mu's so the bonus shows.
   private growthUnitsFor(unit: Unit): { growthUnit: Unit; baseUnit: Unit | null } {
     const key = characterKey(unit.name);
     const boosted = this.units().find((candidate) => candidate.name === BOOSTED_GROWTH_VARIANTS[key]);
@@ -214,7 +211,6 @@ export class CharacterPageComponent {
 
   readonly useFallbackIcon = useFallbackIcon;
 
-  // Resets when switching characters, so one broken link doesn't hide the next portrait.
   readonly portraitFailed = linkedSignal({ source: () => this.unit()?.name, computation: () => false });
 
   readonly portrait = computed(() => {
@@ -235,7 +231,6 @@ export class CharacterPageComponent {
     this.selectedChapter.set(Number(value));
   }
 
-  // Only the parts that apply: "Automatic", or the negotiation plus any Support/Renown level needed.
   requirementText(requirement: RouteRequirement): string {
     return [
       requirement.negotiation,

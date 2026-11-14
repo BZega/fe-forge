@@ -80,6 +80,9 @@
   "_classSpritesSource": "Small pixel-art class sprites from https://eoddb.com/fefw/img/classes.",
   "classSprites": {
     "Noble/Commoner": null,
+    "Noble": null,
+    "Commoner": null,
+    "God": null,
     "Gladiator": "https://eoddb.com/fefw/img/classes/gladiator.webp?v=3",
     "Hunter": "https://eoddb.com/fefw/img/classes/hunter.webp?v=3",
     "Soldier": "https://eoddb.com/fefw/img/classes/soldier.webp?v=3",

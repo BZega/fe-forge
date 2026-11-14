@@ -34,7 +34,6 @@
   box-shadow: 0 6px 18px rgb(0 0 0 / 35%);
 }
 
-// Personal Ability, Level-Up Abilities and Bloodmark, side by side under the name.
 .profile-abilities {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
@@ -330,7 +329,6 @@
   gap: 1rem;
 }
 
-// Laid out like the in-game Stats screen: profile + stats | growths + skill levels | abilities.
 .sheet {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1fr);
@@ -413,7 +411,6 @@
   border-bottom: 1px dashed rgb(240 192 74 / 18%);
   font-variant-numeric: tabular-nums;
 
-  // Alone on its row but only as wide as the left column, so its value lines up with the column below.
   &--wide {
     grid-column: 1 / -1;
     justify-self: start;
@@ -421,7 +418,6 @@
   }
 }
 
-// Column-first: HP (when present) on its own row, then Str-Dex down the left and Def-Cha down the right.
 .stat-rows--split {
   grid-auto-flow: column;
   grid-template-rows: repeat(4, auto);
@@ -453,7 +449,6 @@
   color: var(--muted);
 }
 
-// 12 skills, so six columns gives the two rows of the in-game Skill Lv panel.
 .skill-grid {
   list-style: none;
   margin: 0.5rem 0 0;
@@ -463,7 +458,6 @@
   gap: 0.3rem;
 }
 
-// Rank wraps under the icon when the tile gets too narrow for both side by side.
 .skill-rank {
   position: relative;
   display: flex;
@@ -505,7 +499,6 @@
   }
 }
 
-// Shown by the tile's tooltip; kept for screen readers.
 .skill-rank-label {
   position: absolute;
   width: 1px;

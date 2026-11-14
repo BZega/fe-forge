@@ -19,7 +19,7 @@
         <select class="plan-select" [value]="chapter()?.chapter" (change)="chapterNumber.set(+$any($event.target).value)">
           @for (option of chapters(); track option.chapter) {
             <option [value]="option.chapter" [selected]="option.chapter === chapter()?.chapter">
-              Chapter {{ option.chapter }} · Lv {{ option.level }} {{ option.className }}
+              Chapter {{ option.chapter }} · Lv {{ option.level }} {{ classLabel(option.className, unit()) }}
             </option>
           }
         </select>

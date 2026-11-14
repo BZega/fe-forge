@@ -72,7 +72,6 @@ export const MOUNT_TYPE_ORDER: readonly MountType[] = [
 
 export type BattalionType = 'Physical' | 'Magic' | 'Defense' | 'Recovery';
 
-/** Battalion ranks from lowest to highest; used to sort by rank. */
 export const BATTALION_RANK_ORDER: readonly string[] = [
   'E',
   'E+',
@@ -95,7 +94,6 @@ export const BATTALION_TYPE_ORDER: readonly BattalionType[] = [
   'Recovery',
 ];
 
-/** A battalion's flat stat bonuses, plus the skill it lets its leader use. */
 export interface Battalion extends GrowthRates {
   id: number;
   name: string;
@@ -108,13 +106,11 @@ export interface Battalion extends GrowthRates {
 
 export type Gender = 'Male' | 'Female';
 
-/** Classes only female units may take. */
 export const FEMALE_ONLY_CLASS_NAMES: ReadonlySet<string> = new Set([
   'Winged Soldier',
   'Celestial Trooper',
 ]);
 
-/** Unit names that are variants of one character, so per-character data is written once. */
 const CHARACTER_ALIASES: Readonly<Record<string, string>> = {
   'Eshmel (M)': 'Eshmel',
   'Eshmel (F)': 'Eshmel',
@@ -127,12 +123,10 @@ export function characterKey(unitName: string): string {
 
 const BASE_STATS = baseStatData as Readonly<Record<string, GrowthRates>>;
 
-/** A unit's Lv 1 base stats (gender and boosted variants share their character's), if known. */
 export function baseStatsOf(unitName: string): GrowthRates | null {
   return BASE_STATS[characterKey(unitName)] ?? null;
 }
 
-/** Characters whose recruitment growths come from a boosted variant, shown as the base unit's plus a bonus. */
 export const BOOSTED_GROWTH_VARIANTS: Readonly<Record<string, string>> = {
   Mu: 'Mu*',
 };
@@ -140,8 +134,8 @@ export const BOOSTED_GROWTH_VARIANTS: Readonly<Record<string, string>> = {
 export interface Unit extends GrowthRates {
   id: number;
   name: string;
+  origin: Origin;
   gender: Gender;
-  /** False for units that cannot take any mounted class. */
   canUseMounts: boolean;
   skillPreference: Record<SkillKey, SkillPreference>;
   total: number;
@@ -162,6 +156,16 @@ export interface UnitClass extends GrowthRates {
 }
 
 export type BonusStatKey = StatKey | 'mov';
+
+export type Origin = 'Noble' | 'Commoner' | 'God';
+
+export const ORIGINS: readonly Origin[] = ['Noble', 'Commoner', 'God'];
+
+export const ORIGIN_CLASS = 'Noble/Commoner';
+
+export function classLabel(className: string, unit: Pick<Unit, 'origin'> | null): string {
+  return className === ORIGIN_CLASS && unit?.origin ? unit.origin : className;
+}
 
 export type StatBonuses = Record<BonusStatKey, number>;
 
@@ -227,20 +231,52 @@ export interface ClassAbility {
   isCombatArt: boolean;
 }
 
-/** An ability that raises the unit's own stats while equipped (data/stat-boost-abilities.json). */
 export interface StatBoostAbility {
   name: string;
   description: string;
   boosts: Partial<Record<StatKey, number>>;
-  /** Only these characters can equip it; absent means anyone. */
   characters?: string[];
-  /** Extra boosts that depend on the equipped weapon type. */
   weaponBoosts?: Partial<Record<WeaponKey, Partial<Record<StatKey, number>>>>;
-  /** The ability this upgrades; the two can't be equipped together. */
   upgradeOf?: string;
 }
 
 export const MAX_EQUIPPED_ABILITIES = 5;
+
+export function abilityFamily(ability: StatBoostAbility): string {
+  return ability.upgradeOf ?? ability.name;
+}
+
+export function abilitiesFor(abilities: readonly StatBoostAbility[], unitName: string | null): StatBoostAbility[] {
+  const key = unitName ? characterKey(unitName) : null;
+
+  return abilities.filter((ability) => !ability.characters || (key !== null && ability.characters.includes(key)));
+}
+
+export function abilityPickerGroups(abilities: readonly StatBoostAbility[]) {
+  const toItem = (ability: StatBoostAbility) => ({
+    id: ability.name,
+    name: ability.name,
+    description: ability.description,
+    family: abilityFamily(ability),
+  });
+
+  return [
+    { label: 'Class abilities', items: abilities.filter((ability) => !ability.characters).map(toItem) },
+    { label: 'Character abilities', items: abilities.filter((ability) => ability.characters).map(toItem) },
+  ].filter((group) => group.items.length > 0);
+}
+
+export function abilityBoosts(abilities: readonly StatBoostAbility[], weapon: WeaponKey | null): GrowthRates {
+  const result = { ...ZERO_GROWTH };
+
+  for (const ability of abilities) {
+    for (const key of STAT_KEYS) {
+      result[key] += (ability.boosts[key] ?? 0) + (weapon ? (ability.weaponBoosts?.[weapon]?.[key] ?? 0) : 0);
+    }
+  }
+
+  return result;
+}
 
 export type WeaponKey = Extract<SkillKey, 'sword' | 'spear' | 'axe' | 'bow' | 'gauntlet' | 'blackMagic' | 'whiteMagic'>;
 
@@ -294,7 +330,6 @@ export function mountBonusAt(
 export interface ClassLevelConfig {
   levels: readonly number[];
   defaultLevel: number;
-  /** Bonuses added to base class growths per level; levels do not stack. */
   bonuses: Readonly<Record<number, Partial<GrowthRates>>>;
   mountMultiplier: number;
 }
@@ -319,7 +354,6 @@ export const CLASS_LEVEL_CONFIGS: Readonly<Record<string, ClassLevelConfig>> = {
   },
 };
 
-/** A unit + class + mount selection and the growth rows it produces. */
 export interface GrowthBuild {
   unit: Unit | null;
   unitClass: UnitClass | null;

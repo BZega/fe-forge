@@ -114,6 +114,10 @@
   border-bottom-color: var(--accent);
 }
 
+.hero-variants {
+  margin: 0.85rem 0 0;
+}
+
 // --- profile header -----------------------------------------------------------
 
 .hero {
@@ -161,7 +165,6 @@
   }
 }
 
-// Pixel-art sprite: kept at its own size with crisp edges, never stretched to fill the frame.
 .portrait .portrait-sprite {
   width: auto;
   height: auto;
@@ -204,7 +207,6 @@
 
 .badge {
   display: inline-flex;
-  // The small caps label sits on the same text line as the value.
   align-items: baseline;
   gap: 0.45rem;
   padding: 0.3rem 0.75rem;

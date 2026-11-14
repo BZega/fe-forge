@@ -16,7 +16,6 @@ import {
 
 type Row = Record<string, unknown>;
 
-/** Each inventory list in the files, and the columns to show for it, in order. */
 const INVENTORY_LAYOUT: readonly {
   key: string;
   label: string;
@@ -93,10 +92,6 @@ const INVENTORY_LAYOUT: readonly {
   },
 ];
 
-/**
- * Recruitment details per unit, from the files in src/app/data/recruitment. Kept apart from
- * GrowthDataService so only the character page loads them.
- */
 @Injectable({ providedIn: 'root' })
 export class RecruitmentDataService {
   private readonly byUnit = new Map(
@@ -107,7 +102,6 @@ export class RecruitmentDataService {
     return this.byUnit.get(characterKey(unitName)) ?? null;
   }
 
-  /** Routes that list at least one chapter, i.e. ones a stat projection can start from. */
   routesWithChapters(unitName: string): readonly RecruitmentRoute[] {
     return this.forUnit(unitName)?.routes.filter((route) => route.chapters.length > 0) ?? [];
   }
@@ -188,7 +182,6 @@ function toInventory(inventory: Record<string, Row[] | null>): InventoryGroup[] 
   }).filter((group) => group.entries.length > 0);
 }
 
-// Some files hold an empty list instead of null when there's nothing to show.
 function toAbility(ability: RawAbility | readonly unknown[] | null | undefined): { name: string; description: string } | null {
   return ability && !Array.isArray(ability) && (ability as RawAbility).Name
     ? { name: (ability as RawAbility).Name, description: (ability as RawAbility).Description }
@@ -201,7 +194,6 @@ function skillRank(skill: unknown): string {
   return value?.SkillType ? `${value.SkillType} ${value.SkillRank ?? ''}`.trim() : '';
 }
 
-// "--", null and empty lists mean the stat doesn't apply.
 function display(value: unknown): string {
   if (value === null || value === undefined || value === '--') {
     return '';

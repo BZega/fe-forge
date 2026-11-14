@@ -15,7 +15,6 @@ export function classSpriteUrl(name: string): string | null {
   return LINKS.classSprites[name] ?? null;
 }
 
-// Same naming scheme as the class sprites: "Sword Crit +3" -> sword_crit_3.webp. Unverified, so callers fall back on error.
 export function abilityIconUrl(name: string): string {
   const slug = name
     .toLowerCase()
@@ -29,7 +28,6 @@ export function skillIconUrl(skill: SkillKey, preference: SkillPreference = 'neu
   return LINKS.skills[skill]?.[preference] ?? null;
 }
 
-/** Swaps a linked image that fails to load (e.g. the host is blocked) for a bundled one. */
 export function useFallbackIcon(event: Event, fallback: string): void {
   const img = event.target as HTMLImageElement;
 

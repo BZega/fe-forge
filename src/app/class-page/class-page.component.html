@@ -8,9 +8,9 @@
     <header class="hero">
       <div class="portrait" [attr.data-class-id]="current.id">
         @if (sprite(); as src) {
-          <img class="portrait-sprite" [src]="src" [alt]="current.name" referrerpolicy="no-referrer" (error)="spriteFailed.set(true)" />
+          <img class="portrait-sprite" [src]="src" [alt]="headerName()" referrerpolicy="no-referrer" (error)="spriteFailed.set(true)" />
         } @else {
-          <span class="portrait-glyph" aria-hidden="true">{{ initials(current.name) }}</span>
+          <span class="portrait-glyph" aria-hidden="true">{{ initials(headerName()!) }}</span>
         }
       </div>
 
@@ -87,7 +87,24 @@
           }
         </div>
 
-        @for (line of descriptionLines(); track $index) {
+        @if (variants().length > 0) {
+          <div class="stat-tabs hero-variants" role="tablist" aria-label="Origin">
+            @for (option of variants(); track option.name; let index = $index) {
+              <button
+                type="button"
+                role="tab"
+                class="stat-tabs-tab section-title"
+                [class.stat-tabs-tab--active]="variantIndex() === index"
+                [attr.aria-selected]="variantIndex() === index"
+                (click)="variantIndex.set(index)"
+              >
+                {{ option.name }}
+              </button>
+            }
+          </div>
+        }
+
+        @for (line of headerLines(); track $index) {
           <p class="hero-description">{{ line }}</p>
         }
       </div>

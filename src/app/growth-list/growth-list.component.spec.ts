@@ -33,7 +33,6 @@ describe('GrowthListComponent tag column', () => {
   });
 
   it('sorts highest rank first, then lowest first, then back to the original order', () => {
-    // Like the other columns, a reversed sort also reverses the name order among equal ranks.
     sortByTag();
     expect(names()).toEqual(['Alpha', 'Charlie', 'Delta', 'Bravo']);
 

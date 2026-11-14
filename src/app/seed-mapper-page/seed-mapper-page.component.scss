@@ -91,7 +91,6 @@
   margin: 0 auto;
 }
 
-// With no comparators there is only one block, so the whole card narrows.
 .seed-group--compact {
   max-width: 780px;
 
@@ -99,7 +98,6 @@
     max-width: 100%;
   }
 
-  // The narrow card's header drops counts and uses short button labels (titles keep the detail).
   .seed-header {
     .label-count,
     .label-long {
@@ -185,7 +183,6 @@
 }
 
 .block {
-  // A half-width basis keeps it to two per row; an odd one out centres itself.
   flex: 1 1 calc(50% - 0.45rem);
   min-width: 0;
   max-width: calc(50% - 0.45rem);
@@ -546,7 +543,6 @@
   opacity: 0.6;
 }
 
-// Spans the stat columns of a grid row, between its label and its action column.
 .grid-inline {
   grid-column: 2 / -2;
   display: flex;

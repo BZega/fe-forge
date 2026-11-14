@@ -91,6 +91,59 @@ describe('ProjectionStartDialogComponent', () => {
     expect(STAT_KEYS.every((stat) => confirmed()!.stats[stat] !== null)).toBeTrue();
   });
 
+  it('asks whether entered stats are base or in-game, with the equipped abilities for in-game stats', () => {
+    const { dialog, fixture, host, confirmed } = open();
+    dialog.pickManualUnit(unitId('Cai'));
+    fixture.detectChanges();
+    expect(host.querySelector('.start-kind')).toBeNull();
+
+    const level = host.querySelector<HTMLInputElement>('input[aria-label="Starting level"]')!;
+    level.value = '20';
+    level.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(host.querySelector('.start-kind')).not.toBeNull();
+    expect(host.querySelector('.start-kind-abilities')).toBeNull();
+
+    dialog.inGameStats.set(true);
+    fixture.detectChanges();
+    host.querySelector<HTMLButtonElement>('.start-kind-abilities .ghost-button')!.click();
+    fixture.detectChanges();
+    expect(host.querySelector('app-picker-dialog')).not.toBeNull();
+
+    dialog.onAbilitiesConfirmed(['Divine Insight']);
+    fixture.detectChanges();
+    expect(host.querySelector('app-picker-dialog')).toBeNull();
+    dialog.confirm();
+
+    expect(confirmed()!.inGameStats).toBeTrue();
+    expect(confirmed()!.abilities!.map((ability) => ability.name)).toEqual(['Divine Insight']);
+  });
+
+  it('offers actual stats to compare for a recruitment start, at the actual level', () => {
+    const { dialog, fixture, host, confirmed } = open();
+    dialog.setSource('chapter');
+    dialog.unitId.set(unitId('Cai'));
+    fixture.detectChanges();
+    expect(host.querySelector('.start-actuals')).toBeNull();
+
+    host.querySelector<HTMLInputElement>('.start-compare input')!.click();
+    fixture.detectChanges();
+    const level = host.querySelector<HTMLInputElement>('input[aria-label="Actual stats level"]')!;
+    level.value = '25';
+    level.dispatchEvent(new Event('change'));
+    const str = host.querySelector<HTMLInputElement>('input[aria-label="Actual Str"]')!;
+    str.value = '18';
+    str.dispatchEvent(new Event('change'));
+    dialog.inGameStats.set(true);
+    fixture.detectChanges();
+    expect(host.querySelector('.start-kind legend')!.textContent).toContain('Actual stats are');
+
+    dialog.confirm();
+    expect(confirmed()!.actual).toEqual(jasmine.objectContaining({ level: 25, inGame: true }));
+    expect(confirmed()!.actual!.stats.str).toBe(18);
+    expect(confirmed()!.options.level).toBe(25);
+  });
+
   it('fills an existing start back in when editing', () => {
     const first = open();
     first.dialog.setSource('chapter');

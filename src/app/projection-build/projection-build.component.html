@@ -30,7 +30,6 @@
               <span class="row-growth">—</span>
             </span>
             <span class="row-bar"></span>
-            <span class="row-actual"><input type="number" placeholder="Actual" disabled /></span>
           </li>
         }
       </ul>
@@ -77,18 +76,48 @@
             (input)="setLevel($any($event.target))"
           />
         </label>
-        <!-- Always takes its space, so the slider stops in the same place with or without it. -->
-        <button
-          type="button"
-          class="link-button"
-          [class.link-button--hidden]="!hasActual()"
-          [attr.aria-hidden]="!hasActual()"
-          [tabindex]="hasActual() ? 0 : -1"
-          (click)="clearActual()"
-        >
-          Clear actual stats
-        </button>
       </header>
+
+      <div class="view-bar">
+        <div class="view-toggle" role="group" aria-label="Projected stats view">
+          <button
+            type="button"
+            [class.view-toggle--active]="view() === 'base'"
+            [attr.aria-pressed]="view() === 'base'"
+            title="The unit's own stats, without class, mount or ability bonuses"
+            (click)="view.set('base')"
+          >
+            Base
+          </button>
+          <button
+            type="button"
+            [class.view-toggle--active]="view() === 'inGame'"
+            [attr.aria-pressed]="view() === 'inGame'"
+            title="As shown on the unit's screen, with class, mount and ability bonuses"
+            (click)="view.set('inGame')"
+          >
+            In-game
+          </button>
+        </div>
+        @if (view() === 'inGame') {
+          <button
+            type="button"
+            class="ghost-button"
+            [title]="'Stat abilities: ' + (equippedAbilityNames().join(', ') || 'None')"
+            (click)="abilityPickerOpen.set(true)"
+          >
+            Abilities ({{ equippedAbilities().length }}/{{ maxAbilities }})
+          </button>
+          @if (needsWeapon()) {
+            <select class="view-weapon" aria-label="Equipped weapon" (change)="setWeapon($any($event.target).value)">
+              <option value="" [selected]="weapon() === null">— Weapon —</option>
+              @for (key of weaponKeys; track key) {
+                <option [value]="key" [selected]="weapon() === key">{{ weaponLabels[key] }}</option>
+              }
+            </select>
+          }
+        }
+      </div>
 
       <ul class="rows">
         @for (row of rows(); track row.stat) {
@@ -122,20 +151,9 @@
               <span class="row-band" [style.left.%]="row.bar.from" [style.width.%]="row.bar.to - row.bar.from"></span>
               <span class="row-mean-mark" [style.left.%]="row.bar.mean"></span>
               @if (row.bar.actual !== null) {
-                <span class="row-actual-mark" [style.left.%]="row.bar.actual"></span>
+                <span class="row-actual-mark" [style.left.%]="row.bar.actual" [title]="'Actual ' + row.actual"></span>
               }
             </span>
-            <label class="row-actual">
-              <input
-                type="number"
-                inputmode="numeric"
-                min="0"
-                placeholder="Actual"
-                [attr.aria-label]="'Actual ' + row.label + ' at Lv ' + level()"
-                [value]="row.actual ?? ''"
-                (change)="setActual(row.stat, $event)"
-              />
-            </label>
           </li>
         }
       </ul>
@@ -168,3 +186,16 @@
     </section>
   }
 </article>
+
+@if (abilityPickerOpen()) {
+  <app-picker-dialog
+    eyebrow="Projected Stats"
+    [title]="'Equipped stat abilities · ' + heading()"
+    [context]="'Added to the in-game view. Up to ' + maxAbilities + ' can be equipped; picking an upgrade replaces the ability it upgrades.'"
+    [groups]="abilityGroups()"
+    [selected]="equippedAbilityNames()"
+    [max]="maxAbilities"
+    (confirmed)="onAbilitiesConfirmed($event)"
+    (closed)="abilityPickerOpen.set(false)"
+  />
+}

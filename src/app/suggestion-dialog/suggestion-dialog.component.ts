@@ -10,7 +10,6 @@ type SendState = 'idle' | 'sending' | 'sent' | 'error';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SuggestionDialogComponent {
-  /** Overridable so tests don't need the real form. */
   readonly formId = input(FORMSPREE_FORM_ID);
 
   readonly closed = output<void>();
@@ -23,7 +22,6 @@ export class SuggestionDialogComponent {
   readonly state = signal<SendState>('idle');
 
   readonly configured = computed(() => this.formId().trim() !== '');
-  // Optional, but if given it has to look like an address so replies can reach it.
   readonly emailInvalid = computed(() => {
     const email = this.email().trim();
 
@@ -42,7 +40,6 @@ export class SuggestionDialogComponent {
       return;
     }
 
-    // Bots fill every field; people never see this one.
     if (this.trap()) {
       this.state.set('sent');
       return;
@@ -60,7 +57,6 @@ export class SuggestionDialogComponent {
           _subject: 'FE Forge suggestion',
           message: this.message().trim().slice(0, SUGGESTION_MAX_LENGTH),
           page: location.pathname,
-          // Formspree uses `email` as the reply-to address.
           ...(email ? { email } : {}),
         }),
       });

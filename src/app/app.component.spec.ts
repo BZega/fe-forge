@@ -44,7 +44,6 @@ describe('AppComponent', () => {
 });
 
 describe('AppComponent mobile field visibility', () => {
-  // A 390x844 phone: nav bar to y=56, a 444px keyboard leaves y=0..400 visible.
   const viewport = Object.assign(new EventTarget(), {
     height: 844, width: 390, offsetTop: 0, offsetLeft: 0,
     pageTop: 0, pageLeft: 0, scale: 1, onresize: null, onscroll: null,
@@ -106,7 +105,6 @@ describe('AppComponent mobile field visibility', () => {
     spyOn(scroller, 'getBoundingClientRect').and.returnValue(new DOMRect(0, 56, 390, 788));
     spyOnProperty(scroller, 'scrollHeight', 'get').and.callFake(() => maxScroll() + 788);
     spyOnProperty(scroller, 'clientHeight', 'get').and.returnValue(788);
-    // Like a browser, the scroll position clamps when the page gets shorter.
     spyOnProperty(scroller, 'scrollTop', 'get').and.callFake(() => (scrollTop = Math.min(scrollTop, maxScroll())));
     scroll = spyOn(scroller, 'scrollTo').and.callFake(((options: ScrollToOptions) => {
       scrollTop = Math.min(options.top ?? 0, maxScroll());
@@ -282,7 +280,6 @@ describe('AppComponent mobile field visibility', () => {
       box.append(input);
       dropdown.append(box);
       scroller.append(dropdown);
-      // The field box is 30px tall around an 18px search box; the list opens 4px below it.
       spyOn(dropdown, 'getBoundingClientRect').and.callFake(() => new DOMRect(0, fieldTop() - 6, 300, 30));
       spyOn(input, 'getBoundingClientRect').and.callFake(() => new DOMRect(0, fieldTop(), 300, 18));
     });

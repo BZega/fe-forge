@@ -10,11 +10,9 @@ interface Bar {
   label: boolean;
 }
 
-// Tails thinner than this are left off, so the bars stay readable.
 const TAIL = 0.001;
 const MAX_LABELS = 12;
 
-/** Bars for the chance of each value of one stat, marking the average, middle 50% and actual value. */
 @Component({
   selector: 'app-stat-histogram',
   templateUrl: './stat-histogram.component.html',
@@ -27,7 +25,6 @@ export class StatHistogramComponent {
   readonly statLabel = input.required<string>();
   readonly actual = input<number | null>(null);
 
-  // The rarest outcomes are left off, but an actual value always shows, however far out (even impossible).
   private readonly span = computed(() => {
     const distribution = this.distribution();
     const actual = this.actual();
@@ -69,7 +66,6 @@ export class StatHistogramComponent {
 
   readonly shownTotal = computed(() => this.bars().reduce((sum, bar) => sum + bar.chance, 0));
 
-  /** Where the average falls across the bars, as a percentage of the width. */
   readonly meanAt = computed(() => {
     const { from, to } = this.span();
 

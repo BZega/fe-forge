@@ -21,7 +21,6 @@ export class HomePageComponent {
   readonly supportOpen = signal(false);
   readonly useFallbackIcon = useFallbackIcon;
 
-  // Gold "boon" skill icons from the wiki, matching the cards' gold accents.
   cardIcon(skill: SkillKey): string {
     return skillIconUrl(skill, 'good') ?? this.localIcon(skill);
   }

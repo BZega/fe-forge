@@ -63,7 +63,7 @@
             <select class="start-select" aria-label="Chapter" (change)="chapterNumber.set(+$any($event.target).value)">
               @for (option of active.chapters; track option.chapter) {
                 <option [value]="option.chapter" [selected]="option.chapter === chapterNumber()">
-                  Chapter {{ option.chapter }} · Lv {{ option.level }} {{ option.className }}
+                  Chapter {{ option.chapter }} · Lv {{ option.level }} {{ classLabel(option.className, unit()) }}
                 </option>
               }
             </select>
@@ -96,6 +96,7 @@
             [max]="maxLevel - 1"
             aria-label="Starting level"
             [value]="manualLevel()"
+            (focus)="selectValue($event)"
             (change)="setManualLevel($event)"
           />
         </label>
@@ -104,7 +105,7 @@
       <div class="start-stats" [style.--stat-count]="statKeys.length">
         <span class="start-stats-caption">
           @if (manualLevelEdited()) {
-            Stats at Lv {{ manualLevel() }}, as shown in game
+            Stats at Lv {{ manualLevel() }}
           } @else {
             Lv 1 base stats (enter a level to use your own)
           }
@@ -122,12 +123,93 @@
               placeholder="—"
               [attr.aria-label]="'Starting ' + statLabels[stat]"
               [value]="manualStats()[stat] ?? ''"
+              (focus)="selectValue($event)"
               (change)="setStat(stat, $event)"
             />
           </label>
         }
       </div>
     </div>
+  }
+
+  @if (canCompare() && planStart()) {
+    <label class="start-compare">
+      <input type="checkbox" [checked]="compareActuals()" (change)="compareActuals.set($any($event.target).checked)" />
+      I have actual stats to compare
+    </label>
+
+    @if (compareActuals()) {
+      <div class="start-stats start-actuals" [style.--stat-count]="statKeys.length">
+        <label class="start-stats-caption">
+          Actual stats at Lv
+          <input
+            class="start-select start-actual-level"
+            type="number"
+            inputmode="numeric"
+            [min]="planStart()!.level"
+            [max]="maxLevel"
+            placeholder="—"
+            aria-label="Actual stats level"
+            [value]="actualLevel() ?? ''"
+            (focus)="selectValue($event)"
+            (change)="setActualLevel($event)"
+          />
+        </label>
+        @for (stat of statKeys; track stat) {
+          <label class="start-stat">
+            <span>{{ statLabels[stat] }}</span>
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              placeholder="—"
+              [attr.aria-label]="'Actual ' + statLabels[stat]"
+              [value]="actualInputs()[stat] ?? ''"
+              (focus)="selectValue($event)"
+              (change)="setActualStat(stat, $event)"
+            />
+          </label>
+        }
+      </div>
+    }
+  }
+
+  @if (entered(); as kind) {
+    <fieldset class="start-kind">
+      <legend class="field-label">{{ kind === 'start' ? 'These stats are' : 'Actual stats are' }}</legend>
+      <div class="start-kind-options">
+        <label>
+          <input type="radio" name="stats-kind" [checked]="!inGameStats()" (change)="inGameStats.set(false)" />
+          Base stats <small>(no class, mount or ability bonuses)</small>
+        </label>
+        <label>
+          <input type="radio" name="stats-kind" [checked]="inGameStats()" (change)="inGameStats.set(true)" />
+          In-game stats <small>(as shown on the unit's screen)</small>
+        </label>
+      </div>
+
+      @if (inGameStats()) {
+        <div class="start-kind-abilities">
+          <button
+            type="button"
+            class="ghost-button"
+            [title]="'Stat abilities: ' + (equippedAbilityNames().join(', ') || 'None')"
+            (click)="abilityPickerOpen.set(true)"
+          >
+            Abilities ({{ equippedAbilities().length }}/{{ maxAbilities }})
+          </button>
+          @if (needsWeapon()) {
+            <select class="start-select" aria-label="Equipped weapon" (change)="setWeapon($any($event.target).value)">
+              <option value="" [selected]="weapon() === null">— Weapon —</option>
+              @for (key of weaponKeys; track key) {
+                <option [value]="key" [selected]="weapon() === key">{{ weaponLabels[key] }}</option>
+              }
+            </select>
+          }
+          <span class="start-kind-hint">Class, mount and abilities are taken off to compare.</span>
+        </div>
+      }
+    </fieldset>
   }
 
   @if (planStart(); as from) {
@@ -154,6 +236,7 @@
             [max]="maxLevel"
             [value]="settings.level"
             aria-label="Projection level"
+            (focus)="selectValue($event)"
             (change)="setLevelOption($any($event.target), 'level')"
           />
         </label>
@@ -175,6 +258,7 @@
                 [max]="maxLevel"
                 [value]="settings.partOneEndLevel"
                 aria-label="Part I ends at level"
+                (focus)="selectValue($event)"
                 (change)="setLevelOption($any($event.target), 'partOneEndLevel')"
               />
             </label>
@@ -202,3 +286,16 @@
     <button type="button" class="button button--primary" [disabled]="!start()" (click)="confirm()">{{ confirmLabel() }}</button>
   </footer>
 </div>
+
+@if (abilityPickerOpen()) {
+  <app-picker-dialog
+    eyebrow="Projected Stats"
+    title="Equipped stat abilities"
+    [context]="'Up to ' + maxAbilities + ' can be equipped. Picking an upgrade replaces the ability it upgrades.'"
+    [groups]="abilityGroups()"
+    [selected]="equippedAbilityNames()"
+    [max]="maxAbilities"
+    (confirmed)="onAbilitiesConfirmed($event)"
+    (closed)="abilityPickerOpen.set(false)"
+  />
+}

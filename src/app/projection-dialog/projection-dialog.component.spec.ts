@@ -185,7 +185,6 @@ describe('ProjectionDialogComponent', () => {
       levels.push(plan.rowLevels().at(-1)!);
     }
 
-    // Cai joins at Lv 4.
     expect(levels).toEqual([5, 20, 35, 45, 46]);
   });
 
@@ -194,7 +193,6 @@ describe('ProjectionDialogComponent', () => {
     const entry = reclass(plan, 15, 'Charioteer');
     const position = plan.plan().indexOf(entry);
 
-    // Noble/Commoner, the only Base class, is the class being left, so Base isn't offered.
     expect(gatedRanks(plan.reclassGroups(position))).toEqual(['Beginner', 'Speciality']);
 
     plan.setReclassLevel(entry.id, 14);
@@ -230,7 +228,6 @@ describe('ProjectionDialogComponent', () => {
     expect(names(plan.reclassGroups(2))).not.toContain('Gladiator');
     expect(names(plan.reclassGroups(2))).toContain('Noble/Commoner');
 
-    // A reclass already set to that class keeps it listed.
     plan.setClass(plan.plan()[2].id, String(byName('Gladiator').id));
     expect(names(plan.reclassGroups(2))).toContain('Gladiator');
   });
@@ -273,7 +270,6 @@ describe('ProjectionDialogComponent', () => {
     setLevel(levelBoxes()[1], '10');
     expect(levelBoxes()[1].value).toBe('20');
 
-    // No reclass fits after Lv 98.
     setLevel(levelBoxes()[1], '98');
     expect(plan.canAddClass()).toBeFalse();
     plan.addClass();
@@ -292,7 +288,6 @@ describe('ProjectionDialogComponent', () => {
     expect(host.querySelector('h2')!.textContent!.trim()).toBe('Projected Final Stats');
     expect(host.querySelector('form')!.hidden).toBeTrue();
 
-    // Lv 4 -> 5 as Noble/Commoner, then Lv 5 -> 99 as Gladiator.
     const noble = byName('Noble/Commoner');
     const expectedMag = 3 + (unit.mag + noble.mag) / 100 + (94 * (unit.mag + gladiator.mag)) / 100 + gladiator.bonusStats.mag;
     const mag = dialog.projection().find((row) => row.stat === 'mag')!;
@@ -404,7 +399,6 @@ describe('ProjectionDialogComponent', () => {
     expect(plan.mountOf(backToHorse)!.id).toBe(horses[horses.length - 1].id);
     expect(plan.bondLevelOf(backToHorse)).toBe(2);
 
-    // Picking a mount yourself still wins.
     plan.setMount(armored.id, String(orniusMounts[0].id));
     expect(plan.mountOf(plan.plan().find((entry) => entry.id === armored.id)!)!.id).toBe(orniusMounts[0].id);
   });
@@ -460,7 +454,6 @@ describe('ProjectionDialogComponent', () => {
     dialog.submit();
     expect(dialog.endMount()).toEqual({ name: mount.name, bondLevel: topBond });
 
-    // A reclass moved before the change's level takes it out of the Charioteer's range.
     plan.addClass();
     const next = plan.plan().at(-1)!;
     plan.setClass(next.id, String(byName('Gladiator').id));

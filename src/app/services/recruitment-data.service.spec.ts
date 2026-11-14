@@ -3,7 +3,6 @@ import { RECRUITMENT_FILES } from '../data/recruitment';
 import { RawRecruitment } from '../models/recruitment.models';
 import { RecruitmentDataService } from './recruitment-data.service';
 
-// Expectations come from the files themselves, so editing them doesn't break these tests.
 const files = RECRUITMENT_FILES as RawRecruitment[];
 
 describe('RecruitmentDataService', () => {

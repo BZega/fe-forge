@@ -1,5 +1,3 @@
-// Regenerates src/app/data/recruitment.ts so it imports every JSON file in src/app/data/recruitment.
-// Runs before start, build, test and watch, so dropping in a new unit's file is all that's needed.
 const fs = require('fs');
 const path = require('path');
 

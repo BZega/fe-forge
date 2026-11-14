@@ -114,7 +114,6 @@ describe('ProjectedStatsPageComponent', () => {
     ctx.settle();
     expect(card().level()).toBe(45);
 
-    // Below the starting level isn't possible.
     field('Projected level').value = '0';
     field('Projected level').dispatchEvent(new Event('change'));
     ctx.settle();

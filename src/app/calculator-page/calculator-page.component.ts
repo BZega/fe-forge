@@ -38,7 +38,6 @@ export class CalculatorPageComponent {
         return;
       }
 
-      // Track one calculator's height for the mobile overscroll spacer below the last calculator.
       const observer = new ResizeObserver(() => {
         const first = panels.querySelector<HTMLElement>('.panel');
         host.style.setProperty('--calculator-height', `${first?.offsetHeight ?? 0}px`);
@@ -66,7 +65,6 @@ export class CalculatorPageComponent {
   readonly canCompare = computed(() => this.slots().length >= 2);
   readonly remainingPicks = computed(() => 2 - this.picked().length);
 
-  // "Unit (Class)" once both are picked, numbering repeats of the same unit; otherwise "Calculator N".
   readonly headings = computed(() => {
     const panels = this.panels();
     const picks = this.slots().map((_, i) => {

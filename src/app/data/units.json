@@ -2,6 +2,7 @@
   {
     "id": 10,
     "name": "Alexandra",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 30,
@@ -60,6 +61,7 @@
   {
     "id": 4,
     "name": "Anatolia",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 40,
@@ -139,6 +141,7 @@
   {
     "id": 75,
     "name": "Anna",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 35,
@@ -168,6 +171,7 @@
   {
     "id": 63,
     "name": "Aswan",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 40,
@@ -197,6 +201,7 @@
   {
     "id": 54,
     "name": "Aurora",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 35,
@@ -226,6 +231,7 @@
   {
     "id": 48,
     "name": "Benditz",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 50,
@@ -263,6 +269,7 @@
   {
     "id": 14,
     "name": "Bertrand",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 50,
@@ -292,6 +299,7 @@
   {
     "id": 18,
     "name": "Bonaventure",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 35,
@@ -357,6 +365,7 @@
   {
     "id": 47,
     "name": "Buccar",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 50,
@@ -415,6 +424,7 @@
   {
     "id": 8,
     "name": "Cai",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 45,
@@ -473,6 +483,7 @@
   {
     "id": 17,
     "name": "Catania",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 35,
@@ -531,6 +542,7 @@
   {
     "id": 21,
     "name": "Centurio",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 45,
@@ -560,6 +572,7 @@
   {
     "id": 73,
     "name": "Cleobulus",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 35,
@@ -589,6 +602,7 @@
   {
     "id": 71,
     "name": "Credna",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 65,
@@ -618,6 +632,7 @@
   {
     "id": 61,
     "name": "Creek",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 45,
@@ -647,6 +662,7 @@
   {
     "id": 51,
     "name": "Dadao",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 50,
@@ -705,6 +721,7 @@
   {
     "id": 42,
     "name": "Dante",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 30,
@@ -770,6 +787,7 @@
   {
     "id": 30,
     "name": "Diego",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 45,
@@ -799,6 +817,7 @@
   {
     "id": 1,
     "name": "Dietrich",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 50,
@@ -857,6 +876,7 @@
   {
     "id": 58,
     "name": "Eshmel (M)",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 50,
@@ -908,6 +928,7 @@
   {
     "id": 66,
     "name": "Eshmel (F)",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 50,
@@ -959,6 +980,7 @@
   {
     "id": 22,
     "name": "Esmeralda",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 55,
@@ -1017,6 +1039,7 @@
   {
     "id": 32,
     "name": "Fabio",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 40,
@@ -1082,6 +1105,7 @@
   {
     "id": 43,
     "name": "Fianna",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 30,
@@ -1140,6 +1164,7 @@
   {
     "id": 13,
     "name": "Gaitz",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 50,
@@ -1184,6 +1209,7 @@
   {
     "id": 76,
     "name": "Gladius",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 55,
@@ -1213,6 +1239,7 @@
   {
     "id": 53,
     "name": "Goliath",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": false,
     "hp": 55,
@@ -1264,6 +1291,7 @@
   {
     "id": 25,
     "name": "Guzran",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 45,
@@ -1322,6 +1350,7 @@
   {
     "id": 27,
     "name": "Halvin",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 35,
@@ -1373,6 +1402,7 @@
   {
     "id": 59,
     "name": "Hong Hua",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 40,
@@ -1438,6 +1468,7 @@
   {
     "id": 39,
     "name": "Inyoni",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 40,
@@ -1475,6 +1506,7 @@
   {
     "id": 35,
     "name": "Io",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 45,
@@ -1533,6 +1565,7 @@
   {
     "id": 23,
     "name": "Jasmine",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 50,
@@ -1591,6 +1624,7 @@
   {
     "id": 28,
     "name": "Jester",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 40,
@@ -1635,6 +1669,7 @@
   {
     "id": 68,
     "name": "Jurah",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 45,
@@ -1664,6 +1699,7 @@
   {
     "id": 72,
     "name": "Kalla",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 55,
@@ -1693,6 +1729,7 @@
   {
     "id": 44,
     "name": "Kiroc",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 55,
@@ -1744,6 +1781,7 @@
   {
     "id": 65,
     "name": "Klapka",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 40,
@@ -1773,6 +1811,7 @@
   {
     "id": 9,
     "name": "Leda",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 40,
@@ -1831,6 +1870,7 @@
   {
     "id": 26,
     "name": "Lilian",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 35,
@@ -1882,6 +1922,7 @@
   {
     "id": 34,
     "name": "Loretta",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 35,
@@ -1940,6 +1981,7 @@
   {
     "id": 52,
     "name": "Ludia",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 40,
@@ -1977,6 +2019,7 @@
   {
     "id": 45,
     "name": "Lysander",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 45,
@@ -2028,6 +2071,7 @@
   {
     "id": 56,
     "name": "Majide",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 65,
@@ -2086,6 +2130,7 @@
   {
     "id": 69,
     "name": "Mars",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 65,
@@ -2115,6 +2160,7 @@
   {
     "id": 29,
     "name": "Mikaela",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 50,
@@ -2166,6 +2212,7 @@
   {
     "id": 57,
     "name": "Mu",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 30,
@@ -2217,6 +2264,7 @@
   {
     "id": 12,
     "name": "Mu*",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 50,
@@ -2268,6 +2316,7 @@
   {
     "id": 74,
     "name": "Myson",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 50,
@@ -2297,6 +2346,7 @@
   {
     "id": 62,
     "name": "Nathan",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 55,
@@ -2326,6 +2376,7 @@
   {
     "id": 40,
     "name": "Nezha",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 45,
@@ -2391,6 +2442,7 @@
   {
     "id": 7,
     "name": "Ninae",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 45,
@@ -2449,6 +2501,7 @@
   {
     "id": 36,
     "name": "Noctula",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 50,
@@ -2507,6 +2560,7 @@
   {
     "id": 49,
     "name": "Nuzzuo",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 50,
@@ -2551,6 +2605,7 @@
   {
     "id": 37,
     "name": "Nydine",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 45,
@@ -2609,6 +2664,7 @@
   {
     "id": 24,
     "name": "Olympia",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 35,
@@ -2674,6 +2730,7 @@
   {
     "id": 11,
     "name": "Orchel",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": false,
     "hp": 30,
@@ -2739,6 +2796,7 @@
   {
     "id": 41,
     "name": "Peppe",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 30,
@@ -2783,6 +2841,7 @@
   {
     "id": 46,
     "name": "Peter",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 40,
@@ -2827,6 +2886,7 @@
   {
     "id": 15,
     "name": "Seteth",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 45,
@@ -2871,6 +2931,7 @@
   {
     "id": 19,
     "name": "Sha Lan",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 35,
@@ -2915,6 +2976,7 @@
   {
     "id": 20,
     "name": "Simon",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 50,
@@ -2952,6 +3014,7 @@
   {
     "id": 5,
     "name": "Sirocco",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 40,
@@ -3017,6 +3080,7 @@
   {
     "id": 70,
     "name": "Smyrnos",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 35,
@@ -3046,6 +3110,7 @@
   {
     "id": 50,
     "name": "Sofia",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 35,
@@ -3097,6 +3162,7 @@
   {
     "id": 64,
     "name": "Tahonia",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 65,
@@ -3126,6 +3192,7 @@
   {
     "id": 2,
     "name": "Talimun",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 45,
@@ -3191,6 +3258,7 @@
   {
     "id": 6,
     "name": "Theodora",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 70,
@@ -3249,6 +3317,7 @@
   {
     "id": 31,
     "name": "Tialla",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 30,
@@ -3314,6 +3383,7 @@
   {
     "id": 38,
     "name": "Tobias",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 55,
@@ -3365,6 +3435,7 @@
   {
     "id": 60,
     "name": "Troy",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 40,
@@ -3394,6 +3465,7 @@
   {
     "id": 3,
     "name": "Ultand",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 45,
@@ -3452,6 +3524,7 @@
   {
     "id": 16,
     "name": "Ursula",
+    "origin": "Commoner",
     "gender": "Female",
     "canUseMounts": true,
     "hp": 40,
@@ -3510,6 +3583,7 @@
   {
     "id": 33,
     "name": "Yang Jie",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 50,
@@ -3568,6 +3642,7 @@
   {
     "id": 55,
     "name": "Zarcone",
+    "origin": "Commoner",
     "gender": "Male",
     "canUseMounts": true,
     "hp": 40,
