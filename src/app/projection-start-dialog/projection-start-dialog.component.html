@@ -15,20 +15,20 @@
     <button
       type="button"
       class="mode-option"
-      [class.mode-option--selected]="source() === 'chapter'"
-      [attr.aria-pressed]="source() === 'chapter'"
-      (click)="setSource('chapter')"
-    >
-      Recruitment
-    </button>
-    <button
-      type="button"
-      class="mode-option"
       [class.mode-option--selected]="source() === 'manual'"
       [attr.aria-pressed]="source() === 'manual'"
       (click)="setSource('manual')"
     >
       Manual
+    </button>
+    <button
+      type="button"
+      class="mode-option"
+      [class.mode-option--selected]="source() === 'chapter'"
+      [attr.aria-pressed]="source() === 'chapter'"
+      (click)="setSource('chapter')"
+    >
+      Recruitment
     </button>
   </div>
 
