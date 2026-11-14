@@ -116,6 +116,21 @@
               }
             </select>
           }
+          <select
+            class="view-weapon"
+            aria-label="Battalion"
+            [title]="mountedNow() ? 'Not counted: the class is mounted at this level' : 'Battalion'"
+            (change)="setBattalion($any($event.target).value)"
+          >
+            <option value="" [selected]="battalion() === null">— No battalion —</option>
+            @for (group of battalionGroups(); track group.type) {
+              <optgroup [label]="group.type">
+                @for (option of group.battalions; track option.id) {
+                  <option [value]="option.id" [selected]="battalion()?.id === option.id">{{ option.name }}</option>
+                }
+              </optgroup>
+            }
+          </select>
         }
       </div>
 
@@ -196,6 +211,10 @@
     [selected]="equippedAbilityNames()"
     [max]="maxAbilities"
     (confirmed)="onAbilitiesConfirmed($event)"
+    [weaponOptions]="weaponOptions"
+    [weapon]="weapon()"
+    [weaponNeeded]="personalWeapon()"
+    (weaponChosen)="setWeapon($event ?? '')"
     (closed)="abilityPickerOpen.set(false)"
   />
 }

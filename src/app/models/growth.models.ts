@@ -238,6 +238,7 @@ export interface StatBoostAbility {
   characters?: string[];
   weaponBoosts?: Partial<Record<WeaponKey, Partial<Record<StatKey, number>>>>;
   upgradeOf?: string;
+  learnedAt?: number;
 }
 
 export const MAX_EQUIPPED_ABILITIES = 5;
@@ -252,12 +253,18 @@ export function abilitiesFor(abilities: readonly StatBoostAbility[], unitName: s
   return abilities.filter((ability) => !ability.characters || (key !== null && ability.characters.includes(key)));
 }
 
-export function abilityPickerGroups(abilities: readonly StatBoostAbility[]) {
+export function isLearned(ability: Pick<StatBoostAbility, 'learnedAt'>, level: number): boolean {
+  return (ability.learnedAt ?? 0) <= level;
+}
+
+export function abilityPickerGroups(abilities: readonly StatBoostAbility[], lockOf: (ability: StatBoostAbility) => string | undefined = () => undefined) {
   const toItem = (ability: StatBoostAbility) => ({
     id: ability.name,
     name: ability.name,
     description: ability.description,
     family: abilityFamily(ability),
+    locked: lockOf(ability),
+    usesWeapon: ability.weaponBoosts !== undefined,
   });
 
   return [
@@ -266,7 +273,10 @@ export function abilityPickerGroups(abilities: readonly StatBoostAbility[]) {
   ].filter((group) => group.items.length > 0);
 }
 
-export function abilityBoosts(abilities: readonly StatBoostAbility[], weapon: WeaponKey | null): GrowthRates {
+export function abilityBoosts(
+  abilities: readonly Pick<StatBoostAbility, 'boosts' | 'weaponBoosts'>[],
+  weapon: WeaponKey | null,
+): GrowthRates {
   const result = { ...ZERO_GROWTH };
 
   for (const ability of abilities) {

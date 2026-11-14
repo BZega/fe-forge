@@ -5,6 +5,10 @@
     [initialChapter]="from.chapterNumber"
     [chapterPicker]="from.source === 'chapter'"
     [plannedSteps]="from.steps"
+    [actuals]="from.actual ? [from.actual] : []"
+    [abilities]="from.abilities ?? []"
+    [weapon]="from.weapon ?? null"
+    [battalion]="from.battalion ?? null"
     (back)="projecting.set(false)"
     (closed)="close()"
   />

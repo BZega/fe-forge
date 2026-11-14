@@ -7,6 +7,12 @@ export interface PickerItem {
   fixed?: boolean;
   family?: string;
   locked?: string;
+  usesWeapon?: boolean;
+}
+
+export interface WeaponOption {
+  key: string;
+  label: string;
 }
 
 export interface PickerGroup {
@@ -27,12 +33,17 @@ export class PickerDialogComponent implements OnInit {
   readonly groups = input<readonly PickerGroup[]>([]);
   readonly selected = input<readonly string[]>([]);
   readonly max = input<number | null>(null);
+  readonly weaponOptions = input<readonly WeaponOption[] | null>(null);
+  readonly weapon = input<string | null>(null);
+  readonly weaponNeeded = input(false);
 
   readonly confirmed = output<string[]>();
+  readonly weaponChosen = output<string | null>();
   readonly closed = output<void>();
 
   readonly picked = signal<string[]>([]);
   readonly query = signal('');
+  readonly pickedWeapon = signal<string | null>(null);
 
   private readonly items = computed(() => this.groups().flatMap((group) => group.items));
 
@@ -56,7 +67,14 @@ export class PickerDialogComponent implements OnInit {
   ngOnInit(): void {
     const fixed = this.items().filter((item) => item.fixed).map((item) => item.id);
     this.picked.set([...new Set([...fixed, ...this.selected()])]);
+    this.pickedWeapon.set(this.weapon());
   }
+
+  readonly showWeapon = computed(
+    () =>
+      this.weaponOptions() !== null &&
+      (this.weaponNeeded() || this.items().some((item) => item.usesWeapon && this.isPicked(item))),
+  );
 
   isPicked(item: PickerItem): boolean {
     return this.picked().includes(item.id);
@@ -100,6 +118,10 @@ export class PickerDialogComponent implements OnInit {
   }
 
   confirm(): void {
+    if (this.weaponOptions() !== null) {
+      this.weaponChosen.emit(this.pickedWeapon());
+    }
+
     this.confirmed.emit(this.picked());
   }
 

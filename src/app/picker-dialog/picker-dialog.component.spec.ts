@@ -116,6 +116,29 @@ describe('PickerDialogComponent', () => {
     expect(fixture.nativeElement.querySelector('.picker-item-locked').textContent).toContain('Needs Hunter');
   });
 
+  it('asks for the weapon once a weapon-dependent item is ticked, and hands it back on Confirm', () => {
+    fixture = TestBed.createComponent(PickerDialogComponent);
+    dialog = fixture.componentInstance;
+    fixture.componentRef.setInput('title', 'Pick');
+    fixture.componentRef.setInput('groups', [{ label: '', items: [{ id: 'a', name: 'Alpha' }, { id: 'wb', name: 'WB', usesWeapon: true }] }]);
+    fixture.componentRef.setInput('weaponOptions', [{ key: 'sword', label: 'Sword' }, { key: 'axe', label: 'Axe' }]);
+    fixture.componentRef.setInput('weapon', 'axe');
+    let weapon: string | null | undefined;
+    dialog.weaponChosen.subscribe((chosen) => (weapon = chosen));
+    fixture.detectChanges();
+    const select = () => (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>('.picker-weapon select');
+
+    expect(select()).toBeNull();
+    dialog.toggle({ id: 'wb', name: 'WB', usesWeapon: true });
+    fixture.detectChanges();
+    expect(select()!.value).toBe('axe');
+
+    select()!.value = 'sword';
+    select()!.dispatchEvent(new Event('change'));
+    dialog.confirm();
+    expect(weapon).toBe('sword');
+  });
+
   it('filters by search text', () => {
     open([], null);
     dialog.query.set('blood');

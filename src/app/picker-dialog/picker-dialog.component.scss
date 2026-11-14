@@ -35,6 +35,23 @@
   white-space: nowrap;
 }
 
+.picker-weapon {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+
+  select {
+    background: #142c30;
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    color: inherit;
+    font: inherit;
+    padding: 0.3rem 0.5rem;
+  }
+}
+
 .picker-count--full {
   color: var(--accent);
   opacity: 1;

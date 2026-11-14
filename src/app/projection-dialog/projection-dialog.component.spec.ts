@@ -6,12 +6,17 @@ import { classAtLevel, classLevelGate, levelUpGrowth, projectStats, RecruitmentC
 import { GrowthDataService } from '../services/growth-data.service';
 import { SpoilerService } from '../services/spoiler.service';
 import { ClassPlanComponent } from '../class-plan/class-plan.component';
-import { ProjectionDialogComponent } from './projection-dialog.component';
+import { actualTone, ProjectionDialogComponent } from './projection-dialog.component';
+import { blazeBonusOf, MAX_EXTRA_BONUS } from '../models/bonuses';
 
 const classes = unitClassData as UnitClass[];
 const byName = (name: string) => classes.find((unitClass) => unitClass.name === name)!;
 
 describe('stat projection maths', () => {
+  it('rates an actual against the whole-number part of the projection', () => {
+    expect([15, 14, 13].map((actual) => actualTone(actual, 14.5))).toEqual(['higher', 'even', 'lower']);
+  });
+
   it('uses the latest class taken at or before each level', () => {
     const steps = [
       { fromLevel: 1, classId: 1 },
@@ -103,6 +108,43 @@ describe('ProjectionDialogComponent', () => {
       .filter((group) => group.rank !== 'Divine' && group.classes.some((unitClass) => unitClass.name !== 'Dancer'))
       .map((group) => group.rank);
 
+  it('shows actuals beside the projection at their level, in base and in-game views', () => {
+    const { fixture, dialog, host } = open('Cai');
+    const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, stat === 'hp' ? 40 : null])) as Record<(typeof STAT_KEYS)[number], number | null>;
+    fixture.componentRef.setInput('actuals', [{ level: 10, stats, inGame: false }]);
+    dialog.submit();
+    dialog.setEndLevel('10');
+    fixture.detectChanges();
+
+    const hp = () => dialog.projection().find((row) => row.stat === 'hp')!;
+    expect(host.querySelectorAll('.results-actual').length).toBe(1);
+    expect(hp().actual).toBe(40 + hp().bonus + hp().extraBonus);
+    expect(hp().tone).toBe(actualTone(hp().actual!, hp().total));
+
+    dialog.view.set('base');
+    expect(hp().actual).toBe(40);
+    expect(hp().total).toBeCloseTo(hp().base, 10);
+
+    dialog.setEndLevel('11');
+    expect(hp().actual).toBeNull();
+  });
+
+  it('adds the abilities picked in the results to the in-game view only', () => {
+    const { fixture, dialog } = open('Cai');
+    dialog.submit();
+    fixture.detectChanges();
+    const spd = () => dialog.projection().find((row) => row.stat === 'spd')!.total;
+    const before = spd();
+
+    dialog.onAbilitiesConfirmed(['Divine Insight']);
+    expect(spd()).toBeCloseTo(before + 10, 10);
+
+    dialog.view.set('base');
+    const base = spd();
+    dialog.onAbilitiesConfirmed([]);
+    expect(spd()).toBeCloseTo(base, 10);
+  });
+
   it('unlocks each rank 5 levels before its old gate', () => {
     const { plan } = open('Cai');
     const ranks = (level: number) => gatedRanks(plan.classGroups(level));
@@ -170,7 +212,7 @@ describe('ProjectionDialogComponent', () => {
     const { dialog, unit } = open('Cai', { ...chapter, chapter: 20, level: 40, className: swordmaster.name });
     dialog.setEndLevel('44');
 
-    const expectedMag = 3 + (4 * (unit.mag + swordmaster.mag)) / 100 + swordmaster.bonusStats.mag;
+    const expectedMag = 3 + (4 * (unit.mag + swordmaster.mag)) / 100 + swordmaster.bonusStats.mag + blazeBonusOf('Cai').mag;
     expect(dialog.projection().find((row) => row.stat === 'mag')!.total).toBeCloseTo(expectedMag, 10);
   });
 
@@ -289,7 +331,7 @@ describe('ProjectionDialogComponent', () => {
     expect(host.querySelector('form')!.hidden).toBeTrue();
 
     const noble = byName('Noble/Commoner');
-    const expectedMag = 3 + (unit.mag + noble.mag) / 100 + (94 * (unit.mag + gladiator.mag)) / 100 + gladiator.bonusStats.mag;
+    const expectedMag = 3 + (unit.mag + noble.mag) / 100 + (94 * (unit.mag + gladiator.mag)) / 100 + gladiator.bonusStats.mag + blazeBonusOf('Cai').mag;
     const mag = dialog.projection().find((row) => row.stat === 'mag')!;
 
     expect(mag.total).toBeCloseTo(expectedMag, 10);
@@ -492,7 +534,7 @@ describe('ProjectionDialogComponent', () => {
           : levelUpGrowth(unit, charioteer, level, mount, bond);
       expected += growth.mag / 100;
     }
-    expected += charioteer.bonusStats.mag + mountBonusAt(mount, bond).mag;
+    expected += charioteer.bonusStats.mag + Math.min(MAX_EXTRA_BONUS, mountBonusAt(mount, bond).mag + blazeBonusOf('Cai').mag);
 
     expect(dialog.projection().find((row) => row.stat === 'mag')!.total).toBeCloseTo(expected, 10);
     expect(dialog.endMount()!.name).toBe(mount.name);

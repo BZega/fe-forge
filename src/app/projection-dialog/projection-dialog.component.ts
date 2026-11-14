@@ -1,11 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, HostListener, input, OnInit, output, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, HostListener, inject, input, linkedSignal, OnInit, output, signal, viewChild } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ClassPlanComponent, MAX_PROJECTION_LEVEL, PlanStep } from '../class-plan/class-plan.component';
-import { classLabel, mountBonusAt, STAT_KEYS, STAT_LABELS, Unit } from '../models/growth.models';
+import { abilitiesFor, abilityPickerGroups, Battalion, BATTALION_TYPE_ORDER, classLabel, MAX_EQUIPPED_ABILITIES, SKILL_LABELS, StatBoostAbility, STAT_KEYS, STAT_LABELS, Unit, WEAPON_KEYS, WeaponKey } from '../models/growth.models';
+import { abilitiesAt, abilityLock, InGameGear, inGameBonus, isMountedClass, usesWeapon, WEAPON_OPTIONS } from '../models/bonuses';
 import { levelUpGrowth, projectStats, RecruitmentChapter, stepAtLevel } from '../models/recruitment.models';
+import { PickerDialogComponent } from '../picker-dialog/picker-dialog.component';
+import { ProjectionActual } from '../projection-start-dialog/projection-start-dialog.component';
+import { GrowthDataService } from '../services/growth-data.service';
+
+export type ActualTone = 'higher' | 'even' | 'lower';
 
 @Component({
   selector: 'app-projection-dialog',
-  imports: [ClassPlanComponent],
+  imports: [ClassPlanComponent, PickerDialogComponent],
   templateUrl: './projection-dialog.component.html',
   styleUrls: ['../exam-dialog/exam-dialog.component.scss', './projection-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,6 +24,52 @@ export class ProjectionDialogComponent implements OnInit {
   readonly initialChapter = input<number | null>(null);
   readonly chapterPicker = input(true);
   readonly plannedSteps = input<readonly PlanStep[] | null>(null);
+  readonly actuals = input<readonly ProjectionActual[]>([]);
+  readonly history = input<{ start: RecruitmentChapter; steps: readonly PlanStep[] } | null>(null);
+  readonly abilities = input<readonly StatBoostAbility[]>([]);
+  readonly weapon = input<WeaponKey | null>(null);
+  readonly battalion = input<Battalion | null>(null);
+
+  readonly view = signal<'base' | 'inGame'>('inGame');
+
+  private readonly api = inject(GrowthDataService);
+  private readonly statBoostAbilities = toSignal(this.api.getStatBoostAbilities(), { initialValue: [] as StatBoostAbility[] });
+
+  readonly maxAbilities = MAX_EQUIPPED_ABILITIES;
+  readonly weaponKeys = WEAPON_KEYS;
+  readonly weaponLabels = SKILL_LABELS;
+  readonly abilityOptions = computed(() => abilitiesFor(this.statBoostAbilities(), this.unit().name));
+  readonly abilityGroups = computed(() => abilityPickerGroups(this.abilityOptions(), (ability) => abilityLock(ability, this.endLevel())));
+  private readonly abilityNames = linkedSignal<readonly string[]>(() => this.abilities().map((ability) => ability.name));
+  readonly chosenWeapon = linkedSignal<WeaponKey | null>(() => this.weapon());
+  readonly chosenBattalion = linkedSignal<Battalion | null>(() => this.battalion());
+  readonly abilityPickerOpen = signal(false);
+
+  private readonly battalions = toSignal(this.api.getBattalions(), { initialValue: [] as Battalion[] });
+  readonly battalionGroups = computed(() =>
+    BATTALION_TYPE_ORDER.map((type) => ({ type, battalions: this.battalions().filter((battalion) => battalion.type === type) })),
+  );
+
+  readonly equippedAbilities = computed(() =>
+    this.abilityOptions().filter((ability) => this.abilityNames().includes(ability.name)),
+  );
+  readonly equippedAbilityNames = computed(() => abilitiesAt(this.equippedAbilities(), this.endLevel()).map((ability) => ability.name));
+  readonly needsWeapon = computed(() => usesWeapon(this.unit().name, this.endLevel(), this.equippedAbilities()));
+  readonly personalWeapon = computed(() => usesWeapon(this.unit().name, this.endLevel(), []));
+  readonly weaponOptions = WEAPON_OPTIONS;
+
+  onAbilitiesConfirmed(names: string[]): void {
+    this.abilityNames.set(names);
+    this.abilityPickerOpen.set(false);
+  }
+
+  setWeapon(value: string): void {
+    this.chosenWeapon.set(WEAPON_KEYS.find((weapon) => weapon === value) ?? null);
+  }
+
+  setBattalion(value: string): void {
+    this.chosenBattalion.set(this.battalions().find((battalion) => String(battalion.id) === value) ?? null);
+  }
 
   readonly closed = output<void>();
   readonly back = output<void>();
@@ -27,7 +80,12 @@ export class ProjectionDialogComponent implements OnInit {
 
   readonly planEditor = viewChild(ClassPlanComponent);
 
-  private readonly steps = computed(() => this.plannedSteps() ?? this.planEditor()?.steps() ?? []);
+  private readonly steps = computed(() => {
+    const planned = this.plannedSteps() ?? this.planEditor()?.steps() ?? [];
+    const history = this.history();
+
+    return history ? [...history.steps.filter((step) => step.fromLevel < this.startLevel()), ...planned] : planned;
+  });
 
   readonly page = signal<'plan' | 'results'>('plan');
   readonly chapterNumber = signal<number | null>(null);
@@ -38,6 +96,12 @@ export class ProjectionDialogComponent implements OnInit {
   );
 
   readonly startLevel = computed(() => this.chapter()?.level ?? 1);
+
+  readonly firstLevel = computed(() => this.history()?.start.level ?? this.startLevel());
+
+  readonly actualAtEnd = computed(() => this.actuals().find((actual) => actual.level === this.endLevel()) ?? null);
+
+  readonly actualLevels = computed(() => this.actuals().map((actual) => actual.level).sort((a, b) => a - b));
 
   ngOnInit(): void {
     this.chapterNumber.set(this.initialChapter() ?? this.chapters()[0]?.chapter ?? null);
@@ -65,33 +129,55 @@ export class ProjectionDialogComponent implements OnInit {
     return step?.mount ? { name: step.mount.name, bondLevel: step.bondLevel } : null;
   });
 
+  readonly mountedAtEnd = computed(() => {
+    const unitClass = this.endClass();
+
+    return unitClass !== null && isMountedClass(unitClass.name);
+  });
+
   readonly projection = computed(() => {
     const chapter = this.chapter();
+    const from = this.history()?.start ?? chapter;
 
-    if (!chapter) {
+    if (!chapter || !from) {
       return [];
     }
 
     const unit = this.unit();
     const steps = this.steps();
-    const end = Math.max(this.startLevel(), this.endLevel());
-    const projected = projectStats(chapter.stats, chapter.level, end, (level) => {
+    const end = Math.max(this.firstLevel(), this.endLevel());
+    const projected = projectStats(from.stats, from.level, end, (level) => {
       const step = stepAtLevel(steps, level);
 
       return step ? levelUpGrowth(unit, step.unitClass, level, step.mount, step.bondLevel) : null;
     });
     const step = this.endStep();
-    const classBonus = step?.unitClass.bonusStats;
-    const mountBonus = mountBonusAt(step?.mount ?? null, step?.bondLevel ?? null);
+    const bonusWith = (gear: InGameGear) =>
+      inGameBonus(unit.name, end, step?.unitClass ?? null, step?.mount ?? null, step?.bondLevel ?? null, gear);
+    const shown = bonusWith({ abilities: this.equippedAbilities(), weapon: this.chosenWeapon(), battalion: this.chosenBattalion() });
+    const enteredWith = bonusWith({ abilities: this.abilities(), weapon: this.weapon(), battalion: this.battalion() });
+    const inGame = this.view() === 'inGame';
+    const actual = this.actuals().find((candidate) => candidate.level === end) ?? null;
+    const showActual = actual !== null;
 
-    return this.statKeys.map((stat) => ({
-      stat,
-      label: this.statLabels[stat],
-      base: projected[stat],
-      bonus: classBonus?.[stat] ?? 0,
-      mountBonus: mountBonus[stat],
-      total: projected[stat] + (classBonus?.[stat] ?? 0) + mountBonus[stat],
-    }));
+    return this.statKeys.map((stat) => {
+      const classBonus = step?.unitClass.bonusStats[stat] ?? 0;
+      const total = projected[stat] + (inGame ? shown[stat] : 0);
+      const entered = showActual ? actual.stats[stat] : null;
+      const shownActual =
+        entered === null ? null : entered - (actual!.inGame ? enteredWith[stat] : 0) + (inGame ? shown[stat] : 0);
+
+      return {
+        stat,
+        label: this.statLabels[stat],
+        base: projected[stat],
+        bonus: classBonus,
+        extraBonus: shown[stat] - classBonus,
+        total,
+        actual: shownActual,
+        tone: shownActual === null ? null : actualTone(shownActual, total),
+      };
+    });
   });
 
   submit(): void {
@@ -103,7 +189,7 @@ export class ProjectionDialogComponent implements OnInit {
     const level = Math.round(Number(value));
 
     if (Number.isFinite(level)) {
-      this.endLevel.set(Math.min(this.maxLevel, Math.max(this.startLevel(), level)));
+      this.endLevel.set(Math.min(this.maxLevel, Math.max(this.firstLevel(), level)));
     }
   }
 
@@ -123,6 +209,16 @@ export class ProjectionDialogComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   close(): void {
+    if (this.abilityPickerOpen()) {
+      return;
+    }
+
     this.closed.emit();
   }
+}
+
+export function actualTone(actual: number, projected: number): ActualTone {
+  const expected = Math.floor(projected);
+
+  return actual > expected ? 'higher' : actual < expected ? 'lower' : 'even';
 }

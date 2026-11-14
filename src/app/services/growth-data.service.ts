@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 
-import { Battalion, characterKey, ClassAbility, FEMALE_ONLY_CLASS_NAMES, GrowthRates, Mount, MountType, SKILL_KEYS, SkillKey, SkillPreference, StatBoostAbility, toGrowth, Unit, UnitClass } from '../models/growth.models';
+import { Battalion, BOOSTED_GROWTH_VARIANTS, characterKey, ClassAbility, FEMALE_ONLY_CLASS_NAMES, GrowthRates, Mount, MountType, SKILL_KEYS, SkillKey, SkillPreference, StatBoostAbility, toGrowth, Unit, UnitClass } from '../models/growth.models';
 import battalionData from '../data/battalions.json';
 import classAbilityData from '../data/class-abilities.json';
 import classMountTypes from '../data/class-mount-types.json';
@@ -111,6 +111,18 @@ export class GrowthDataService {
 
   unitById(unitId: number | null): Unit | null {
     return this.units.find((unit) => unit.id === unitId) ?? null;
+  }
+
+  pickableUnits(units: readonly Unit[]): Unit[] {
+    const boosted = new Set(Object.values(BOOSTED_GROWTH_VARIANTS));
+
+    return units.filter((unit) => !boosted.has(unit.name));
+  }
+
+  withGrowthBonus(unit: Unit): Unit {
+    const boosted = this.units.find((candidate) => candidate.name === BOOSTED_GROWTH_VARIANTS[characterKey(unit.name)]);
+
+    return boosted && boosted.id !== unit.id ? { ...unit, ...toGrowth(boosted), total: boosted.total } : unit;
   }
 
   private mountsForClass(classId: number): Mount[] {

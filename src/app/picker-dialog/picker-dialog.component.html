@@ -58,6 +58,18 @@
     }
   </div>
 
+  @if (showWeapon()) {
+    <label class="picker-weapon">
+      <span>Equipped weapon</span>
+      <select aria-label="Equipped weapon" (change)="pickedWeapon.set($any($event.target).value || null)">
+        <option value="" [selected]="pickedWeapon() === null">— Weapon —</option>
+        @for (option of weaponOptions(); track option.key) {
+          <option [value]="option.key" [selected]="pickedWeapon() === option.key">{{ option.label }}</option>
+        }
+      </select>
+    </label>
+  }
+
   <footer class="dialog-footer">
     <button type="button" class="button" (click)="close()">Cancel</button>
     <button type="button" class="button button--primary" (click)="confirm()">Confirm</button>

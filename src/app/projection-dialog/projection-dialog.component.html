@@ -41,7 +41,7 @@
         <span class="field-label">End level</span>
         <input
           type="range"
-          [min]="startLevel()"
+          [min]="firstLevel()"
           [max]="maxLevel"
           [value]="endLevel()"
           aria-label="End level slider"
@@ -51,7 +51,7 @@
           class="results-level-input"
           type="number"
           inputmode="numeric"
-          [min]="startLevel()"
+          [min]="firstLevel()"
           [max]="maxLevel"
           [value]="endLevel()"
           aria-label="End level"
@@ -60,13 +60,82 @@
         />
       </label>
 
+      <div class="results-bar">
+        <div class="view-toggle" role="group" aria-label="Projected stats view">
+          <button
+            type="button"
+            [class.view-toggle--active]="view() === 'base'"
+            [attr.aria-pressed]="view() === 'base'"
+            title="The unit's own stats, without class, mount or ability bonuses"
+            (click)="view.set('base')"
+          >
+            Base
+          </button>
+          <button
+            type="button"
+            [class.view-toggle--active]="view() === 'inGame'"
+            [attr.aria-pressed]="view() === 'inGame'"
+            title="As shown on the unit's screen, with class, mount and ability bonuses"
+            (click)="view.set('inGame')"
+          >
+            In-game
+          </button>
+        </div>
+        @if (view() === 'inGame') {
+          <button
+            type="button"
+            class="ghost-button"
+            [title]="'Stat abilities: ' + (equippedAbilityNames().join(', ') || 'None')"
+            (click)="abilityPickerOpen.set(true)"
+          >
+            Abilities ({{ equippedAbilities().length }}/{{ maxAbilities }})
+          </button>
+          @if (needsWeapon()) {
+            <select class="results-weapon" aria-label="Equipped weapon" (change)="setWeapon($any($event.target).value)">
+              <option value="" [selected]="chosenWeapon() === null">— Weapon —</option>
+              @for (key of weaponKeys; track key) {
+                <option [value]="key" [selected]="chosenWeapon() === key">{{ weaponLabels[key] }}</option>
+              }
+            </select>
+          }
+          <select
+            class="results-weapon"
+            aria-label="Battalion"
+            [title]="mountedAtEnd() ? 'Not counted: the class is mounted at this level' : 'Battalion'"
+            (change)="setBattalion($any($event.target).value)"
+          >
+            <option value="" [selected]="chosenBattalion() === null">— No battalion —</option>
+            @for (group of battalionGroups(); track group.type) {
+              <optgroup [label]="group.type">
+                @for (option of group.battalions; track option.id) {
+                  <option [value]="option.id" [selected]="chosenBattalion()?.id === option.id">{{ option.name }}</option>
+                }
+              </optgroup>
+            }
+          </select>
+        }
+        @if (actualLevels().length > 0) {
+          @if (actualAtEnd()) {
+            <span class="results-hint">Actual · Projected</span>
+          } @else {
+            @let last = actualLevels().at(-1)!;
+            <button type="button" class="link-button" (click)="setEndLevel('' + last)">
+              Compare actuals ({{ actualLevels().length > 1 ? 'Lv ' + actualLevels()[0] + '–' + last : 'Lv ' + last }})
+            </button>
+          }
+        }
+      </div>
+
       <ul class="results-stats">
         @for (row of projection(); track row.stat) {
           <li
             class="results-stat"
-            [title]="'Levelled ' + fixed(row.base) + (row.bonus ? ' + class bonus ' + row.bonus : '') + (row.mountBonus ? ' + mount bonus ' + row.mountBonus : '')"
+            [title]="'Levelled ' + fixed(row.base) + (row.bonus ? ' + class bonus ' + row.bonus : '') + (row.extraBonus ? ' + other bonuses ' + row.extraBonus + ' (max 10)' : '')"
           >
             <span class="results-label">{{ row.label }}</span>
+            @if (row.actual !== null) {
+              <span class="results-actual" [attr.data-tone]="row.tone" [title]="'Actual ' + row.actual">{{ row.actual }}</span>
+            }
             <span class="results-value">{{ fixed(row.total) }}</span>
           </li>
         }
@@ -79,3 +148,20 @@
     </div>
   }
 </div>
+
+@if (abilityPickerOpen()) {
+  <app-picker-dialog
+    eyebrow="Projected Stats"
+    [title]="'Equipped stat abilities · ' + unit().name"
+    [context]="'Added to the in-game view. Up to ' + maxAbilities + ' can be equipped; picking an upgrade replaces the ability it upgrades.'"
+    [groups]="abilityGroups()"
+    [selected]="equippedAbilityNames()"
+    [max]="maxAbilities"
+    (confirmed)="onAbilitiesConfirmed($event)"
+    [weaponOptions]="weaponOptions"
+    [weapon]="chosenWeapon()"
+    [weaponNeeded]="personalWeapon()"
+    (weaponChosen)="setWeapon($event ?? '')"
+    (closed)="abilityPickerOpen.set(false)"
+  />
+}

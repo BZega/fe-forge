@@ -179,11 +179,11 @@
       <legend class="field-label">{{ kind === 'start' ? 'These stats are' : 'Actual stats are' }}</legend>
       <div class="start-kind-options">
         <label>
-          <input type="radio" name="stats-kind" [checked]="!inGameStats()" (change)="inGameStats.set(false)" />
+          <input type="radio" name="stats-kind" [checked]="!inGameStats()" (change)="setInGame(false)" />
           Base stats <small>(no class, mount or ability bonuses)</small>
         </label>
         <label>
-          <input type="radio" name="stats-kind" [checked]="inGameStats()" (change)="inGameStats.set(true)" />
+          <input type="radio" name="stats-kind" [checked]="inGameStats()" (change)="setInGame(true)" />
           In-game stats <small>(as shown on the unit's screen)</small>
         </label>
       </div>
@@ -206,7 +206,17 @@
               }
             </select>
           }
-          <span class="start-kind-hint">Class, mount and abilities are taken off to compare.</span>
+          <select class="start-select" aria-label="Battalion" title="Not counted while the class is mounted" (change)="setBattalion($any($event.target).value)">
+            <option value="" [selected]="battalion() === null">— No battalion —</option>
+            @for (group of battalionGroups(); track group.type) {
+              <optgroup [label]="group.type">
+                @for (option of group.battalions; track option.id) {
+                  <option [value]="option.id" [selected]="battalion()?.id === option.id">{{ option.name }}</option>
+                }
+              </optgroup>
+            }
+          </select>
+          <span class="start-kind-hint">Class, mount, battalion and abilities are taken off to compare.</span>
         </div>
       }
     </fieldset>
@@ -296,6 +306,10 @@
     [selected]="equippedAbilityNames()"
     [max]="maxAbilities"
     (confirmed)="onAbilitiesConfirmed($event)"
+    [weaponOptions]="weaponOptions"
+    [weapon]="weapon()"
+    [weaponNeeded]="personalWeapon()"
+    (weaponChosen)="setWeapon($event ?? '')"
     (closed)="abilityPickerOpen.set(false)"
   />
 }

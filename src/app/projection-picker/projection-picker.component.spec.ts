@@ -36,7 +36,7 @@ describe('ProjectionPickerComponent', () => {
     start.confirm();
     fixture.detectChanges();
 
-    expect(projection()!.unit().name).toBe('Mu*');
+    expect(projection()!.unit().name).toBe('Mu');
     expect(projection()!.chapters()).toBe(start.route()!.chapters);
     expect(projection()!.chapter()!.chapter).toBe(start.chapterNumber()!);
     expect(projection()!.page()).toBe('results');

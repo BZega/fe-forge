@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import unitClassData from '../data/unit-classes.json';
 import unitData from '../data/units.json';
-import { STAT_KEYS, Unit } from '../models/growth.models';
+import { STAT_KEYS, Unit, UnitClass } from '../models/growth.models';
 import { RecruitmentDataService } from '../services/recruitment-data.service';
 import { SpoilerService } from '../services/spoiler.service';
 import { ProjectionStart, ProjectionStartDialogComponent } from './projection-start-dialog.component';
@@ -60,7 +61,8 @@ describe('ProjectionStartDialogComponent', () => {
     const start = confirmed()!;
     expect(start.source).toBe('chapter');
     expect(start.name).toBe('Mu');
-    expect(start.unit.name).toBe('Mu*');
+    expect(start.unit.name).toBe('Mu');
+    expect(start.unit.hp).toBe((unitData as { name: string; hp: number }[]).find((unit) => unit.name === 'Mu*')!.hp);
     expect(start.chapters).toBe(dialog.route()!.chapters);
     expect(start.level).toBe(dialog.chapter()!.level);
   });
@@ -142,6 +144,36 @@ describe('ProjectionStartDialogComponent', () => {
     expect(confirmed()!.actual).toEqual(jasmine.objectContaining({ level: 25, inGame: true }));
     expect(confirmed()!.actual!.stats.str).toBe(18);
     expect(confirmed()!.options.level).toBe(25);
+  });
+
+  it('pulls impossible actuals down to the most possible, then to the equipped bonuses on Done', () => {
+    const { dialog, fixture, host, confirmed } = open();
+    dialog.setSource('chapter');
+    dialog.unitId.set(unitId('Cai'));
+    fixture.detectChanges();
+    host.querySelector<HTMLInputElement>('.start-compare input')!.click();
+    fixture.detectChanges();
+
+    const chapter = dialog.chapter()!;
+    const classBonus = (unitClassData as UnitClass[]).find((unitClass) => unitClass.name === chapter.className)!.bonusStats.str;
+    const field = (aria: string) => host.querySelector<HTMLInputElement>(`input[aria-label="${aria}"]`)!;
+    const type = (aria: string, value: string) => {
+      field(aria).value = value;
+      field(aria).dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+    };
+
+    type('Actual stats level', String(chapter.level));
+    type('Actual Str', '999');
+    expect(dialog.actualInputs().str).toBe(chapter.stats.str);
+
+    dialog.setInGame(true);
+    fixture.detectChanges();
+    type('Actual Str', '999');
+    expect(dialog.actualInputs().str).toBe(chapter.stats.str + classBonus + 10);
+
+    dialog.confirm();
+    expect(confirmed()!.actual!.stats.str).toBe(chapter.stats.str + classBonus);
   });
 
   it('fills an existing start back in when editing', () => {

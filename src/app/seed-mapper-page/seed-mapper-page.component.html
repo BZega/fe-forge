@@ -948,6 +948,10 @@
     [groups]="picker.groups"
     [selected]="picker.selected"
     [max]="picker.max"
+    [weaponOptions]="picker.weapon ? weaponOptions : null"
+    [weapon]="picker.weapon?.current ?? null"
+    [weaponNeeded]="picker.weapon?.needed ?? false"
+    (weaponChosen)="onPickerWeapon($event)"
     (confirmed)="onPickerConfirmed($event)"
     (closed)="closePicker()"
   />
@@ -958,6 +962,10 @@
     [unit]="projected.unit"
     [chapters]="[projected.start]"
     [chapterPicker]="false"
+    [history]="projected.history"
+    [actuals]="projected.actuals"
+    [abilities]="projected.abilities"
+    [weapon]="projected.weapon"
     (closed)="projection.set(null)"
   />
 }

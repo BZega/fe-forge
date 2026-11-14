@@ -4,9 +4,12 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { BranchMode, ExamDialogComponent } from '../exam-dialog/exam-dialog.component';
 import { PickerDialogComponent, PickerGroup } from '../picker-dialog/picker-dialog.component';
 import { classUnlockLevel, snapRank } from '../class-plan/class-plan.component';
+import { PlanStep } from '../class-plan/class-plan.component';
 import { ProjectionDialogComponent } from '../projection-dialog/projection-dialog.component';
+import { ProjectionActual } from '../projection-start-dialog/projection-start-dialog.component';
 import { RecruitmentChapter } from '../models/recruitment.models';
-import { baseStatsOf, bondLevelOf, characterKey, ClassAbility, CLASS_RANK_ORDER, ClassRank, GrowthRates, MAX_EQUIPPED_ABILITIES, Mount, MountBondLevel, mountBonusAt, mountGrowthAt, SKILL_LABELS, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, sumGrowth, toGrowth, Unit, UnitClass, WEAPON_KEYS, ZERO_GROWTH } from '../models/growth.models';
+import { abilitiesFor, baseStatsOf, bondLevelOf, characterKey, ClassAbility, CLASS_RANK_ORDER, ClassRank, GrowthRates, MAX_EQUIPPED_ABILITIES, Mount, MountBondLevel, mountBonusAt, mountGrowthAt, SKILL_LABELS, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, sumGrowth, toGrowth, Unit, UnitClass, WEAPON_KEYS, WeaponKey, ZERO_GROWTH } from '../models/growth.models';
+import { abilitiesAt, abilityLock, blazeBonusOf, MAX_EXTRA_BONUS, personalBonusesAt, usesWeapon, WEAPON_OPTIONS } from '../models/bonuses';
 import { estimateRoll, MAX_UNRELIABLE_GAINS, MIN_READINGS_TO_FILL, RollBounds, rollBounds, RollEstimate, RollObservation, UNKNOWN_ROLL } from '../models/seed-roll';
 import { CURRENT_SAVE_VERSION, migrateSave, newSaveId, SeedSave } from '../models/seed-save';
 import { SearchableSelectComponent, SelectItemGroup } from '../searchable-select/searchable-select.component';
@@ -63,6 +66,7 @@ export interface StatTotal {
   mountSource: string | null;
   abilityBonus: number;
   abilitySources: string[];
+  capped: number;
   floorBoost: number;
 }
 
@@ -97,6 +101,7 @@ interface PickerConfig {
   groups: PickerGroup[];
   selected: string[];
   max: number | null;
+  weapon?: { current: string | null; needed: boolean };
 }
 
 interface ExamDialogState {
@@ -180,16 +185,12 @@ export class SeedMapperPageComponent {
     initialValue: [] as StatBoostAbility[],
   });
 
-  private readonly unitAbilities = computed(() => {
-    const unit = this.api.unitById(this.seedMap().unitId);
-    const key = unit ? characterKey(unit.name) : null;
+  private readonly unitAbilities = computed(() => abilitiesFor(this.statBoostAbilities(), this.unitName() || null));
 
-    return this.statBoostAbilities().filter(
-      (ability) => !ability.characters || (key !== null && ability.characters.includes(key)),
-    );
-  });
+  private readonly unitName = computed(() => this.api.unitById(this.seedMap().unitId)?.name ?? '');
 
   readonly maxAbilities = MAX_EQUIPPED_ABILITIES;
+  readonly weaponOptions = WEAPON_OPTIONS;
   readonly weaponKeys = WEAPON_KEYS;
   readonly weaponLabels = SKILL_LABELS;
 
@@ -218,7 +219,7 @@ export class SeedMapperPageComponent {
     return !teachers || teachers.some((unitClass) => pool.has(unitClass.id)) ? [] : teachers;
   }
 
-  readonly units = computed(() => this.spoilers.filter(this.allUnits()));
+  readonly units = computed(() => this.api.pickableUnits(this.spoilers.filter(this.allUnits())));
 
   readonly classGroups = computed<SelectItemGroup[]>(() =>
     this.groupClasses(this.spoilers.filter(this.usableClasses())),
@@ -262,6 +263,7 @@ export class SeedMapperPageComponent {
     }
 
     const view = this.sectionViews().find((candidate) => candidate.section.id === dialog.sectionId);
+    const level = view ? this.endLevelOf(view) : 0;
     const toItem = (ability: StatBoostAbility) => {
       const missing = this.missingClassesFor(ability, dialog.sectionId);
 
@@ -270,7 +272,11 @@ export class SeedMapperPageComponent {
         name: ability.name,
         description: ability.description,
         family: familyOf(ability),
-        locked: missing.length > 0 ? `Needs ${missing.map((unitClass) => unitClass.name).join(' or ')} in available classes` : undefined,
+        usesWeapon: ability.weaponBoosts !== undefined,
+        locked:
+          missing.length > 0
+            ? `Needs ${missing.map((unitClass) => unitClass.name).join(' or ')} in available classes`
+            : abilityLock(ability, level),
       };
     };
     const abilities = this.unitAbilities();
@@ -284,6 +290,7 @@ export class SeedMapperPageComponent {
       ].filter((group) => group.items.length > 0),
       selected: view ? this.equippedAbilities(view).map((ability) => ability.name) : [],
       max: MAX_EQUIPPED_ABILITIES,
+      weapon: { current: view?.section.weapon ?? null, needed: usesWeapon(this.unitName(), level, []) },
     };
   });
 
@@ -507,6 +514,14 @@ export class SeedMapperPageComponent {
 
   closePicker(): void {
     this.pickerDialog.set(null);
+  }
+
+  onPickerWeapon(weapon: string | null): void {
+    const dialog = this.pickerDialog();
+
+    if (dialog?.kind === 'abilities') {
+      this.state.setWeapon(dialog.sectionId, WEAPON_KEYS.find((key) => key === weapon) ?? null);
+    }
   }
 
   onPickerConfirmed(ids: string[]): void {
@@ -1018,6 +1033,7 @@ export class SeedMapperPageComponent {
       view.classId,
       view.classId === null ? null : ridden(view.mount, view.mountLevel),
       view.section,
+      this.startLevelOf(view),
     );
   }
 
@@ -1033,14 +1049,14 @@ export class SeedMapperPageComponent {
           : ridden(this.comparatorMountOf(comparator), this.comparatorMountLevel(comparator));
       const gains = sumGrowth(start.gains, this.gainsOf(view, () => growth, rows, rows.length - 1));
 
-      return this.totals(gains, start.floorBoosts, comparator.classId, mount, view.section);
+      return this.totals(gains, start.floorBoosts, comparator.classId, mount, view.section, this.endLevelOf(view));
     }
 
     const classId = this.rowClassId(view, rows.length - 1);
     const { mount, level } = this.mountFor(view, classId);
     const end = this.progress().get(view.section.id)?.after.at(-1) ?? start;
 
-    return this.totals(end.gains, end.floorBoosts, classId, classId === null ? null : ridden(mount, level), view.section);
+    return this.totals(end.gains, end.floorBoosts, classId, classId === null ? null : ridden(mount, level), view.section, this.endLevelOf(view));
   }
 
   startLevelOf(view: SectionView): number {
@@ -1057,6 +1073,7 @@ export class SeedMapperPageComponent {
     classId: number | null,
     mount: RiddenMount | null,
     section: SeedSection,
+    level: number,
   ): StatTotal[] {
     const base = this.seedMap().startStats;
     const seed = this.sectionViews()[0];
@@ -1066,28 +1083,35 @@ export class SeedMapperPageComponent {
     const shownClass =
       classId === null ? seedClass : (this.classes().find((c) => c.id === classId) ?? null);
     const shownMount = mount ?? ridden(seed?.mount ?? null, seed?.mountLevel ?? null);
-    const abilities = this.equippedAbilitiesOf(section.abilities, section.id);
+    const unitName = this.unitName();
+    const bonuses: { name: string; boosts: Partial<Record<StatKey, number>>; weaponBoosts?: StatBoostAbility['weaponBoosts'] }[] = [
+      ...abilitiesAt(this.equippedAbilitiesOf(section.abilities, section.id), level),
+      ...personalBonusesAt(unitName, level),
+      { name: 'Blaze', boosts: blazeBonusOf(unitName) },
+    ];
 
     return this.statKeys.map((stat) => {
       const start = base[stat];
       const classBonus =
         (shownClass?.bonusStats[stat] ?? 0) - (startingClass?.bonusStats[stat] ?? 0);
       const mountBonus = shownMount.bonus[stat];
-      const boostOf = (ability: StatBoostAbility) =>
-        (ability.boosts[stat] ?? 0) +
-        (section.weapon ? (ability.weaponBoosts?.[section.weapon]?.[stat] ?? 0) : 0);
-      const boosting = abilities.filter((ability) => boostOf(ability) !== 0);
-      const abilityBonus = boosting.reduce((sum, ability) => sum + boostOf(ability), 0);
+      const boostOf = (bonus: (typeof bonuses)[number]) =>
+        (bonus.boosts[stat] ?? 0) +
+        (section.weapon ? (bonus.weaponBoosts?.[section.weapon]?.[stat] ?? 0) : 0);
+      const boosting = bonuses.filter((bonus) => boostOf(bonus) !== 0);
+      const abilityBonus = boosting.reduce((sum, bonus) => sum + boostOf(bonus), 0);
+      const extra = Math.min(MAX_EXTRA_BONUS, mountBonus + abilityBonus);
 
       return {
-        value: start === null ? null : start + gains[stat] + classBonus + mountBonus + abilityBonus,
+        value: start === null ? null : start + gains[stat] + classBonus + extra,
         gained: gains[stat] - floorBoosts[stat],
         classBonus,
         versus: classBonus === 0 ? null : (startingClass?.name ?? null),
         mountBonus,
         mountSource: mountBonus === 0 ? null : shownMount.label,
         abilityBonus,
-        abilitySources: boosting.map((ability) => ability.name),
+        abilitySources: boosting.map((bonus) => bonus.name),
+        capped: mountBonus + abilityBonus - extra,
         floorBoost: floorBoosts[stat],
       };
     });
@@ -1119,6 +1143,10 @@ export class SeedMapperPageComponent {
       parts.push(`+${total.abilityBonus} from ${total.abilitySources.join(', ')}`);
     }
 
+    if (total.capped > 0) {
+      parts.push(`−${total.capped} over the +${MAX_EXTRA_BONUS} limit on non-class bonuses`);
+    }
+
     return parts.join('; ');
   }
 
@@ -1137,12 +1165,13 @@ export class SeedMapperPageComponent {
     return [...byFamily.values()];
   }
 
+  /** As of the section's last level, so an equipped Warrior's Blood shows as Warrior's Blood+ from Lv 35. */
   equippedAbilities(view: SectionView): StatBoostAbility[] {
-    return this.equippedAbilitiesOf(view.section.abilities, view.section.id);
+    return abilitiesAt(this.equippedAbilitiesOf(view.section.abilities, view.section.id), this.endLevelOf(view));
   }
 
   usesWeapon(view: SectionView): boolean {
-    return this.equippedAbilities(view).some((ability) => ability.weaponBoosts);
+    return usesWeapon(this.unitName(), this.endLevelOf(view), this.equippedAbilities(view));
   }
 
   onWeaponChange(view: SectionView, value: string): void {
@@ -1597,7 +1626,14 @@ export class SeedMapperPageComponent {
 
   // --- projection ---------------------------------------------------------
 
-  readonly projection = signal<{ unit: Unit; start: RecruitmentChapter } | null>(null);
+  readonly projection = signal<{
+    unit: Unit;
+    start: RecruitmentChapter;
+    history: { start: RecruitmentChapter; steps: PlanStep[] };
+    actuals: ProjectionActual[];
+    abilities: StatBoostAbility[];
+    weapon: WeaponKey | null;
+  } | null>(null);
 
   canProject(view: SectionView): boolean {
     const stats = this.seedMap().startStats;
@@ -1614,11 +1650,12 @@ export class SeedMapperPageComponent {
       return 'Enter every starting stat first';
     }
 
-    return `Project ${view.title}'s stats from Lv ${this.endLevelOf(view)}, planning reclasses on the way`;
+    return `Project ${view.title}'s stats from Lv ${this.seedMap().statsLevel}, comparing every mapped level, and plan reclasses after Lv ${this.endLevelOf(view)}`;
   }
 
   openProjection(view: SectionView): void {
-    const unit = this.api.unitById(this.seedMap().unitId);
+    const found = this.api.unitById(this.seedMap().unitId);
+    const unit = found && this.api.withGrowthBonus(found);
     const unitClass = this.classes().find((c) => c.id === this.rowClassId(view, view.section.rows.length - 1));
 
     if (!unit || !unitClass || !this.canProject(view)) {
@@ -1628,24 +1665,74 @@ export class SeedMapperPageComponent {
     const gains = (this.progress().get(view.section.id)?.after.at(-1) ?? this.sectionStart(view)).gains;
     const startingBonus = this.startingClass()?.bonusStats;
     const base = this.seedMap().startStats;
-    const stats = { ...ZERO_GROWTH };
+    const own = (gained: GrowthRates) => {
+      const stats = { ...ZERO_GROWTH };
 
-    for (const stat of this.statKeys) {
-      stats[stat] = (base[stat] ?? 0) - (startingBonus?.[stat] ?? 0) + gains[stat];
+      for (const stat of this.statKeys) {
+        stats[stat] = (base[stat] ?? 0) - (startingBonus?.[stat] ?? 0) + gained[stat];
+      }
+
+      return stats;
+    };
+    const chapterAt = (level: number, className: string, stats: GrowthRates): RecruitmentChapter => ({
+      chapter: 0,
+      level,
+      className,
+      skillRanks: {},
+      stats,
+      inventory: [],
+      equippedAbilities: [],
+    });
+    const startLevel = this.seedMap().statsLevel;
+    const firstClass = this.classes().find((c) => c.id === this.sectionViews()[0]?.classId);
+    const steps: PlanStep[] = [];
+    const actuals: ProjectionActual[] = [];
+
+    for (const { part, until } of this.pathTo(view)) {
+      const after = this.progress().get(part.section.id)?.after ?? [];
+
+      for (let index = 0; index <= until; index++) {
+        const level = this.levelOf(part, index);
+        const rowClass = this.classes().find((c) => c.id === this.rowClassId(part, index));
+        const { mount, level: bondLevel } = this.mountFor(part, rowClass?.id ?? null);
+
+        if (rowClass) {
+          steps.push({ fromLevel: level - 1, unitClass: rowClass, mount, bondLevel });
+        }
+
+        if (after[index]) {
+          actuals.push({ level, stats: own(after[index].gains), inGame: false });
+        }
+      }
     }
 
     this.projection.set({
       unit,
-      start: {
-        chapter: 0,
-        level: this.endLevelOf(view),
-        className: unitClass.name,
-        skillRanks: {},
-        stats,
-        inventory: [],
-        equippedAbilities: [],
-      },
+      start: chapterAt(this.endLevelOf(view), unitClass.name, own(gains)),
+      history: { start: chapterAt(startLevel, firstClass?.name ?? unitClass.name, own(ZERO_GROWTH)), steps },
+      actuals,
+      abilities: this.equippedAbilities(view),
+      weapon: view.section.weapon,
     });
+  }
+
+  private pathTo(view: SectionView): { part: SectionView; until: number }[] {
+    const views = this.sectionViews();
+    const path: { part: SectionView; until: number }[] = [{ part: view, until: view.section.rows.length - 1 }];
+    let exam = view.section.exam;
+
+    while (exam) {
+      const parent = views.find((candidate) => candidate.section.id === exam!.parentId);
+
+      if (!parent) {
+        break;
+      }
+
+      path.unshift({ part: parent, until: parent.section.rows.findIndex((row) => row.id === exam!.afterRowId) });
+      exam = parent.section.exam;
+    }
+
+    return path;
   }
 
   // --- saves -------------------------------------------------------------
@@ -2017,10 +2104,10 @@ export class SeedMapperPageComponent {
     mount: Mount | null,
     mountLevel: number | null,
   ): GrowthRates {
-    const unit = this.units().find((u) => u.id === unitId) ?? null;
+    const unit = this.allUnits().find((u) => u.id === unitId) ?? null;
     const unitClass = this.classes().find((c) => c.id === classId) ?? null;
 
-    return sumGrowth(toGrowth(unit), toGrowth(unitClass), mountGrowthAt(mount, mountLevel));
+    return sumGrowth(toGrowth(unit && this.api.withGrowthBonus(unit)), toGrowth(unitClass), mountGrowthAt(mount, mountLevel));
   }
 
   private loadMounts(classId: number | null): void {

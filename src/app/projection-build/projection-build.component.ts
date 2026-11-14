@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, linkedSignal, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MAX_PROJECTION_LEVEL } from '../class-plan/class-plan.component';
-import { abilitiesFor, abilityBoosts, abilityPickerGroups, classLabel, GrowthRates, MAX_EQUIPPED_ABILITIES, mountBonusAt, SKILL_LABELS, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, sumGrowth, toGrowth, WEAPON_KEYS, WeaponKey } from '../models/growth.models';
+import { abilitiesFor, abilityPickerGroups, Battalion, BATTALION_TYPE_ORDER, classLabel, GrowthRates, MAX_EQUIPPED_ABILITIES, SKILL_LABELS, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, toGrowth, WEAPON_KEYS, WeaponKey } from '../models/growth.models';
+import { abilitiesAt, abilityLock, InGameGear, inGameBonus, isMountedClass, usesWeapon, WEAPON_OPTIONS } from '../models/bonuses';
 import { levelUpGrowth, routeLabel, stepAtLevel } from '../models/recruitment.models';
 import { DistributionSummary, projectDistributions, quantile, rankOf, Ranking, shift, StatDistribution, summarize } from '../models/stat-distribution';
 import { PickerDialogComponent } from '../picker-dialog/picker-dialog.component';
@@ -31,6 +32,8 @@ export interface StatRow {
 }
 
 const emptyStats = (): StatInputs => Object.fromEntries(STAT_KEYS.map((stat) => [stat, null])) as StatInputs;
+
+const NO_ABILITIES: readonly StatBoostAbility[] = [];
 
 @Component({
   selector: 'app-projection-build',
@@ -67,16 +70,36 @@ export class ProjectionBuildComponent {
   readonly weaponKeys = WEAPON_KEYS;
   readonly weaponLabels = SKILL_LABELS;
   readonly abilityOptions = computed(() => abilitiesFor(this.statBoostAbilities(), this.start()?.name ?? null));
-  readonly abilityGroups = computed(() => abilityPickerGroups(this.abilityOptions()));
-  private readonly abilityNames = linkedSignal<readonly string[]>(() => (this.start()?.abilities ?? []).map((ability) => ability.name));
-  readonly weapon = linkedSignal<WeaponKey | null>(() => this.start()?.weapon ?? null);
+  readonly abilityGroups = computed(() => abilityPickerGroups(this.abilityOptions(), (ability) => abilityLock(ability, this.level())));
+  private readonly startAbilities = computed(() => this.start()?.abilities ?? NO_ABILITIES);
+  private readonly startWeapon = computed(() => this.start()?.weapon ?? null);
+  private readonly startBattalion = computed(() => this.start()?.battalion ?? null);
+  private readonly abilityNames = linkedSignal<readonly StatBoostAbility[], readonly string[]>({
+    source: this.startAbilities,
+    computation: (abilities) => abilities.map((ability) => ability.name),
+  });
+  readonly weapon = linkedSignal<WeaponKey | null, WeaponKey | null>({ source: this.startWeapon, computation: (weapon) => weapon });
+  readonly battalion = linkedSignal<Battalion | null, Battalion | null>({ source: this.startBattalion, computation: (battalion) => battalion });
+  readonly weaponOptions = WEAPON_OPTIONS;
+  readonly personalWeapon = computed(() => usesWeapon(this.start()?.name ?? '', this.level(), []));
   readonly abilityPickerOpen = signal(false);
+
+  private readonly battalions = toSignal(this.api.getBattalions(), { initialValue: [] as Battalion[] });
+  readonly battalionGroups = computed(() =>
+    BATTALION_TYPE_ORDER.map((type) => ({ type, battalions: this.battalions().filter((battalion) => battalion.type === type) })),
+  );
 
   readonly equippedAbilities = computed(() =>
     this.abilityOptions().filter((ability) => this.abilityNames().includes(ability.name)),
   );
-  readonly equippedAbilityNames = computed(() => this.equippedAbilities().map((ability) => ability.name));
-  readonly needsWeapon = computed(() => this.equippedAbilities().some((ability) => ability.weaponBoosts));
+  readonly equippedAbilityNames = computed(() => abilitiesAt(this.equippedAbilities(), this.level()).map((ability) => ability.name));
+  readonly needsWeapon = computed(() => usesWeapon(this.start()?.name ?? '', this.level(), this.equippedAbilities()));
+
+  readonly mountedNow = computed(() => {
+    const unitClass = stepAtLevel(this.steps(), this.level())?.unitClass;
+
+    return unitClass !== undefined && isMountedClass(unitClass.name);
+  });
 
   onAbilitiesConfirmed(names: string[]): void {
     this.abilityNames.set(names);
@@ -85,6 +108,10 @@ export class ProjectionBuildComponent {
 
   setWeapon(value: string): void {
     this.weapon.set(WEAPON_KEYS.find((weapon) => weapon === value) ?? null);
+  }
+
+  setBattalion(value: string): void {
+    this.battalion.set(this.battalions().find((battalion) => String(battalion.id) === value) ?? null);
   }
 
   readonly startSummary = computed(() => {
@@ -121,14 +148,23 @@ export class ProjectionBuildComponent {
     Math.min(MAX_PROJECTION_LEVEL, Math.max(this.start()?.level ?? 1, this.options().level)),
   );
 
-  private bonusesAt(level: number): GrowthRates {
+  private bonusesAt(level: number, gear: InGameGear): GrowthRates {
     const step = stepAtLevel(this.steps(), level);
 
-    return sumGrowth(
-      toGrowth(step?.unitClass.bonusStats ?? null),
-      toGrowth(mountBonusAt(step?.mount ?? null, step?.bondLevel ?? null)),
-    );
+    return inGameBonus(this.start()?.name ?? '', level, step?.unitClass ?? null, step?.mount ?? null, step?.bondLevel ?? null, gear);
   }
+
+  private readonly enteredGear = computed<InGameGear>(() => {
+    const start = this.start();
+
+    return { abilities: start?.abilities ?? [], weapon: start?.weapon ?? null, battalion: start?.battalion ?? null };
+  });
+
+  private readonly cardGear = computed<InGameGear>(() => ({
+    abilities: this.equippedAbilities(),
+    weapon: this.weapon(),
+    battalion: this.battalion(),
+  }));
 
   private readonly baseStats = computed<GrowthRates | null>(() => {
     const start = this.start();
@@ -142,7 +178,7 @@ export class ProjectionBuildComponent {
     }
 
     if (start.inGameStats) {
-      const bonuses = sumGrowth(this.bonusesAt(start.level), abilityBoosts(start.abilities ?? [], start.weapon ?? null));
+      const bonuses = this.bonusesAt(start.level, this.enteredGear());
 
       return Object.fromEntries(this.statKeys.map((stat) => [stat, start.stats[stat] - bonuses[stat]])) as GrowthRates;
     }
@@ -199,7 +235,7 @@ export class ProjectionBuildComponent {
       return null;
     }
 
-    const bonuses = sumGrowth(this.bonusesAt(this.level()), abilityBoosts(this.equippedAbilities(), this.weapon()));
+    const bonuses = this.bonusesAt(this.level(), this.cardGear());
 
     return Object.fromEntries(
       this.statKeys.map((stat) => [stat, shift(base[stat], bonuses[stat])]),
@@ -216,9 +252,7 @@ export class ProjectionBuildComponent {
       return emptyStats();
     }
 
-    const bonuses = actual.inGame
-      ? sumGrowth(this.bonusesAt(actual.level), abilityBoosts(start.abilities ?? [], start.weapon ?? null))
-      : toGrowth(null);
+    const bonuses = actual.inGame ? this.bonusesAt(actual.level, this.enteredGear()) : toGrowth(null);
 
     return Object.fromEntries(
       this.statKeys.map((stat) => [stat, actual.stats[stat] === null ? null : actual.stats[stat]! - bonuses[stat]]),
@@ -226,9 +260,7 @@ export class ProjectionBuildComponent {
   });
 
   private readonly viewBonus = computed(() =>
-    this.view() === 'base'
-      ? toGrowth(null)
-      : sumGrowth(this.bonusesAt(this.level()), abilityBoosts(this.equippedAbilities(), this.weapon())),
+    this.view() === 'base' ? toGrowth(null) : this.bonusesAt(this.level(), this.cardGear()),
   );
 
   private readonly shownActuals = computed(() => {

@@ -88,6 +88,25 @@ describe('SeedMapperPageComponent starting stats', () => {
     expect(baseStats()[str]).toBe(10 + str + 1);
   });
 
+  it('projects from the starting stats, with every mapped level as an actual to compare', () => {
+    component.onUnitChange(unitId('Cai'));
+    const seedId = state.seedMap().sections[0].id;
+    state.setClass(seedId, noble.id);
+    state.addLevel(seedId);
+    state.addLevel(seedId);
+    component.openProjection(component.sectionViews()[0]);
+    const projected = component.projection()!;
+    const start = state.seedMap().statsLevel;
+    const rows = state.seedMap().sections[0].rows.length;
+    const levels = Array.from({ length: rows }, (_, index) => start + index);
+
+    expect(projected.history.start.level).toBe(start);
+    expect(projected.history.steps.map((step) => step.fromLevel)).toEqual(levels);
+    expect(projected.actuals.map((actual) => actual.level)).toEqual(levels.map((level) => level + 1));
+    expect(projected.history.start.stats).toEqual(jasmine.objectContaining({ str: state.seedMap().startStats.str! }));
+    expect(projected.start.level).toBe(start + rows);
+  });
+
   it('carries equipped abilities into a new exam and keeps them through save and load', () => {
     const seedId = state.seedMap().sections[0].id;
     state.setAbilities(seedId, ['Divine Might']);
@@ -151,70 +170,68 @@ describe('SeedMapperPageComponent starting stats', () => {
       component.openAbilityPicker(view());
       return component.pickerConfig()!.groups.flatMap((group) => group.items.map((item) => item.name));
     };
-    const equip = (...names: string[]) => {
-      component.openAbilityPicker(view());
-      component.onPickerConfirmed(names);
-    };
     const stat = (key: (typeof STAT_KEYS)[number]) => baseStats()[STAT_KEYS.indexOf(key)]!;
     const base = (key: (typeof STAT_KEYS)[number]) => 10 + STAT_KEYS.indexOf(key);
+    // The seed's last level is one past its starting level.
+    const reach = (level: number) => state.setStatsLevel(level - 1);
 
-    it('is offered to Mu and Mu*, under character abilities, but not to other characters', () => {
-      expect(options()).not.toContain("Warrior's Blood");
-
-      state.setUnit(unitId('Hong Hua'));
+    it('is offered to Mu, under character abilities, locked until she learns it', () => {
       expect(options()).not.toContain("Warrior's Blood");
 
       state.setUnit(unitId('Mu'));
+      reach(19);
       expect(options()).toContain("Warrior's Blood");
       expect(component.pickerConfig()!.groups.map((group) => group.label)).toEqual(['Class abilities', 'Character abilities']);
+      const item = (name: string) => component.pickerConfig()!.groups.flatMap((group) => group.items).find((candidate) => candidate.name === name)!;
+      expect(item("Warrior's Blood").locked).toBe('Learned at Lv 20');
 
-      state.setUnit(unitId('Mu*'));
-      expect(options()).toContain("Warrior's Blood+");
+      reach(20);
+      options();
+      expect(item("Warrior's Blood").locked).toBeUndefined();
+      expect(item("Warrior's Blood+").locked).toBe('Learned at Lv 35');
+
+      reach(35);
+      options();
+      expect(item("Warrior's Blood").locked).toBe("Replaced by Warrior's Blood+ from Lv 35");
+      expect(item("Warrior's Blood+").locked).toBeUndefined();
     });
 
-    it('puts Warrior\'s Blood and its upgrade in one family so the dialog swaps them', () => {
-      state.setUnit(unitId('Mu'));
-      const items = (options(), component.pickerConfig()!.groups.flatMap((group) => group.items));
-      const family = (name: string) => items.find((item) => item.name === name)!.family;
+    it('lists Mu, not Mu*, among the units', () => {
+      const names = component.units().map((unit) => unit.name);
 
-      expect(family("Warrior's Blood+")).toBe(family("Warrior's Blood"));
-      expect(family('Divine Might')).not.toBe(family("Warrior's Blood"));
+      expect(names).toContain('Mu');
+      expect(names).not.toContain('Mu*');
     });
 
-    it('boosts the stat for the equipped weapon, and asks for the weapon only when it matters', () => {
+    it('counts only once learned, and asks for the weapon only then', () => {
       state.setUnit(unitId('Mu'));
-      expect(component.usesWeapon(view())).toBeFalse();
-
-      equip("Warrior's Blood");
-      expect(component.usesWeapon(view())).toBeTrue();
-      expect(baseStats()).toEqual(STAT_KEYS.map((key) => base(key)));
-
+      state.setAbilities(sectionId(), ["Warrior's Blood"]);
       component.onWeaponChange(view(), 'sword');
-      expect(stat('spd')).toBe(base('spd') + 2);
-
-      component.onWeaponChange(view(), 'whiteMagic');
+      reach(19);
+      expect(component.usesWeapon(view())).toBeFalse();
       expect(stat('spd')).toBe(base('spd'));
-      expect(stat('mag')).toBe(base('mag') + 2);
-    });
 
-    it("applies Warrior's Blood+ boosts for the weapon alongside other abilities", () => {
-      state.setUnit(unitId('Mu'));
-      allow('The Eternal', 'Priest');
-      equip('Divine Might', "Warrior's Blood+", 'Piety');
-      state.setWeapon(sectionId(), 'axe');
+      reach(20);
+      expect(component.usesWeapon(view())).toBeTrue();
+      expect(stat('spd')).toBe(base('spd') + 2);
+      expect(stat('dex')).toBe(base('dex'));
 
-      expect(stat('def')).toBe(base('def') + 2);
-      expect(stat('str')).toBe(base('str') + 10 + 2);
-    });
-
-    it('counts only the later of the two if a save has both', () => {
-      state.setUnit(unitId('Mu'));
-      state.setAbilities(sectionId(), ["Warrior's Blood", "Warrior's Blood+"]);
-      state.setWeapon(sectionId(), 'bow');
-
+      reach(35);
       expect(component.equippedAbilities(view()).map((ability) => ability.name)).toEqual(["Warrior's Blood+"]);
+      expect(stat('spd')).toBe(base('spd') + 2);
       expect(stat('dex')).toBe(base('dex') + 2);
     });
+  });
+
+  it('adds Blaze and personal bonuses, but no more than +10 to a stat from everything but the class', () => {
+    const def = STAT_KEYS.indexOf('def');
+    state.setUnit(unitId('Orchel'));
+    expect(baseStats()[def]).toBe(10 + def + 5 + 5);
+
+    allow('The Trident');
+    state.setAbilities(state.seedMap().sections[0].id, ['Divine Wall']);
+    expect(baseStats()[def]).toBe(10 + def + 10);
+    expect(component.statTotalTitle(component.endStatsOf(component.sectionViews()[0])[def])).toContain('limit');
   });
 
   it('allows at most five equipped abilities', () => {
@@ -270,10 +287,11 @@ describe('SeedMapperPageComponent starting stats', () => {
       expect(item('Attack Basics').locked).toBe('Needs Gladiator in available classes');
     });
 
-    it('never locks character abilities, which no class teaches', () => {
+    it('never locks character abilities by class, which no class teaches', () => {
       state.setUnit(unitId('Mu'));
+      state.setStatsLevel(40);
 
-      expect(item("Warrior's Blood").locked).toBeUndefined();
+      expect(item("Warrior's Blood+").locked).toBeUndefined();
     });
   });
 

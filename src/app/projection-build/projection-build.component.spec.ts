@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { PlanStep } from '../class-plan/class-plan.component';
 import unitClassData from '../data/unit-classes.json';
 import { baseStatsOf, GrowthRates, STAT_KEYS, StatKey, Unit, UnitClass } from '../models/growth.models';
+import { blazeBonusOf } from '../models/bonuses';
 import { levelUpGrowth, projectStats } from '../models/recruitment.models';
 import { ProjectionOptions, ProjectionStart } from '../projection-start-dialog/projection-start-dialog.component';
 import { GrowthDataService } from '../services/growth-data.service';
@@ -78,14 +79,16 @@ describe('ProjectionBuildComponent', () => {
     return { fixture, build: fixture.componentInstance, host: fixture.nativeElement as HTMLElement, result: () => result };
   };
 
-  it("averages what the existing projection does from a chapter, plus the class's bonus", () => {
+  it("averages what the existing projection does from a chapter, plus the class's bonus and Cai's Blaze", () => {
     const start = chapterStart('Cai');
     const { build, result } = open(start);
     const noble = byName(start.className!);
+    const blaze = blazeBonusOf('Cai');
     const average = projectStats(start.stats, start.level, 30, (level) => levelUpGrowth(start.unit, noble, level, null, null));
 
+    expect(blaze.mag).toBe(3);
     for (const row of build.rows()) {
-      expect(row.summary.mean).toBeCloseTo(average[row.stat] + noble.bonusStats[row.stat], 10);
+      expect(row.summary.mean).toBeCloseTo(average[row.stat] + noble.bonusStats[row.stat] + blaze[row.stat], 10);
     }
     expect(result()!.level).toBe(30);
     expect(result()!.label).toBe('Cai');
@@ -219,6 +222,54 @@ describe('ProjectionBuildComponent', () => {
     expect(edges('.row-growth', (box) => box.left).size).toBe(1);
     expect(edges('.row-bar', (box) => box.left).size).toBe(1);
     expect(edges('.row-bar', (box) => box.width).size).toBe(1);
+  });
+
+  it('counts a battalion in game only while the class is not mounted', () => {
+    const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, 20])) as GrowthRates;
+    const hunters = { id: 1, name: 'Novice Hunters', type: 'Physical' as const, rank: 'E', total: 5, skillName: '', skillDescription: '', ...stats, str: 1, dex: 1, cha: 3, hp: 0, mag: 0, spd: 0, def: 0, res: 0, lck: 0 };
+    const strIn = (className: string) => {
+      const unitClass = byName(className);
+      const { build } = open(
+        { ...manualStart('Lysander', 10, stats), battalion: hunters, steps: [{ fromLevel: 10, unitClass, mount: null, bondLevel: null }] },
+        { level: 10 },
+      );
+
+      return build.rows().find((row) => row.stat === 'str')!.summary.mean - unitClass.bonusStats.str;
+    };
+
+    expect(strIn('Noble/Commoner')).toBe(21);
+    expect(strIn('Ornius Rider')).toBe(20);
+  });
+
+  it("counts Mu's Warrior's Blood picked at Lv 20 as Warrior's Blood+ from Lv 35", () => {
+    const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, 20])) as GrowthRates;
+    const blood = { name: "Warrior's Blood", description: '', boosts: {}, learnedAt: 20 };
+    const start = { ...manualStart('Mu', 20, stats), steps: stepsFrom(20), abilities: [blood], weapon: 'sword' as const };
+    const extra = (level: number, stat: StatKey) => {
+      const { build } = open(start, { level });
+      const inGame = build.rows().find((row) => row.stat === stat)!.summary.mean;
+      build.view.set('base');
+
+      return Math.round(inGame - build.rows().find((row) => row.stat === stat)!.summary.mean);
+    };
+
+    expect([extra(34, 'spd'), extra(34, 'dex')]).toEqual([2, 0]);
+    expect([extra(35, 'spd'), extra(35, 'dex')]).toEqual([2, 2]);
+  });
+
+  it("keeps the card's abilities and weapon when only its level changes, but not when the build is edited", () => {
+    const start = chapterStart('Cai');
+    const { build, fixture } = open(start);
+    build.onAbilitiesConfirmed(['Divine Insight']);
+    build.setWeapon('axe');
+
+    fixture.componentRef.setInput('start', { ...start, options: { ...start.options, level: 40 } });
+    expect(build.equippedAbilityNames()).toEqual(['Divine Insight']);
+    expect(build.weapon()).toBe('axe');
+
+    fixture.componentRef.setInput('start', { ...start, abilities: [], weapon: 'sword' });
+    expect(build.equippedAbilityNames()).toEqual([]);
+    expect(build.weapon()).toBe('sword');
   });
 
   it('raises the averages when the guaranteed minimum is on', () => {

@@ -19,6 +19,7 @@
     "name": "Warrior's Blood",
     "description": "Grants +2 to a stat that depends on the equipped weapon.",
     "characters": ["Mu"],
+    "learnedAt": 20,
     "boosts": {},
     "weaponBoosts": {
       "gauntlet": { "str": 2 },
@@ -35,6 +36,7 @@
     "description": "Grants +2 to two stats that depend on the equipped weapon.",
     "upgradeOf": "Warrior's Blood",
     "characters": ["Mu"],
+    "learnedAt": 35,
     "boosts": {},
     "weaponBoosts": {
       "gauntlet": { "str": 2, "spd": 2 },

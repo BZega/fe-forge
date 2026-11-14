@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, HostListener, inject, input, linkedSignal, OnInit, output, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ClassPlanComponent, MAX_PROJECTION_LEVEL, PlanEntry, PlanStep } from '../class-plan/class-plan.component';
-import { abilitiesFor, abilityPickerGroups, baseStatsOf, BOOSTED_GROWTH_VARIANTS, characterKey, classLabel, GrowthRates, MAX_EQUIPPED_ABILITIES, SKILL_LABELS, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, Unit, WEAPON_KEYS, WeaponKey } from '../models/growth.models';
+import { abilitiesFor, abilityPickerGroups, baseStatsOf, Battalion, BATTALION_TYPE_ORDER, classLabel, GrowthRates, MAX_EQUIPPED_ABILITIES, SKILL_LABELS, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, Unit, WEAPON_KEYS, WeaponKey } from '../models/growth.models';
+import { abilitiesAt, abilityLock, inGameBonus, MAX_EXTRA_BONUS, usesWeapon, WEAPON_OPTIONS } from '../models/bonuses';
 import { PickerDialogComponent } from '../picker-dialog/picker-dialog.component';
-import { RecruitmentChapter } from '../models/recruitment.models';
+import { levelUpGrowth, RecruitmentChapter, stepAtLevel } from '../models/recruitment.models';
 import { SearchableSelectComponent } from '../searchable-select/searchable-select.component';
 import { GrowthDataService } from '../services/growth-data.service';
 import { RecruitmentDataService } from '../services/recruitment-data.service';
@@ -25,6 +26,7 @@ export interface ProjectionStart {
   actual?: ProjectionActual | null;
   abilities?: readonly StatBoostAbility[];
   weapon?: WeaponKey | null;
+  battalion?: Battalion | null;
   plan: readonly PlanEntry[];
   steps: readonly PlanStep[];
   options: ProjectionOptions;
@@ -82,14 +84,13 @@ export class ProjectionStartDialogComponent implements OnInit {
   readonly maxLevel = MAX_PROJECTION_LEVEL;
 
   private readonly allUnits = toSignal(this.api.getUnits(), { initialValue: [] as Unit[] });
-  private readonly boostedNames = new Set(Object.values(BOOSTED_GROWTH_VARIANTS));
 
   readonly source = signal<StartSource>('manual');
 
   readonly characters = computed(() =>
-    this.spoilers
-      .filter(this.allUnits())
-      .filter((unit) => !this.boostedNames.has(unit.name) && this.recruitment.routesWithChapters(unit.name).length > 0),
+    this.api
+      .pickableUnits(this.spoilers.filter(this.allUnits()))
+      .filter((unit) => this.recruitment.routesWithChapters(unit.name).length > 0),
   );
 
   readonly unitId = signal<number | null>(null);
@@ -115,14 +116,13 @@ export class ProjectionStartDialogComponent implements OnInit {
 
   readonly growthUnit = computed(() => {
     const unit = this.unit();
-    const boosted = unit ? BOOSTED_GROWTH_VARIANTS[characterKey(unit.name)] : undefined;
 
-    return (boosted && this.allUnits().find((candidate) => candidate.name === boosted)) || unit;
+    return unit ? this.api.withGrowthBonus(unit) : null;
   });
 
   // --- manual entry ----------------------------------------------------------------
 
-  readonly manualUnits = computed(() => this.spoilers.filter(this.allUnits()));
+  readonly manualUnits = computed(() => this.api.pickableUnits(this.spoilers.filter(this.allUnits())));
   readonly manualUnitId = signal<number | null>(null);
   readonly manualLevel = signal(1);
   readonly manualStats = signal<StatInputs>(emptyStats());
@@ -142,14 +142,34 @@ export class ProjectionStartDialogComponent implements OnInit {
   readonly abilityOptions = computed(() =>
     abilitiesFor(this.statBoostAbilities(), (this.source() === 'chapter' ? this.unit() : this.manualUnit())?.name ?? null),
   );
-  readonly abilityGroups = computed(() => abilityPickerGroups(this.abilityOptions()));
+  readonly enteredLevel = computed(() => (this.entered() === 'actual' ? (this.actualLevel() ?? 1) : this.manualLevel()));
+
+  readonly abilityGroups = computed(() => abilityPickerGroups(this.abilityOptions(), (ability) => abilityLock(ability, this.enteredLevel())));
 
   readonly equippedAbilities = computed(() =>
     this.abilityOptions().filter((ability) => this.abilityNames().includes(ability.name)),
   );
-  readonly equippedAbilityNames = computed(() => this.equippedAbilities().map((ability) => ability.name));
+  readonly equippedAbilityNames = computed(() =>
+    abilitiesAt(this.equippedAbilities(), this.enteredLevel()).map((ability) => ability.name),
+  );
 
-  readonly needsWeapon = computed(() => this.equippedAbilities().some((ability) => ability.weaponBoosts));
+  readonly needsWeapon = computed(() => usesWeapon(this.enteredName(), this.enteredLevel(), this.equippedAbilities()));
+
+  readonly personalWeapon = computed(() => usesWeapon(this.enteredName(), this.enteredLevel(), []));
+
+  private readonly enteredName = computed(() => (this.source() === 'chapter' ? this.unit() : this.manualUnit())?.name ?? '');
+
+  readonly weaponOptions = WEAPON_OPTIONS;
+
+  readonly battalion = signal<Battalion | null>(null);
+  private readonly battalions = toSignal(this.api.getBattalions(), { initialValue: [] as Battalion[] });
+  readonly battalionGroups = computed(() =>
+    BATTALION_TYPE_ORDER.map((type) => ({ type, battalions: this.battalions().filter((battalion) => battalion.type === type) })),
+  );
+
+  setBattalion(value: string): void {
+    this.battalion.set(this.battalions().find((battalion) => String(battalion.id) === value) ?? null);
+  }
 
   readonly abilityPickerOpen = signal(false);
 
@@ -179,6 +199,7 @@ export class ProjectionStartDialogComponent implements OnInit {
 
     if (field.value.trim() !== '' && Number.isFinite(level)) {
       this.actualLevel.set(Math.min(MAX_PROJECTION_LEVEL, Math.max(this.planStart()?.level ?? 1, level)));
+      this.clampActuals(this.typingLimits());
     }
 
     field.value = this.actualLevel() === null ? '' : String(this.actualLevel());
@@ -188,9 +209,87 @@ export class ProjectionStartDialogComponent implements OnInit {
     const field = event.target as HTMLInputElement;
     const value = Math.round(Number(field.value));
     const next = field.value.trim() === '' || !Number.isFinite(value) || value < 0 ? null : value;
+    const limit = this.typingLimits()?.[stat];
+    const kept = next === null || limit === undefined ? next : Math.min(next, limit);
 
-    this.actualInputs.update((stats) => ({ ...stats, [stat]: next }));
-    field.value = next === null ? '' : String(next);
+    this.actualInputs.update((stats) => ({ ...stats, [stat]: kept }));
+    field.value = kept === null ? '' : String(kept);
+  }
+
+  setInGame(inGame: boolean): void {
+    this.inGameStats.set(inGame);
+    this.clampActuals(this.typingLimits());
+  }
+
+  private readonly maxBase = computed<GrowthRates | null>(() => {
+    const from = this.planStart();
+    const level = this.actualLevel();
+    const steps = this.planEditor()?.steps() ?? [];
+    const start = this.source() === 'chapter' ? this.chapter()?.stats : this.manualStats();
+
+    if (!from || level === null || steps.length === 0 || !start || this.statKeys.some((stat) => start[stat] === null)) {
+      return null;
+    }
+
+    const startingClass = stepAtLevel(steps, from.level)?.unitClass;
+    const stats = Object.fromEntries(
+      this.statKeys.map((stat) => [stat, Math.max(start[stat]!, this.source() === 'chapter' ? 0 : (startingClass?.classFloorStats[stat] ?? 0))]),
+    ) as GrowthRates;
+    const seen = new Set(startingClass ? [startingClass.id] : []);
+
+    for (let at = from.level; at <= level; at++) {
+      const step = stepAtLevel(steps, at);
+
+      if (step && at > from.level && step.fromLevel === at && !seen.has(step.unitClass.id)) {
+        seen.add(step.unitClass.id);
+        this.statKeys.forEach((stat) => (stats[stat] = Math.max(stats[stat], step.unitClass.classFloorStats[stat])));
+      }
+
+      if (step && at < level) {
+        const growth = levelUpGrowth(from.unit, step.unitClass, at, step.mount, step.bondLevel);
+        this.statKeys.forEach((stat) => (stats[stat] += growth[stat] > 0 ? Math.ceil(growth[stat] / 100) : 0));
+      }
+    }
+
+    return stats;
+  });
+
+  private typingLimits(): GrowthRates | null {
+    const max = this.maxBase();
+    const step = stepAtLevel(this.planEditor()?.steps() ?? [], this.actualLevel() ?? 0);
+
+    if (!max || !this.inGameStats()) {
+      return max;
+    }
+
+    return Object.fromEntries(
+      this.statKeys.map((stat) => [stat, max[stat] + (step?.unitClass.bonusStats[stat] ?? 0) + MAX_EXTRA_BONUS]),
+    ) as GrowthRates;
+  }
+
+  private equippedLimits(): GrowthRates | null {
+    const max = this.maxBase();
+    const step = stepAtLevel(this.planEditor()?.steps() ?? [], this.actualLevel() ?? 0);
+
+    if (!max || !this.inGameStats()) {
+      return max;
+    }
+
+    const bonus = inGameBonus(this.enteredName(), this.actualLevel()!, step?.unitClass ?? null, step?.mount ?? null, step?.bondLevel ?? null, {
+      abilities: this.equippedAbilities(),
+      weapon: this.weapon(),
+      battalion: this.battalion(),
+    });
+
+    return Object.fromEntries(this.statKeys.map((stat) => [stat, max[stat] + bonus[stat]])) as GrowthRates;
+  }
+
+  private clampActuals(limits: GrowthRates | null): void {
+    if (limits && this.entered() === 'actual') {
+      this.actualInputs.update((stats) =>
+        Object.fromEntries(this.statKeys.map((stat) => [stat, stats[stat] === null ? null : Math.min(stats[stat]!, limits[stat])])) as StatInputs,
+      );
+    }
   }
 
   private readonly manualUnit = computed(() => this.manualUnits().find((unit) => unit.id === this.manualUnitId()) ?? null);
@@ -228,6 +327,7 @@ export class ProjectionStartDialogComponent implements OnInit {
       this.options.set({ ...initial.options });
       this.abilityNames.set((initial.abilities ?? []).map((ability) => ability.name));
       this.weapon.set(initial.weapon ?? null);
+      this.battalion.set(initial.battalion ?? null);
       this.inGameStats.set(initial.inGameStats ?? initial.actual?.inGame ?? false);
 
       if (initial.actual) {
@@ -251,8 +351,8 @@ export class ProjectionStartDialogComponent implements OnInit {
   }
 
   setSource(source: StartSource): void {
-    if (source === 'manual' && this.manualUnitId() === null && this.growthUnit()) {
-      this.pickManualUnit(this.growthUnit()!.id);
+    if (source === 'manual' && this.manualUnitId() === null && this.unit()) {
+      this.pickManualUnit(this.unit()!.id);
     }
 
     this.source.set(source);
@@ -328,7 +428,8 @@ export class ProjectionStartDialogComponent implements OnInit {
       inGameStats: entered === 'start' && inGame,
       actual,
       abilities: inGame ? this.equippedAbilities() : [],
-      weapon: inGame && this.needsWeapon() ? this.weapon() : null,
+      weapon: inGame ? this.weapon() : null,
+      battalion: inGame ? this.battalion() : null,
       plan: plan.plan(),
       steps,
       options: actual ? { ...this.options(), level: actual.level } : this.options(),
@@ -365,7 +466,7 @@ export class ProjectionStartDialogComponent implements OnInit {
 
     return {
       source: 'manual',
-      unit,
+      unit: this.api.withGrowthBonus(unit),
       name: unit.name,
       level: this.manualLevel(),
       className: null,
@@ -388,12 +489,13 @@ export class ProjectionStartDialogComponent implements OnInit {
 
     const unit = this.manualUnit();
 
-    return unit ? { unit, level: this.manualLevel(), className: null } : null;
+    return unit ? { unit: this.api.withGrowthBonus(unit), level: this.manualLevel(), className: null } : null;
   });
 
   private readonly planEditor = viewChild(ClassPlanComponent);
 
   confirm(): void {
+    this.clampActuals(this.equippedLimits());
     const start = this.start();
 
     if (start) {

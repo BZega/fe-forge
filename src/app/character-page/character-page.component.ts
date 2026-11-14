@@ -166,7 +166,7 @@ export class CharacterPageComponent {
   readonly projectionUnit = computed(() => {
     const unit = this.unit();
 
-    return unit ? this.growthUnitsFor(unit).growthUnit : null;
+    return unit ? this.api.withGrowthBonus(unit) : null;
   });
 
   readonly slotA = computed(() => `character-${this.unitId()}-1`);
