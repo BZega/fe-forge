@@ -3,8 +3,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const DIR = path.join(-dirname, '..', 'src', 'app', 'data', 'recruitment');
-const OUT = path.join(-dirname, '..', 'src', 'app', 'data', 'recruitment.ts');
+const DIR = path.join(__dirname, '..', 'src', 'app', 'data', 'recruitment');
+const OUT = path.join(__dirname, '..', 'src', 'app', 'data', 'recruitment.ts');
 
 const files = fs
   .readdirSync(DIR)

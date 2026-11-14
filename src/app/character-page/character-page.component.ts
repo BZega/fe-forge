@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { GrowthCalculatorComponent } from '../growth-calculator/growth-calculator.component';
+import { portraitUrl, skillIconUrl, useFallbackIcon } from '../icon-links';
 import { ProjectionDialogComponent } from '../projection-dialog/projection-dialog.component';
 import { BOOSTED_GROWTH_VARIANTS, characterKey, diffGrowth, growthTotal, Mount, SKILL_KEYS, SKILL_LABELS, SkillKey, SkillPreference, STAT_KEYS, STAT_LABELS, sumGrowth, toGrowth, Unit, UnitClass } from '../models/growth.models';
 import { BASE_MOVE, buildFromStrength, chapterGrowth, RouteRequirement } from '../models/recruitment.models';
@@ -206,6 +207,21 @@ export class CharacterPageComponent {
   skillIcon(skill: SkillKey, preference: SkillPreference): string {
     return `icons/skills/${SKILL_ICON_COLORS[preference]}/${skill}.svg`;
   }
+
+  linkedSkillIcon(skill: SkillKey, preference: SkillPreference): string {
+    return skillIconUrl(skill, preference) ?? this.skillIcon(skill, preference);
+  }
+
+  readonly useFallbackIcon = useFallbackIcon;
+
+  // Resets when switching characters, so one broken link doesn't hide the next portrait.
+  readonly portraitFailed = linkedSignal({ source: () => this.unit()?.name, computation: () => false });
+
+  readonly portrait = computed(() => {
+    const name = this.unit()?.name;
+
+    return name && !this.portraitFailed() ? portraitUrl(name) : null;
+  });
 
   selectTab(tab: CharacterTab): void {
     this.activeTab.set(tab);

@@ -3,9 +3,20 @@
 @let info = recruitment();
 
 <header class="page-header">
-  <div>
-    <a class="back" routerLink="/characters">&larr; Characters</a>
-    <h1>{{ current?.name ?? 'Character not found' }}</h1>
+  <div class="page-header-title">
+    @if (portrait(); as src) {
+      <img
+        class="portrait"
+        [src]="src"
+        [alt]="current?.name + ' portrait'"
+        referrerpolicy="no-referrer"
+        (error)="portraitFailed.set(true)"
+      />
+    }
+    <div>
+      <a class="back" routerLink="/characters">&larr; Characters</a>
+      <h1>{{ current?.name ?? 'Character not found' }}</h1>
+    </div>
   </div>
 
   <!-- The character's own abilities, whatever route or chapter they're met in. -->
@@ -224,7 +235,13 @@
                       <ul class="skill-grid">
                         @for (skill of view.skillRanks; track skill.key) {
                           <li class="skill-rank" [class.skill-rank--usable]="skill.usable" [title]="skill.label + (skill.usable ? '' : ' (not usable)')">
-                            <img class="skill-rank-icon" [src]="skillIcon(skill.key, skill.preference)" alt="" />
+                            <img
+                              class="skill-rank-icon"
+                              [src]="linkedSkillIcon(skill.key, skill.preference)"
+                              alt=""
+                              referrerpolicy="no-referrer"
+                              (error)="useFallbackIcon($event, skillIcon(skill.key, skill.preference))"
+                            />
                             <span class="skill-rank-label">{{ skill.label }}</span>
                             <span class="skill-rank-value">{{ skill.value }}</span>
                           </li>

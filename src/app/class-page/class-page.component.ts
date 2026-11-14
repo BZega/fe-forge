@@ -1,8 +1,9 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, inject, Injector, signal, viewChild } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, inject, Injector, linkedSignal, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
+import { classSpriteUrl, skillIconUrl, useFallbackIcon } from '../icon-links';
 import { BONUS_STAT_KEYS, BONUS_STAT_LABELS, CLASS_RANK_ORDER, ClassAbility, SKILL_KEYS, SKILL_LABELS, SkillKey, STAT_KEYS, STAT_LABELS, UnitClass } from '../models/growth.models';
 import { GrowthDataService } from '../services/growth-data.service';
 import { SpoilerService } from '../services/spoiler.service';
@@ -67,6 +68,17 @@ export class ClassPageComponent {
     return unitClass ? this.api.mountTypeOfClass(unitClass.name) : 'None';
   });
 
+  // Resets when switching classes, so one broken link doesn't hide the next class's sprite.
+  readonly spriteFailed = linkedSignal({ source: () => this.unitClass()?.name, computation: () => false });
+
+  readonly sprite = computed(() => {
+    const name = this.unitClass()?.name;
+
+    return name && !this.spriteFailed() ? classSpriteUrl(name) : null;
+  });
+
+  readonly useFallbackIcon = useFallbackIcon;
+
   readonly usableSkills = computed(() => {
     const unitClass = this.unitClass();
 
@@ -116,6 +128,10 @@ export class ClassPageComponent {
 
   skillIcon(skill: SkillKey): string {
     return `icons/skills/black/${skill}.svg`;
+  }
+
+  linkedSkillIcon(skill: SkillKey): string {
+    return skillIconUrl(skill) ?? this.skillIcon(skill);
   }
 
   initials(name: string): string {

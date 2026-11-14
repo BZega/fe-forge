@@ -1,8 +1,10 @@
+import { SkillKey } from './models/growth.models';
+
 export interface NavLink {
   path: string;
   label: string;
   description: string;
-  icon: string;
+  icon: SkillKey;
 }
 
 export const TOOL_LINKS: readonly NavLink[] = [

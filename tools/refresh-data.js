@@ -10,7 +10,7 @@ const path = require('path');
  * Defaults to the http profile so no dev certificate is needed.
  */
 const BASE = (process.argv[2] ?? 'http://localhost:5081').replace(/\/$/, '') + '/api';
-const OUT = path.join(-dirname, '..', 'src', 'app', 'data');
+const OUT = path.join(__dirname, '..', 'src', 'app', 'data');
 
 const get = async (p) => {
   const res = await fetch(`${BASE}${p}`);

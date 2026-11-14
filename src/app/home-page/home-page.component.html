@@ -67,7 +67,13 @@
   <div class="cards">
     @for (tool of tools; track tool.path) {
       <a class="card card--tool" [routerLink]="tool.path">
-        <img class="card-icon" [src]="'icons/skills/gold/' + tool.icon + '.svg'" alt="" />
+        <img
+          class="card-icon"
+          [src]="cardIcon(tool.icon)"
+          alt=""
+          referrerpolicy="no-referrer"
+          (error)="useFallbackIcon($event, localIcon(tool.icon))"
+        />
         <h3 class="card-title">{{ tool.label }}</h3>
         <p class="card-text">{{ tool.description }}</p>
         <span class="card-cta">Open {{ tool.label }} &rsaquo;</span>
@@ -84,7 +90,13 @@
   <div class="cards cards--compact">
     @for (resource of resources; track resource.path) {
       <a class="card" [routerLink]="resource.path">
-        <img class="card-icon" [src]="'icons/skills/gold/' + resource.icon + '.svg'" alt="" />
+        <img
+          class="card-icon"
+          [src]="cardIcon(resource.icon)"
+          alt=""
+          referrerpolicy="no-referrer"
+          (error)="useFallbackIcon($event, localIcon(resource.icon))"
+        />
         <h3 class="card-title">{{ resource.label }}</h3>
         <p class="card-text">{{ resource.description }}</p>
       </a>

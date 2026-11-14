@@ -6,8 +6,12 @@
   <article class="profile">
     <!-- Profile header -->
     <header class="hero">
-      <div class="portrait" [attr.data-class-id]="current.id" aria-hidden="true">
-        <span class="portrait-glyph">{{ initials(current.name) }}</span>
+      <div class="portrait" [attr.data-class-id]="current.id">
+        @if (sprite(); as src) {
+          <img class="portrait-sprite" [src]="src" [alt]="current.name" referrerpolicy="no-referrer" (error)="spriteFailed.set(true)" />
+        } @else {
+          <span class="portrait-glyph" aria-hidden="true">{{ initials(current.name) }}</span>
+        }
       </div>
 
       <div class="hero-body">
@@ -181,11 +185,13 @@
                   >
                     <img
                       class="skill-icon"
-                      [src]="skillIcon(skill.key)"
+                      [src]="linkedSkillIcon(skill.key)"
                       [attr.data-skill]="skill.key"
                       alt=""
                       width="32"
                       height="32"
+                      referrerpolicy="no-referrer"
+                      (error)="useFallbackIcon($event, skillIcon(skill.key))"
                     />
                     <span class="skill-value" aria-hidden="true">
                       {{ skill.expBonus === 0 ? '—' : signed(skill.expBonus) }}

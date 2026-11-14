@@ -247,7 +247,7 @@ describe('CharacterPageComponent recruitment', () => {
     const component = fixture.componentInstance;
 
     expect(component.unit()!.skillPreference.sword).toBe('neutral');
-    expect(host.querySelector<HTMLImageElement>('.skill-rank-icon')!.getAttribute('src')).toBe('icons/skills/black/sword.svg');
+    expect(host.querySelector<HTMLImageElement>('.skill-rank-icon')!.getAttribute('src')).toContain('FE18_Sword_Level_icon.png');
     expect(component.skillIcon('axe', 'good')).toBe('icons/skills/gold/axe.svg');
     expect(component.skillIcon('axe', 'neutral')).toBe('icons/skills/black/axe.svg');
     expect(component.skillIcon('axe', 'bad')).toBe('icons/skills/silver/axe.svg');

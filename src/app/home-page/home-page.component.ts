@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { skillIconUrl, useFallbackIcon } from '../icon-links';
+import { SkillKey } from '../models/growth.models';
 import { RESOURCE_LINKS, TOOL_LINKS } from '../nav-links';
 import { SPOILER_TIERS, SpoilerService, SpoilerTier } from '../services/spoiler.service';
 import { SupportDialogComponent } from '../support-dialog/support-dialog.component';
@@ -17,6 +19,16 @@ export class HomePageComponent {
   readonly tools = TOOL_LINKS;
   readonly resources = RESOURCE_LINKS;
   readonly supportOpen = signal(false);
+  readonly useFallbackIcon = useFallbackIcon;
+
+  // Gold "boon" skill icons from the wiki, matching the cards' gold accents.
+  cardIcon(skill: SkillKey): string {
+    return skillIconUrl(skill, 'good') ?? this.localIcon(skill);
+  }
+
+  localIcon(skill: SkillKey): string {
+    return `icons/skills/gold/${skill}.svg`;
+  }
   readonly spoilerTiers = SPOILER_TIERS;
   readonly hiddenTiers = this.spoilers.hiddenTiers;
   readonly allHidden = this.spoilers.allHidden;
