@@ -36,6 +36,9 @@ export class SearchableSelectComponent {
 
   readonly open = signal(false);
   readonly query = signal('');
+  /** A keyboard-less list was tapped again to search by typing; the keyboard is up, so the list stays tiny. */
+  readonly typing = signal(false);
+  readonly typingMinLength = TYPING_MIN_LENGTH;
 
   private readonly searchBox =
     viewChild<ElementRef<HTMLInputElement>>('search');
@@ -48,16 +51,24 @@ export class SearchableSelectComponent {
 
   readonly filtered = computed<SelectItemGroup[]>(() => {
     const needle = this.query().trim().toLowerCase();
+    const typing = this.typing();
+
+    if (typing && needle.length < TYPING_MIN_LENGTH) {
+      return [];
+    }
+
+    let room = typing ? TYPING_MAX_RESULTS : Infinity;
 
     return this.allGroups()
-      .map((group) => ({
-        label: group.label,
-        items: needle
-          ? group.items.filter((item) =>
-              item.name.toLowerCase().includes(needle),
-            )
-          : group.items,
-      }))
+      .map((group) => {
+        const items = needle
+          ? group.items.filter((item) => item.name.toLowerCase().includes(needle))
+          : group.items;
+        const kept = items.slice(0, room);
+        room -= kept.length;
+
+        return { label: group.label, items: kept };
+      })
       .filter((group) => group.items.length > 0);
   });
 
@@ -156,8 +167,15 @@ export class SearchableSelectComponent {
     this.openBeforePress = this.open();
   }
 
-  onFieldClick(): void {
+  onFieldClick(event: MouseEvent): void {
     if (this.openBeforePress) {
+      // Tapping the text box of an already-open, keyboard-less list switches it to typing.
+      if (!this.keyboard() && !this.typing() && event.target === this.searchBox()?.nativeElement) {
+        this.startTyping();
+
+        return;
+      }
+
       this.close();
 
       return;
@@ -167,10 +185,28 @@ export class SearchableSelectComponent {
     this.searchBox()?.nativeElement.focus();
   }
 
+  private startTyping(): void {
+    const element = this.searchBox()?.nativeElement;
+
+    if (!element) {
+      return;
+    }
+
+    this.typing.set(true);
+    this.query.set('');
+    this.activeIndex.set(0);
+    element.value = '';
+    // The keyboard only appears on focus, so refocus (still within the tap) once typing is allowed.
+    element.removeAttribute('inputmode');
+    element.blur();
+    element.focus();
+  }
+
   pick(id: number | null): void {
     this.valueChange.emit(id);
     this.open.set(false);
     this.query.set('');
+    this.typing.set(false);
 
     if (matchMedia('(pointer: coarse)').matches) {
       this.searchBox()?.nativeElement.blur();
@@ -180,6 +216,7 @@ export class SearchableSelectComponent {
   close(): void {
     this.open.set(false);
     this.query.set('');
+    this.typing.set(false);
     this.searchBox()?.nativeElement.blur();
   }
 
@@ -307,3 +344,7 @@ function clamp(index: number, length: number): number {
 
 // The list's 0.25rem offset below the field plus a little breathing room above the screen edge.
 const LIST_GAP = 12;
+
+// While typing with the keyboard up, results wait for a few letters and stay short enough to fit above it.
+const TYPING_MIN_LENGTH = 3;
+const TYPING_MAX_RESULTS = 2;

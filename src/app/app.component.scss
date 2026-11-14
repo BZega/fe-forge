@@ -40,6 +40,14 @@ main {
   z-index: 20;
 }
 
+// Sits under the nav (z-index 20) and over the page while the mobile menu is open.
+.topnav-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+  background: rgb(0 0 0 / 35%);
+}
+
 .topnav-brand {
   color: var(--accent);
   font-family: var(--font-display);

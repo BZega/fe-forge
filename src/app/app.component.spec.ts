@@ -28,6 +28,19 @@ describe('AppComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('router-outlet')).toBeTruthy();
   });
+
+  it('closes the open menu when the area below it is tapped', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const compiled = fixture.nativeElement as HTMLElement;
+    fixture.componentInstance.toggleMenu();
+    fixture.detectChanges();
+
+    (compiled.querySelector('.topnav-backdrop') as HTMLElement).click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.menuOpen()).toBeFalse();
+    expect(compiled.querySelector('.topnav-backdrop')).toBeNull();
+  });
 });
 
 describe('AppComponent mobile field visibility', () => {

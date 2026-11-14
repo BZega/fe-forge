@@ -3,7 +3,7 @@
   [class.field--open]="open()"
   [class.field--disabled]="disabled()"
   (pointerdown)="onFieldPointerDown()"
-  (click)="onFieldClick()"
+  (click)="onFieldClick($event)"
 >
   <input
     #search
@@ -14,11 +14,11 @@
     autocapitalize="off"
     spellcheck="false"
     [attr.aria-label]="label() || null"
-    [attr.inputmode]="keyboard() ? null : 'none'"
+    [attr.inputmode]="keyboard() || typing() ? null : 'none'"
     [attr.aria-expanded]="open()"
     aria-haspopup="listbox"
     [disabled]="disabled()"
-    [placeholder]="open() ? (selectedName() ?? placeholder()) : placeholder()"
+    [placeholder]="typing() ? 'Type to search' : open() ? (selectedName() ?? placeholder()) : placeholder()"
     (focus)="openPanel()"
     (input)="onSearch($event)"
     (keydown)="onKeydown($event)"
@@ -29,7 +29,7 @@
 @if (open()) {
   <div class="panel">
     <ul class="panel-list" role="listbox">
-      @if (clearable() && query().trim() === '') {
+      @if (clearable() && !typing() && query().trim() === '') {
         <li>
           <button
             type="button"
@@ -64,7 +64,11 @@
           </li>
         }
       } @empty {
-        <li class="panel-empty">No matches</li>
+        @if (typing() && query().trim().length < typingMinLength) {
+          <li class="panel-empty">Type at least {{ typingMinLength }} letters</li>
+        } @else {
+          <li class="panel-empty">No matches</li>
+        }
       }
     </ul>
   </div>

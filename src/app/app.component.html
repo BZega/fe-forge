@@ -138,6 +138,11 @@
   </ul>
 </nav>
 
+@if (menuOpen()) {
+  <!-- Catches a tap below the open menu so it closes the menu instead of hitting the page. -->
+  <div class="topnav-backdrop" aria-hidden="true" (click)="closeMenu()"></div>
+}
+
 <main>
   <router-outlet />
 </main>
