@@ -722,7 +722,7 @@
     "id": 42,
     "name": "Dante",
     "origin": "Commoner",
-    "gender": "Male",
+    "gender": "Female",
     "canUseMounts": true,
     "hp": 30,
     "str": 30,
