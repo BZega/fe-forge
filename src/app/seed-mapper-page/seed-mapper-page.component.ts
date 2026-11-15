@@ -1324,6 +1324,7 @@ export class SeedMapperPageComponent {
   }
 
   readonly createdBranchId = signal<number | null>(null);
+  readonly timelineResetVersion = signal(0);
 
   openBranchAt(view: SectionView, rowIndex: number): void {
     if (!this.canTakeExam(view)) {
@@ -2055,6 +2056,7 @@ export class SeedMapperPageComponent {
 
   private reset(): void {
     this.state.reset();
+    this.timelineResetVersion.update((version) => version + 1);
     this.saveName.set('');
     this.attemptedSave.set(false);
     this.status.set('Started a new seed map.');
@@ -2081,6 +2083,7 @@ export class SeedMapperPageComponent {
       id: save.id,
       name: save.name,
     });
+    this.timelineResetVersion.update((version) => version + 1);
 
     this.attemptedSave.set(false);
 

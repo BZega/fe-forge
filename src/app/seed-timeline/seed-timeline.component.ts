@@ -67,16 +67,23 @@ export class SeedTimelineComponent {
   private readonly views = computed(() => this.mapper().sectionViews());
 
   readonly focused = computed<SectionView | null>(
-    () => this.views().find((view) => view.section.id === this.focusId()) ?? this.views()[0] ?? null,
+    () => this.views().find((view) => view.section.id === this.focusId()) ?? this.views().at(-1) ?? null,
   );
 
   constructor() {
+    effect(() => {
+      this.mapper().timelineResetVersion();
+      untracked(() => this.focusId.set(null));
+    });
+
     effect(() => {
       const created = this.mapper().createdBranchId();
 
       if (created !== null) {
         untracked(() => {
-          this.focusId.set(created);
+          if (this.focusId() !== null) {
+            this.focusId.set(created);
+          }
           this.mapper().createdBranchId.set(null);
         });
       }
@@ -115,9 +122,7 @@ export class SeedTimelineComponent {
   readonly timelines = computed<TimelineOption[]>(() =>
     this.views().map((view) => ({
       id: view.section.id,
-      label: this.chainOf(view)
-        .map((link) => (link.section.exam ? `${this.branchLabel(link)} @Lv ${link.firstLevel}` : link.title))
-        .join(' → '),
+      label: view.section.exam ? `→ ${this.branchLabel(view)} Lv ${view.firstLevel}` : 'Seed',
     })),
   );
 
@@ -273,7 +278,7 @@ export class SeedTimelineComponent {
   }
 
   onTimelineChange(value: string): void {
-    this.focusId.set(Number(value));
+    this.focusId.set(value === 'current' ? null : Number(value));
   }
 
   toggle(item: TimelineLevel, stat: StatKey): void {
@@ -305,7 +310,9 @@ export class SeedTimelineComponent {
     const parentId = view.section.exam?.parentId ?? null;
 
     this.mapper().removeSection(view);
-    this.focusId.set(parentId);
+    if (this.focusId() !== null) {
+      this.focusId.set(parentId);
+    }
   }
 
   endTotals(view: SectionView): StatTotal[] {

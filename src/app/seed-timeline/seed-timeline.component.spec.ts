@@ -251,6 +251,68 @@ describe('SeedTimelineComponent', () => {
     expect(toggleButton(host, 'Timeline view')).toBeDefined();
   });
 
+  it('labels each timeline with only its final branch action', () => {
+    const { fixture, page, host } = render();
+    const first = state.addBranch(seed().id, seed().rows[0].id, { classId: classId('Diviner'), chance: 40, passed: true })!;
+    const firstSection = state.seedMap().sections.find((section) => section.id === first)!;
+    const second = state.addBranch(first, firstSection.rows[0].id, { classId: classId('Gladiator'), chance: 40, passed: false })!;
+    state.addBranch(seed().id, seed().rows[0].id, { classId: classId('Hunter'), chance: 0, passed: true, reclass: true });
+    fixture.detectChanges();
+
+    const options = Array.from(host.querySelectorAll<HTMLOptionElement>('.timeline-select option')).map((option) => option.textContent!.trim());
+    const secondView = page.sectionViews().find((view) => view.section.id === second)!;
+    expect(options[0]).toBe('Current');
+    expect(options[1]).toBe('Seed');
+    expect(options[2]).toContain('Diviner ✓ Lv');
+    expect(options[3]).toBe(`→ Gladiator ✗ Lv ${secondView.firstLevel}`);
+    expect(options[4]).toContain('↻ Hunter Lv');
+  });
+
+  it('defaults to the latest timeline and lets Current follow new branches', () => {
+    const { fixture, host } = render();
+    const first = state.addBranch(seed().id, seed().rows[0].id, { classId: classId('Diviner'), chance: 40, passed: true })!;
+    fixture.detectChanges();
+
+    const timeline = fixture.debugElement.query(By.directive(SeedTimelineComponent)).componentInstance as SeedTimelineComponent;
+    const select = host.querySelector<HTMLSelectElement>('.timeline-select')!;
+    expect(select.value).toBe('current');
+    expect(timeline.focused()!.section.id).toBe(first);
+
+    select.value = String(seed().id);
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(timeline.focused()!.section.id).toBe(seed().id);
+
+    select.value = 'current';
+    select.dispatchEvent(new Event('change'));
+    const second = state.addBranch(seed().id, seed().rows[0].id, { classId: classId('Gladiator'), chance: 40, passed: false })!;
+    fixture.detectChanges();
+    expect(select.value).toBe('current');
+    expect(timeline.focused()!.section.id).toBe(second);
+
+    toggleButton(host, 'Section view')!.click();
+    fixture.detectChanges();
+    toggleButton(host, 'Timeline view')!.click();
+    fixture.detectChanges();
+    const restored = fixture.debugElement.query(By.directive(SeedTimelineComponent)).componentInstance as SeedTimelineComponent;
+    expect(restored.focused()!.section.id).toBe(second);
+    expect(host.querySelector<HTMLSelectElement>('.timeline-select')!.value).toBe('current');
+  });
+
+  it('returns to Current when a map is loaded', () => {
+    const { fixture, page, host } = render();
+    const branch = state.addBranch(seed().id, seed().rows[0].id, { classId: classId('Diviner'), chance: 40, passed: true })!;
+    fixture.detectChanges();
+    const timeline = fixture.debugElement.query(By.directive(SeedTimelineComponent)).componentInstance as SeedTimelineComponent;
+    timeline.focusBranch(seed().id);
+    fixture.detectChanges();
+
+    page.timelineResetVersion.update((version) => version + 1);
+    fixture.detectChanges();
+    expect(timeline.focused()!.section.id).toBe(branch);
+    expect(host.querySelector<HTMLSelectElement>('.timeline-select')!.value).toBe('current');
+  });
+
   it('shows one timeline with a switcher where exams branch off, locking rows the branch shares', () => {
     const { fixture, page, host } = render();
     const afterRow = seed().rows[0].id;

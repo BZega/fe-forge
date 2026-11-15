@@ -8,8 +8,9 @@
       <label class="timeline-picker">
         <span class="timeline-picker-label">Timeline</span>
         <select class="timeline-select" (change)="onTimelineChange($any($event.target).value)">
+          <option value="current" [selected]="focusId() === null">Current</option>
           @for (option of timelines(); track option.id) {
-            <option [value]="option.id" [selected]="option.id === focus.section.id">{{ option.label }}</option>
+            <option [value]="option.id" [selected]="option.id === focusId()">{{ option.label }}</option>
           }
         </select>
       </label>
