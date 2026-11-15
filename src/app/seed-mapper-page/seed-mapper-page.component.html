@@ -202,19 +202,23 @@
             <ng-container [ngTemplateOutlet]="classPickers" [ngTemplateOutletContext]="{ view: view }" />
 
             <div class="grid grid--actions" [style.--stat-count]="statKeys.length">
-              <div class="grid-corner"></div>
-              @for (stat of statKeys; track stat) {
-                <div class="grid-head">{{ statLabels[stat] }}</div>
-              }
-              <div class="grid-corner"></div>
+              <div class="grid-band grid-band--head">
+                <div class="grid-corner"></div>
+                @for (stat of statKeys; track stat) {
+                  <div class="grid-head">{{ statLabels[stat] }}</div>
+                }
+                <div class="grid-corner"></div>
+              </div>
 
-              <div class="grid-label">Growth</div>
-              @for (stat of statKeys; track stat) {
-                <div class="grid-growth" [class.negative]="view.growth[stat] < 0">
-                  {{ view.growth[stat] }}%
-                </div>
-              }
-              <div class="grid-corner"></div>
+              <div class="grid-band grid-band--growth">
+                <div class="grid-label">Growth</div>
+                @for (stat of statKeys; track stat) {
+                  <div class="grid-growth" [class.negative]="view.growth[stat] < 0">
+                    {{ view.growth[stat] }}%
+                  </div>
+                }
+                <div class="grid-corner"></div>
+              </div>
 
               @if (exam) {
                 @let carried = startStatsOf(view);
@@ -323,13 +327,15 @@
                   }
 
                   @if (inlineExam.passed && !inlineExam.keepClass) {
-                    <div class="grid-label">Growth</div>
-                    @for (stat of statKeys; track stat) {
-                      <div class="grid-growth" [class.negative]="(rowGrowths?.[stat] ?? 0) < 0">
-                        {{ rowGrowths?.[stat] ?? 0 }}%
-                      </div>
-                    }
-                    <div class="grid-corner"></div>
+                    <div class="grid-band grid-band--growth">
+                      <div class="grid-label">Growth</div>
+                      @for (stat of statKeys; track stat) {
+                        <div class="grid-growth" [class.negative]="(rowGrowths?.[stat] ?? 0) < 0">
+                          {{ rowGrowths?.[stat] ?? 0 }}%
+                        </div>
+                      }
+                      <div class="grid-corner"></div>
+                    </div>
                   }
                 }
 
@@ -362,13 +368,15 @@
                     &times;
                   </button>
 
-                  <div class="grid-label">Growth</div>
-                  @for (stat of statKeys; track stat) {
-                    <div class="grid-growth" [class.negative]="(rowGrowths?.[stat] ?? 0) < 0">
-                      {{ rowGrowths?.[stat] ?? 0 }}%
-                    </div>
-                  }
-                  <div class="grid-corner"></div>
+                  <div class="grid-band grid-band--growth">
+                    <div class="grid-label">Growth</div>
+                    @for (stat of statKeys; track stat) {
+                      <div class="grid-growth" [class.negative]="(rowGrowths?.[stat] ?? 0) < 0">
+                        {{ rowGrowths?.[stat] ?? 0 }}%
+                      </div>
+                    }
+                    <div class="grid-corner"></div>
+                  </div>
                 }
 
                 <div class="grid-label">
@@ -500,20 +508,24 @@
               @let comparatorGrowths = comparatorGrowth(comparator);
 
               <div class="grid" [style.--stat-count]="statKeys.length">
-                <div class="grid-corner"></div>
-                @for (stat of statKeys; track stat) {
-                  <div class="grid-head">{{ statLabels[stat] }}</div>
-                }
+                <div class="grid-band grid-band--head">
+                  <div class="grid-corner"></div>
+                  @for (stat of statKeys; track stat) {
+                    <div class="grid-head">{{ statLabels[stat] }}</div>
+                  }
+                </div>
 
-                <div class="grid-label">Growth</div>
-                @for (stat of statKeys; track stat) {
-                  <div
-                    class="grid-growth"
-                    [class.negative]="comparatorGrowths[stat] < 0"
-                  >
-                    {{ comparatorGrowths[stat] }}%
-                  </div>
-                }
+                <div class="grid-band grid-band--growth">
+                  <div class="grid-label">Growth</div>
+                  @for (stat of statKeys; track stat) {
+                    <div
+                      class="grid-growth"
+                      [class.negative]="comparatorGrowths[stat] < 0"
+                    >
+                      {{ comparatorGrowths[stat] }}%
+                    </div>
+                  }
+                </div>
 
                 @if (exam && view.exam) {
                   <ng-container

@@ -43,11 +43,13 @@
     </header>
 
     <div class="tgrid" [style.--stat-count]="statKeys.length">
-      <div class="tgrid-corner"></div>
-      @for (stat of statKeys; track stat) {
-        <div class="tgrid-head">{{ statLabels[stat] }}</div>
-      }
-      <div class="tgrid-corner"></div>
+      <div class="tgrid-band tgrid-band--head">
+        <div class="tgrid-corner"></div>
+        @for (stat of statKeys; track stat) {
+          <div class="tgrid-head">{{ statLabels[stat] }}</div>
+        }
+        <div class="tgrid-corner"></div>
+      </div>
 
       @for (item of items(); track item.key) {
         @if (asFork(item); as fork) {
@@ -75,14 +77,16 @@
         }
 
         @if (asGrowth(item); as growthRow) {
-          <div class="tgrid-label" [title]="growthRow.className + ' growth rates'">
-            <span class="tgrid-level">Growth</span>
-            <span class="tgrid-class">{{ growthRow.className }}</span>
+          <div class="tgrid-band tgrid-band--growth">
+            <div class="tgrid-label" [title]="growthRow.className + ' growth rates'">
+              <span class="tgrid-level">Growth</span>
+              <span class="tgrid-class">{{ growthRow.className }}</span>
+            </div>
+            @for (stat of statKeys; track stat) {
+              <div class="tgrid-growth" [class.negative]="growthRow.growth[stat] < 0">{{ growthRow.growth[stat] }}%</div>
+            }
+            <div class="tgrid-corner"></div>
           </div>
-          @for (stat of statKeys; track stat) {
-            <div class="tgrid-growth" [class.negative]="growthRow.growth[stat] < 0">{{ growthRow.growth[stat] }}%</div>
-          }
-          <div class="tgrid-corner"></div>
         }
 
         @if (asLevel(item); as level) {

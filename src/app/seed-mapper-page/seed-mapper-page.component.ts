@@ -1165,7 +1165,6 @@ export class SeedMapperPageComponent {
     return [...byFamily.values()];
   }
 
-  /** As of the section's last level, so an equipped Warrior's Blood shows as Warrior's Blood+ from Lv 35. */
   equippedAbilities(view: SectionView): StatBoostAbility[] {
     return abilitiesAt(this.equippedAbilitiesOf(view.section.abilities, view.section.id), this.endLevelOf(view));
   }
