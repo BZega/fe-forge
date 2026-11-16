@@ -343,10 +343,12 @@
 .grid-band--head {
   top: 0;
   height: var(--head-h);
+  z-index: 3;
 }
 
 .grid-band--growth {
   top: calc(var(--head-h) + 0.2rem);
+  margin-bottom: 0.2rem;
 }
 
 .grid--actions {
@@ -421,10 +423,6 @@
   background: rgb(240 192 74 / 14%);
   color: var(--accent);
   font-weight: 700;
-}
-
-.grid-corner {
-  background: transparent;
 }
 
 .grid-head {

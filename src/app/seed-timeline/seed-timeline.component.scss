@@ -82,10 +82,12 @@
 .tgrid-band--head {
   top: 0;
   height: var(--head-h);
+  z-index: 3;
 }
 
 .tgrid-band--growth {
   top: calc(var(--head-h) + 0.2rem);
+  margin-bottom: 0.2rem;
 }
 
 .tgrid-corner {
