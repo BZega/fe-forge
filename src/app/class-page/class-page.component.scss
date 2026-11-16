@@ -414,104 +414,6 @@
 
 .growth-body {
   min-width: 0;
-  container-type: inline-size;
-}
-
-.pills.pills--growth {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-
-  > :nth-child(6) {
-    grid-column-start: 2;
-  }
-}
-
-@container (max-width: 520px) {
-  .pills.pills--growth {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-
-    > :nth-child(6) {
-      grid-column-start: auto;
-    }
-  }
-}
-
-.pills {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(6.25rem, 1fr));
-  gap: 0.5rem;
-}
-
-.pills--compact {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-
-  .pill {
-    padding: 0.42rem 0.65rem;
-  }
-}
-
-.pill {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.45rem 0.75rem;
-  border-radius: 999px;
-  background: var(--surface);
-  font-variant-numeric: tabular-nums;
-}
-
-.pill-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgb(236 228 204 / 70%);
-}
-
-.pill-value {
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
-.pill[data-tone='positive'] {
-  background: var(--green-soft);
-  box-shadow: inset 0 0 0 1px rgb(126 224 138 / 28%);
-
-  .pill-value {
-    color: var(--green);
-  }
-}
-
-.pill[data-tone='negative'] {
-  background: var(--red-soft);
-  box-shadow: inset 0 0 0 1px rgb(255 141 141 / 28%);
-
-  .pill-value {
-    color: var(--red);
-  }
-}
-
-.pill[data-tone='base'] {
-  background: var(--gold-soft);
-  box-shadow: inset 0 0 0 1px var(--gold-line);
-
-  .pill-value {
-    color: var(--accent);
-  }
-}
-
-.pill[data-tone='zero'] {
-  .pill-label,
-  .pill-value {
-    color: var(--muted);
-  }
-
-  .pill-value {
-    font-weight: 500;
-  }
 }
 
 .split {
@@ -532,104 +434,6 @@
   }
 }
 
-.skills {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.skill {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 4.75rem;
-  padding: 0.35rem 0.7rem 0.35rem 0.35rem;
-  border: 0;
-  border-radius: 10px;
-  background: var(--surface);
-  color: inherit;
-  cursor: help;
-  font: inherit;
-  transition: background-color 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-
-  &:hover,
-  &.skill--tip {
-    background: var(--surface-raised);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-
-  &:hover .skill-tip,
-  &:focus-visible .skill-tip,
-  &.skill--tip .skill-tip {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-}
-
-.skill-value {
-  flex: 1;
-  font-size: 1.1rem;
-  font-weight: 800;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.skill-tip {
-  position: absolute;
-  z-index: 10;
-  top: calc(100% + 0.45rem);
-  left: 50%;
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
-  background: #0f131b;
-  box-shadow:
-    inset 0 0 0 1px var(--gold-line),
-    0 6px 16px rgb(0 0 0 / 45%);
-  color: var(--text);
-  font-size: 0.78rem;
-  font-weight: 600;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, -0.25rem);
-  transition:
-    opacity 0.12s ease,
-    transform 0.12s ease;
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    border: 5px solid transparent;
-    border-bottom-color: var(--gold-line);
-    transform: translateX(-50%);
-  }
-}
-
-.skill[data-tone='positive'] .skill-value {
-  color: var(--green);
-}
-
-.skill[data-tone='negative'] .skill-value {
-  color: var(--red);
-}
-
-.skill[data-tone='zero'] .skill-value {
-  color: var(--muted);
-  font-weight: 500;
-}
-
-
 .icon-slot {
   display: grid;
   place-items: center;
@@ -649,14 +453,6 @@
     height: 100%;
     object-fit: contain;
   }
-}
-
-.skill-icon {
-  display: block;
-  flex: none;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 7px;
 }
 
 .icon-slot--ability {
@@ -783,9 +579,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ability,
-  .skill,
-  .skill-tip {
+  .ability {
     transition: none;
   }
 
@@ -809,9 +603,6 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .pills--compact {
-    grid-template-columns: repeat(auto-fill, minmax(4.75rem, 1fr));
-  }
 }
 
 @media (max-width: 640px) {

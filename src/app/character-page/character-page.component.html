@@ -199,7 +199,7 @@
                   <section aria-labelledby="stats-title">
                     <div class="profile">
                       <span class="profile-class summary-value">{{ classLabel(view.chapter.className, unit()) }}</span>
-                      <ng-container *ngTemplateOutlet="statRows; context: { $implicit: view.profile }" />
+                      <app-stat-rows [items]="view.profile" />
                     </div>
                   </section>
                   <section aria-labelledby="growth-title">
@@ -210,14 +210,14 @@
                       }
                     </div>
                     @if (view.unitClass) {
-                      <ng-container *ngTemplateOutlet="statRows; context: { $implicit: view.growth, split: true }" />
+                      <app-stat-rows [items]="view.growth" [split]="true" />
                     } @else {
                       <p class="empty">The class "{{ view.chapter.className }}" isn't in the class data, so growths can't be worked out.</p>
                     }
                   </section>
                   <section aria-labelledby="stats-title">
                     <h2 class="sheet-title" id="stats-title">Basic Stats</h2>
-                    <ng-container *ngTemplateOutlet="statRows; context: { $implicit: view.stats, split: true }" />
+                    <app-stat-rows [items]="view.stats" [split]="true" />
                   </section>     
                 </div>
 
@@ -232,21 +232,7 @@
                         <h2 class="sheet-title" id="ranks-title">Skill Lv</h2>
                         <span class="section-hint">Highlighted = usable</span>
                       </div>
-                      <ul class="skill-grid">
-                        @for (skill of view.skillRanks; track skill.key) {
-                          <li class="skill-rank" [class.skill-rank--usable]="skill.usable" [title]="skill.label + (skill.usable ? '' : ' (not usable)')">
-                            <img
-                              class="skill-rank-icon"
-                              [src]="linkedSkillIcon(skill.key, skill.preference)"
-                              alt=""
-                              referrerpolicy="no-referrer"
-                              (error)="useFallbackIcon($event, skillIcon(skill.key, skill.preference))"
-                            />
-                            <span class="skill-rank-label">{{ skill.label }}</span>
-                            <span class="skill-rank-value">{{ skill.value }}</span>
-                          </li>
-                        }
-                      </ul>
+                      <app-skill-grid [items]="view.skillRanks" />
                     </section>
                   }
                 </div>
@@ -332,13 +318,3 @@
   </section>
 </ng-template>
 
-<ng-template #statRows let-items let-split="split">
-  <ul class="stat-rows" [class.stat-rows--split]="split">
-    @for (item of items; track item.label) {
-      <li class="stat-row" [class.stat-row--wide]="item.wide" [attr.data-tone]="item.tone" [attr.title]="item.detail ?? null">
-        <span class="stat-row-label">{{ item.label }}</span>
-        <span class="stat-row-value">{{ item.value }}</span>
-      </li>
-    }
-  </ul>
-</ng-template>

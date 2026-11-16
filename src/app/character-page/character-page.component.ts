@@ -11,16 +11,12 @@ import { BASE_MOVE, buildFromStrength, chapterGrowth, RouteRequirement } from '.
 import { CalculatorStateService } from '../services/calculator-state.service';
 import { GrowthDataService } from '../services/growth-data.service';
 import { RecruitmentDataService } from '../services/recruitment-data.service';
+import { StatRowItem, StatRowsComponent } from '../stat-rows/stat-rows.component';
+import { SkillGridComponent } from '../skill-grid/skill-grid.component';
 
 type Tone = 'positive' | 'negative' | 'zero' | 'base';
 
-interface Pill {
-  label: string;
-  value: string;
-  tone: Tone;
-  wide?: boolean;
-  detail?: string;
-}
+type Pill = StatRowItem;
 
 type CharacterTab = 'build' | 'skill' | 'recruitment';
 
@@ -28,7 +24,7 @@ const SKILL_ICON_COLORS: Record<SkillPreference, string> = { good: 'gold', neutr
 
 @Component({
   selector: 'app-character-page',
-  imports: [GrowthCalculatorComponent, NgTemplateOutlet, ProjectionDialogComponent, RouterLink],
+  imports: [GrowthCalculatorComponent, NgTemplateOutlet, ProjectionDialogComponent, RouterLink, SkillGridComponent, StatRowsComponent],
   templateUrl: './character-page.component.html',
   styleUrls: ['../styles/detail-cards.scss', './character-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

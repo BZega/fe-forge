@@ -131,14 +131,7 @@
             </label>
           }
         </div>
-        <ul class="pills pills--growth">
-          @for (stat of statKeys; track stat) {
-            <li class="pill" [attr.data-tone]="tone(classGrowth()[stat])">
-              <span class="pill-label">{{ statLabels[stat] }}</span>
-              <span class="pill-value">{{ signed(classGrowth()[stat]) }}%</span>
-            </li>
-          }
-        </ul>
+        <app-stat-rows [items]="growthRows()" [split]="true" />
       </div>
     </section>
 
@@ -169,25 +162,10 @@
           <div role="tabpanel" [id]="'stat-panel-' + statTab()" [attr.aria-labelledby]="'stat-tab-' + statTab()">
             @switch (statTab()) {
               @case ('bonus') {
-                <ul class="pills pills--compact">
-                  @for (stat of bonusStatKeys; track stat) {
-                    <li class="pill" [attr.data-tone]="tone(current.bonusStats[stat])">
-                      <span class="pill-label">{{ bonusStatLabels[stat] }}</span>
-                      <span class="pill-value">{{ signed(current.bonusStats[stat]) }}</span>
-                    </li>
-                  }
-                </ul>
+                <app-stat-rows [items]="bonusRows()" [split]="true" [splitRows]="5" />
               }
               @case ('base') {
-                <ul class="pills pills--compact">
-                  @for (stat of statKeys; track stat) {
-                    @let floor = current.classFloorStats[stat];
-                    <li class="pill" [attr.data-tone]="floor > 0 ? 'base' : 'zero'">
-                      <span class="pill-label">{{ statLabels[stat] }}</span>
-                      <span class="pill-value">{{ floor > 0 ? floor : '—' }}</span>
-                    </li>
-                  }
-                </ul>
+                <app-stat-rows [items]="floorRows()" [split]="true" [splitRows]="5" />
               }
             }
           </div>
@@ -201,35 +179,7 @@
           @if (usableSkills().length === 0) {
             <p class="empty">This class can't use any skills.</p>
           } @else {
-            <ul class="skills">
-              @for (skill of usableSkills(); track skill.key) {
-                <li>
-                  <button
-                    type="button"
-                    class="skill"
-                    [class.skill--tip]="activeSkill() === skill.key"
-                    [attr.data-tone]="tone(skill.expBonus)"
-                    [attr.aria-label]="skill.label + ', ' + (skill.expBonus === 0 ? 'no EXP bonus' : signed(skill.expBonus) + ' EXP bonus')"
-                    (click)="toggleSkillTip(skill.key)"
-                  >
-                    <img
-                      class="skill-icon"
-                      [src]="linkedSkillIcon(skill.key)"
-                      [attr.data-skill]="skill.key"
-                      alt=""
-                      width="32"
-                      height="32"
-                      referrerpolicy="no-referrer"
-                      (error)="useFallbackIcon($event, skillIcon(skill.key))"
-                    />
-                    <span class="skill-value" aria-hidden="true">
-                      {{ skill.expBonus === 0 ? '—' : signed(skill.expBonus) }}
-                    </span>
-                    <span class="skill-tip" aria-hidden="true">{{ skill.label }}</span>
-                  </button>
-                </li>
-              }
-            </ul>
+            <app-skill-grid [items]="usableSkills()" [interactive]="true" [active]="activeSkill()" (selected)="toggleSkillTip($event)" />
           }
         </section>
       </div>

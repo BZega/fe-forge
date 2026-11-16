@@ -57,7 +57,7 @@ describe('ClassPageComponent class switcher keyboard', () => {
         select.dispatchEvent(new Event('change'));
         page.fixture.detectChanges();
         const growth = sumGrowth(toGrowth(unitClass), toGrowth(config.bonuses[level]));
-        const values = Array.from(page.host.querySelectorAll('.pills--growth .pill-value')).map((element) => element.textContent!.trim());
+        const values = Array.from(page.host.querySelectorAll('.growth-body .stat-row-value')).map((element) => element.textContent!.trim());
 
         expect(values).toEqual(STAT_KEYS.map((stat) => `${page.component.signed(growth[stat])}%`));
         expect(page.host.querySelector('.growth-feature-value')!.textContent!.trim()).toBe(`${page.component.signed(growthTotal(growth))}%`);
@@ -68,6 +68,54 @@ describe('ClassPageComponent class switcher keyboard', () => {
   it('does not show a growth level selector for other classes', () => {
     const page = open(second.id);
     expect(page.host.querySelector('select[aria-label="Class growth level"]')).toBeNull();
+  });
+
+  it('shows class bonuses and floors using shared stat rows', () => {
+    const unitClass = (unitClassData as UnitClass[]).find((candidate) => candidate.name === 'Ornius Rider')!;
+    const page = open(unitClass.id);
+    const value = (label: string) => Array.from(page.host.querySelectorAll('#stat-panel-' + page.component.statTab() + ' .stat-row'))
+      .find((row) => row.querySelector('.stat-row-label')!.textContent!.trim() === label)!
+      .querySelector('.stat-row-value')!.textContent!.trim();
+
+    expect(value('Spd')).toBe('+3');
+    page.host.querySelector<HTMLButtonElement>('#stat-tab-base')!.click();
+    page.fixture.detectChanges();
+    expect(value('Spd')).toBe('8');
+    expect(value('HP')).toBe('—');
+  });
+
+  it('places class stats in two columns with five rows on the left', () => {
+    const page = open(second.id);
+    document.body.appendChild(page.host);
+
+    const check = (expected: string[]) => {
+      const rows = Array.from(page.host.querySelectorAll<HTMLElement>('[role="tabpanel"] .stat-row'));
+      expect(rows.map((row) => row.querySelector('.stat-row-label')!.textContent!.trim())).toEqual(expected);
+      const positions = rows.map((row) => row.getBoundingClientRect());
+      expect(positions.slice(0, 5).every((rect) => rect.left === positions[0].left)).toBeTrue();
+      expect(positions.slice(5).every((rect) => rect.left > positions[0].left)).toBeTrue();
+      expect(positions[5].top).toBe(positions[0].top);
+    };
+
+    check(['HP', 'Str', 'Mag', 'Spd', 'Dex', 'Def', 'Res', 'Lck', 'Cha', 'Mov']);
+    page.host.querySelector<HTMLButtonElement>('#stat-tab-base')!.click();
+    page.fixture.detectChanges();
+    check(['HP', 'Str', 'Mag', 'Spd', 'Dex', 'Def', 'Res', 'Lck', 'Cha']);
+    page.host.remove();
+  });
+
+  it('shows and dismisses a class skill hint', () => {
+    const unitClass = (unitClassData as UnitClass[]).find((candidate) => candidate.name === 'Charioteer')!;
+    const page = open(unitClass.id);
+    const skill = page.host.querySelector<HTMLButtonElement>('app-skill-grid button')!;
+
+    expect(skill.getAttribute('aria-label')).toContain('EXP bonus');
+    skill.click();
+    page.fixture.detectChanges();
+    expect(skill.querySelector('.skill-tip')?.textContent!.trim()).toBe('Bow');
+    skill.click();
+    page.fixture.detectChanges();
+    expect(skill.querySelector('.skill-tip')).toBeNull();
   });
 
   it('toggles the Noble/Commoner header between Noble, Commoner and God', () => {

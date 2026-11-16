@@ -392,122 +392,6 @@
   color: var(--accent);
 }
 
-.stat-rows {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: var(--stat-gap);
-  --stat-gap: 1.5rem;
-}
-
-.stat-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.42rem 0.1rem;
-  border-bottom: 1px dashed rgb(240 192 74 / 18%);
-  font-variant-numeric: tabular-nums;
-
-  &--wide {
-    grid-column: 1 / -1;
-    justify-self: start;
-    width: calc((100% - var(--stat-gap)) / 2);
-  }
-}
-
-.stat-rows--split {
-  grid-auto-flow: column;
-  grid-template-rows: repeat(4, auto);
-
-  &:has(.stat-row--wide) {
-    grid-template-rows: repeat(5, auto);
-  }
-}
-
-.stat-row-label {
-  font-size: 0.8rem;
-  color: rgb(236 228 204 / 70%);
-}
-
-.stat-row-value {
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-
-.stat-row[data-tone='positive'] .stat-row-value {
-  color: var(--green);
-}
-
-.stat-row[data-tone='negative'] .stat-row-value {
-  color: var(--red);
-}
-
-.stat-row[data-tone='zero'] .stat-row-value {
-  color: var(--muted);
-}
-
-.skill-grid {
-  list-style: none;
-  margin: 0.5rem 0 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 0.3rem;
-}
-
-.skill-rank {
-  position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.2rem;
-  padding: 0.3rem 0.2rem;
-  border: 1px solid var(--hairline);
-  border-radius: 8px;
-  background: var(--surface);
-  opacity: 0.5;
-
-  &--usable {
-    border-color: var(--gold-line);
-    background: var(--gold-soft);
-    opacity: 1;
-  }
-}
-
-.skill-rank-icon {
-  width: 1.2rem;
-  height: 1.2rem;
-}
-
-.skill-rank-value {
-  display: grid;
-  place-items: center;
-  width: 1.35rem;
-  height: 1.35rem;
-  border: 1.5px solid currentColor;
-  border-radius: 50%;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--muted);
-
-  .skill-rank--usable & {
-    color: var(--accent);
-  }
-}
-
-.skill-rank-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 .note {
   margin: 0.7rem 0 0;
   font-size: 0.75rem;
@@ -608,10 +492,6 @@
       border-left: none;
       border-top: 1px solid var(--hairline);
     }
-  }
-
-  .stat-rows {
-    --stat-gap: 1rem;
   }
 
   .difference {

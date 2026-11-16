@@ -3,16 +3,18 @@ import { afterNextRender, ChangeDetectionStrategy, Component, computed, ElementR
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
-import { abilityIconUrl, classSpriteUrl, skillIconUrl, useFallbackIcon } from '../icon-links';
+import { abilityIconUrl, classSpriteUrl } from '../icon-links';
 import { BONUS_STAT_KEYS, BONUS_STAT_LABELS, CLASS_LEVEL_CONFIGS, CLASS_RANK_ORDER, ClassAbility, growthTotal, ORIGIN_CLASS, SKILL_KEYS, SKILL_LABELS, SkillKey, STAT_KEYS, STAT_LABELS, sumGrowth, toGrowth, UnitClass } from '../models/growth.models';
 import { GrowthDataService } from '../services/growth-data.service';
 import { SpoilerService } from '../services/spoiler.service';
+import { StatRowItem, StatRowsComponent } from '../stat-rows/stat-rows.component';
+import { SkillGridComponent } from '../skill-grid/skill-grid.component';
 
 type StatTab = 'bonus' | 'base';
 
 @Component({
   selector: 'app-class-page',
-  imports: [NgTemplateOutlet, RouterLink],
+  imports: [NgTemplateOutlet, RouterLink, SkillGridComponent, StatRowsComponent],
   templateUrl: './class-page.component.html',
   styleUrl: './class-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -79,6 +81,34 @@ export class ClassPageComponent {
 
   readonly totalGrowth = computed(() => growthTotal(this.classGrowth()));
 
+  readonly growthRows = computed<StatRowItem[]>(() => {
+    const growth = this.classGrowth();
+    return this.statKeys.map((stat) => ({
+      label: this.statLabels[stat],
+      value: `${this.signed(growth[stat])}%`,
+      tone: this.tone(growth[stat]),
+      wide: stat === 'hp',
+    }));
+  });
+
+  readonly bonusRows = computed<StatRowItem[]>(() => {
+    const stats = this.unitClass()?.bonusStats;
+    return this.bonusStatKeys.map((stat) => ({
+      label: this.bonusStatLabels[stat],
+      value: this.signed(stats?.[stat] ?? 0),
+      tone: this.tone(stats?.[stat] ?? 0),
+    }));
+  });
+
+  readonly floorRows = computed<StatRowItem[]>(() => {
+    const stats = this.unitClass()?.classFloorStats;
+    return this.statKeys.map((stat) => ({
+      label: this.statLabels[stat],
+      value: (stats?.[stat] ?? 0) > 0 ? String(stats![stat]) : '—',
+      tone: (stats?.[stat] ?? 0) > 0 ? 'base' : 'zero',
+    }));
+  });
+
   readonly mountType = computed(() => {
     const unitClass = this.unitClass();
 
@@ -92,8 +122,6 @@ export class ClassPageComponent {
 
     return name && !this.spriteFailed() ? classSpriteUrl(name) : null;
   });
-
-  readonly useFallbackIcon = useFallbackIcon;
 
   readonly failedAbilityIcons = signal<ReadonlySet<number>>(new Set());
 
@@ -115,6 +143,9 @@ export class ClassPageComponent {
             key: skill,
             label: this.skillLabels[skill],
             expBonus: unitClass.skillExpBonus[skill] ?? 0,
+            value: unitClass.skillExpBonus[skill] ? this.signed(unitClass.skillExpBonus[skill]) : '—',
+            usable: true,
+            description: `${this.skillLabels[skill]}, ${unitClass.skillExpBonus[skill] ? this.signed(unitClass.skillExpBonus[skill]) + ' EXP bonus' : 'no EXP bonus'}`,
           }))
       : [];
   });
@@ -175,14 +206,6 @@ export class ClassPageComponent {
 
   tone(value: number): 'positive' | 'negative' | 'zero' {
     return value > 0 ? 'positive' : value < 0 ? 'negative' : 'zero';
-  }
-
-  skillIcon(skill: SkillKey): string {
-    return `icons/skills/black/${skill}.svg`;
-  }
-
-  linkedSkillIcon(skill: SkillKey): string {
-    return skillIconUrl(skill) ?? this.skillIcon(skill);
   }
 
   initials(name: string): string {

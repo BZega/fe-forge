@@ -1,0 +1,76 @@
+.skill-grid {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+
+.skill-rank {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0.3rem 0.2rem;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface);
+  opacity: 0.5;
+
+  &--usable {
+    border-color: var(--gold-line);
+    background: var(--gold-soft);
+    opacity: 1;
+  }
+}
+
+button.skill-rank {
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.skill-rank-icon {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.skill-rank-value {
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.skill-rank-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skill-tip {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 0.45rem);
+  left: 50%;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  background: #0f131b;
+  color: var(--text);
+  font-size: 0.78rem;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
