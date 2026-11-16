@@ -112,18 +112,30 @@
 
     <!-- Growth rates: primary card -->
     <section class="card growth" aria-labelledby="growth-title">
-      <div class="growth-feature" [attr.data-tone]="tone(current.total)">
+      <div class="growth-feature" [attr.data-tone]="tone(totalGrowth())">
         <span class="growth-feature-label">Total growth</span>
-        <span class="growth-feature-value">{{ signed(current.total) }}%</span>
+        <span class="growth-feature-value">{{ signed(totalGrowth()) }}%</span>
       </div>
 
       <div class="growth-body">
-        <h2 class="section-title" id="growth-title">Growth rates</h2>
+        <div class="section-head">
+          <h2 class="section-title" id="growth-title">Growth rates</h2>
+          @if (levelConfig(); as config) {
+            <label class="badge" style="align-items: center">
+              <span>Level</span>
+              <select class="stat-tabs-tab" style="margin: 0; padding: 0; border: 0" aria-label="Class growth level" [value]="classLevel()" (change)="classLevel.set(+$any($event.target).value)">
+                @for (level of config.levels; track level) {
+                  <option [value]="level">{{ level }}</option>
+                }
+              </select>
+            </label>
+          }
+        </div>
         <ul class="pills pills--growth">
           @for (stat of statKeys; track stat) {
-            <li class="pill" [attr.data-tone]="tone(current[stat])">
+            <li class="pill" [attr.data-tone]="tone(classGrowth()[stat])">
               <span class="pill-label">{{ statLabels[stat] }}</span>
-              <span class="pill-value">{{ signed(current[stat]) }}%</span>
+              <span class="pill-value">{{ signed(classGrowth()[stat]) }}%</span>
             </li>
           }
         </ul>

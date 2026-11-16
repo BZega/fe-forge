@@ -4,7 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { abilityIconUrl, classSpriteUrl, skillIconUrl, useFallbackIcon } from '../icon-links';
-import { BONUS_STAT_KEYS, BONUS_STAT_LABELS, CLASS_RANK_ORDER, ClassAbility, ORIGIN_CLASS, SKILL_KEYS, SKILL_LABELS, SkillKey, STAT_KEYS, STAT_LABELS, UnitClass } from '../models/growth.models';
+import { BONUS_STAT_KEYS, BONUS_STAT_LABELS, CLASS_LEVEL_CONFIGS, CLASS_RANK_ORDER, ClassAbility, growthTotal, ORIGIN_CLASS, SKILL_KEYS, SKILL_LABELS, SkillKey, STAT_KEYS, STAT_LABELS, sumGrowth, toGrowth, UnitClass } from '../models/growth.models';
 import { GrowthDataService } from '../services/growth-data.service';
 import { SpoilerService } from '../services/spoiler.service';
 
@@ -61,6 +61,23 @@ export class ClassPageComponent {
   readonly unitClass = computed(
     () => this.classes().find((c) => c.id === this.classId()) ?? null,
   );
+
+  readonly levelConfig = computed(() => {
+    const name = this.unitClass()?.name;
+    return name ? CLASS_LEVEL_CONFIGS[name] ?? null : null;
+  });
+
+  readonly classLevel = linkedSignal({
+    source: () => this.unitClass()?.id,
+    computation: () => this.levelConfig()?.defaultLevel ?? null,
+  });
+
+  readonly classGrowth = computed(() => {
+    const level = this.classLevel();
+    return sumGrowth(toGrowth(this.unitClass()), toGrowth(level === null ? null : this.levelConfig()?.bonuses[level]));
+  });
+
+  readonly totalGrowth = computed(() => growthTotal(this.classGrowth()));
 
   readonly mountType = computed(() => {
     const unitClass = this.unitClass();

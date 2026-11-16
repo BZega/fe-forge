@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import unitClassData from '../data/unit-classes.json';
-import { CLASS_RANK_ORDER, UnitClass } from '../models/growth.models';
+import { CLASS_LEVEL_CONFIGS, CLASS_RANK_ORDER, growthTotal, STAT_KEYS, sumGrowth, toGrowth, UnitClass } from '../models/growth.models';
 import { SpoilerService } from '../services/spoiler.service';
 import { ClassPageComponent } from './class-page.component';
 
@@ -41,6 +41,34 @@ describe('ClassPageComponent class switcher keyboard', () => {
   };
 
   const second = ordered[1];
+
+  for (const name of ['Charioteer', 'Elephant Rider']) {
+    it(`shows ${name} growth rates for each level gate`, () => {
+      const unitClass = (unitClassData as UnitClass[]).find((candidate) => candidate.name === name)!;
+      const config = CLASS_LEVEL_CONFIGS[name];
+      const page = open(unitClass.id);
+      const select = page.host.querySelector<HTMLSelectElement>('select[aria-label="Class growth level"]')!;
+
+      expect(select.value).toBe(String(config.defaultLevel));
+      expect(Array.from(select.options).map((option) => Number(option.value))).toEqual([...config.levels]);
+
+      for (const level of config.levels) {
+        select.value = String(level);
+        select.dispatchEvent(new Event('change'));
+        page.fixture.detectChanges();
+        const growth = sumGrowth(toGrowth(unitClass), toGrowth(config.bonuses[level]));
+        const values = Array.from(page.host.querySelectorAll('.pills--growth .pill-value')).map((element) => element.textContent!.trim());
+
+        expect(values).toEqual(STAT_KEYS.map((stat) => `${page.component.signed(growth[stat])}%`));
+        expect(page.host.querySelector('.growth-feature-value')!.textContent!.trim()).toBe(`${page.component.signed(growthTotal(growth))}%`);
+      }
+    });
+  }
+
+  it('does not show a growth level selector for other classes', () => {
+    const page = open(second.id);
+    expect(page.host.querySelector('select[aria-label="Class growth level"]')).toBeNull();
+  });
 
   it('toggles the Noble/Commoner header between Noble, Commoner and God', () => {
     const origin = (unitClassData as UnitClass[]).find((unitClass) => unitClass.name === 'Noble/Commoner')!;
