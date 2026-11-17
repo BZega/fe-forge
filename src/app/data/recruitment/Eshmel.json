@@ -4,10 +4,12 @@
     "Name": "Light of Salvation",
     "Description": "Neutralizes Underworld Boon on foes within 2 spaces."
   },
-  "Bloodmark": {
-    "Name": "Diadem of the Augur",
-    "Description": "Grants Hit\u002B100 when attacking. Trigger % = 5."
-  },
+  "Bloodmark": [
+    {
+      "Name": "Diadem of the Augur",
+      "Description": "Grants Hit\u002B100 when attacking. Trigger % = 5."
+    }
+  ],
   "LevelUpPersonalAbilities": [
     {
       "Name": "Scorching Sun",
@@ -20,6 +22,107 @@
       "Description": "Reduces damage done by undead foes to 0. Trigger % = 10."
     }
   ],
+  "Blaze": {
+    "BlazeType": {
+      "Type": "Celestial Wells",
+      "Description": "Blaze Gauge decreases when in combat with cursed treasures. Attacking increases Blaze Gauge."
+    },
+    "BlazeAbility": {
+      "Name": "Grasp Truths",
+      "Description": "Allows use of increasingly powerful Blaze Arts as the Blaze Gauge fills."
+    },
+    "BlazeArts": [
+      {
+        "Name": "Purifying Flash",
+        "Description": "Pierces foes with a spear of holy light. Effective vs. undead.",
+        "Atk": "20",
+        "DamageType": "Phys",
+        "Hit": "100",
+        "Crit": "0",
+        "Rng": "0-3",
+        "BlazeCost": "1",
+        "HpCost": "20%",
+        "LevelGained": "--",
+        "EffectiveType": [
+          "Undead"
+        ],
+        "Req": null
+      },
+      {
+        "Name": "Purifying Flash\u002B",
+        "Description": "Pierces foes with a spear of holy light. Effective vs. undead. Guaranteed to hit.",
+        "Atk": "25",
+        "DamageType": "Phys",
+        "Hit": "100",
+        "Crit": "0",
+        "Rng": "0-3",
+        "BlazeCost": "2",
+        "HpCost": "30%",
+        "LevelGained": "--",
+        "EffectiveType": [
+          "Undead"
+        ],
+        "Req": "3 Bars"
+      },
+      {
+        "Name": "Nine-Sky Strike",
+        "Description": "Pierces foes with a spear of holy light. Effective vs. undead.",
+        "Atk": "25",
+        "DamageType": "Phys",
+        "Hit": "100",
+        "Crit": "0",
+        "Rng": "0-3",
+        "BlazeCost": "6",
+        "HpCost": "40%",
+        "LevelGained": "--",
+        "EffectiveType": [
+          "Undead"
+        ],
+        "Req": "6 Bars"
+      },
+      {
+        "Name": "Nine-Sky Strike+",
+        "Description": "Pierces foes with a spear of light. Effective\u002B vs. undead. Guaranteed to hit.",
+        "Atk": "30",
+        "DamageType": "Phys",
+        "Hit": "100",
+        "Crit": "0",
+        "Rng": "0-3",
+        "BlazeCost": "6",
+        "HpCost": "50%",
+        "LevelGained": "--",
+        "EffectiveType": [
+          "ExtraUndead"
+        ],
+        "Req": "9 Bars"
+      },
+      {
+        "Name": "Cleave Heaven",
+        "Description": "Pierces foes with a spear of light. Effective\u002B vs. undead. Guaranteed to hit.",
+        "Atk": "30",
+        "DamageType": "Phys",
+        "Hit": "100",
+        "Crit": "0",
+        "Rng": "0-3",
+        "BlazeCost": "6",
+        "HpCost": "60%",
+        "LevelGained": "--",
+        "EffectiveType": [
+          "ExtraUndead"
+        ],
+        "Req": "11 Bars"
+      }
+    ],
+    "ManageBlaze": null,
+    "Source": {
+      "Name": "Leader\u0027s Heart Core",
+      "Description": "The final Heart Core, entrusted to a savior. It is the power to bring light to the world. Grants Dex\u002B10.",
+      "StatBonus": {
+        "StatType": "Dex",
+        "Bonus": 10
+      }
+    }
+  },
   "Paths": [
     {
       "Path": "Prologue",
@@ -62,10 +165,12 @@
                 "Wt": 7,
                 "Avo": 0,
                 "Range": "1",
-                "Skill": {
-                  "SkillType": "Spear",
-                  "SkillRank": "E"
-                }
+                "Skills": [
+                  {
+                    "SkillType": "Spear",
+                    "SkillRank": "E"
+                  }
+                ]
               }
             ],
             "Items": [

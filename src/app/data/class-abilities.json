@@ -664,5 +664,29 @@
     "name": "Flying Avo +5",
     "description": "[Flying] Grants Avo +5.",
     "isCombatArt": false
+  },
+  {
+    "id": 112,
+    "name": "Foul Play",
+    "description": "Unit and ally in range swap places (not usable on large allies).",
+    "isCombatArt": false
+  },
+  {
+    "id": 113,
+    "name": "Clear Head",
+    "description": "Grants Def/Res Shift for 1 combat or 1 turn. Def/Res Shift: swaps Def and Res.",
+    "isCombatArt": false
+  },
+  {
+    "id": 114,
+    "name": "Magic Burial",
+    "description": "If unit and foe use magic, grants Atk+7 to unit during combat.",
+    "isCombatArt": false
+  },
+  {
+    "id": 115,
+    "name": "Blessed Armor",
+    "description": "After combat, restores a little HP to the user.",
+    "isCombatArt": false
   }
 ]

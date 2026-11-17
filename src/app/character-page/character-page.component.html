@@ -46,7 +46,7 @@
 
 @if (current) {
   <div class="tabs" role="tablist" aria-label="Character sections">
-    @for (tab of tabs; track tab.key) {
+    @for (tab of tabs(); track tab.key) {
       <button
         type="button"
         role="tab"
@@ -254,6 +254,82 @@
               </div>
             </div>
           }
+        }
+      }
+      @case ('blaze') {
+        @if (recruitment()?.blaze; as blaze) {
+          <div class="card sheet blaze-sheet">
+            <div class="sheet-col">
+              @if (blaze.type; as type) {
+                <section aria-labelledby="blaze-type-title">
+                  <h2 class="sheet-title" id="blaze-type-title">{{ type.name }}</h2>
+                  <p class="inventory-description">{{ type.description }}</p>
+                </section>
+              }
+
+              @if (blaze.ability; as ability) {
+                <section aria-labelledby="blaze-ability-title">
+                  <h2 class="sheet-title" id="blaze-ability-title">Blaze Ability</h2>
+                  <ng-container *ngTemplateOutlet="abilityList; context: { $implicit: [ability] }" />
+                </section>
+              }
+
+              @if (blaze.manage; as manage) {
+                <section aria-labelledby="manage-blaze-title">
+                  <h2 class="sheet-title" id="manage-blaze-title">Manage Blaze</h2>
+                  <ng-container *ngTemplateOutlet="abilityList; context: { $implicit: [manage] }" />
+                </section>
+              }
+
+              @if (blaze.source; as source) {
+                <section aria-labelledby="blaze-source-title">
+                  <h2 class="sheet-title" id="blaze-source-title">{{ source.name }}</h2>
+                  <p class="inventory-description">{{ source.description }}</p>
+                  @if (source.statBonus; as bonus) {
+                    <ul class="inventory-stats">
+                      <li class="inventory-stat"><span class="inventory-stat-label">{{ bonus.stat }}</span>+{{ bonus.bonus }}</li>
+                    </ul>
+                  }
+                </section>
+              }
+            </div>
+
+            <div class="sheet-col blaze-arts">
+              <section aria-labelledby="blaze-arts-title">
+                <h2 class="sheet-title" id="blaze-arts-title">Blaze Arts</h2>
+                <ul class="inventory">
+                  @for (art of blaze.arts; track $index) {
+                    <li class="inventory-entry">
+                      <span class="inventory-item">{{ art.name }}</span>
+                      <ul class="inventory-stats">
+                        @for (field of [
+                          { label: 'Atk', value: art.atk },
+                          { label: 'Type', value: art.damageType },
+                          { label: 'Hit', value: art.hit },
+                          { label: 'Crit', value: art.crit },
+                          { label: 'Rng', value: art.range },
+                          { label: 'Blaze', value: art.blazeCost },
+                          { label: 'HP', value: art.hpCost },
+                          { label: 'Lv', value: art.levelGained },
+                          { label: 'Req', value: art.req },
+                          { label: 'Eff', value: art.effectiveType.join(', ') },
+                        ]; track field.label) {
+                          @if (field.value) {
+                            <li class="inventory-stat"><span class="inventory-stat-label">{{ field.label }}</span> {{ field.value }}</li>
+                          }
+                        }
+                      </ul>
+                      @if (art.description) {
+                        <span class="inventory-description">{{ art.description }}</span>
+                      }
+                    </li>
+                  } @empty {
+                    <li class="empty">No Blaze Arts listed.</li>
+                  }
+                </ul>
+              </section>
+            </div>
+          </div>
         }
       }
       @default {

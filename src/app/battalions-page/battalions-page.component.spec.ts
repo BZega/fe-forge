@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import battalionData from '../data/battalions.json';
-import { Battalion, BATTALION_TYPE_ORDER } from '../models/growth.models';
+import { Battalion, BATTALION_RANK_ORDER, BATTALION_TYPE_ORDER } from '../models/growth.models';
 import { SpoilerService } from '../services/spoiler.service';
 import { BattalionsPageComponent } from './battalions-page.component';
 
@@ -39,6 +39,26 @@ describe('BattalionsPageComponent', () => {
     expect(groups()).toEqual(expectedGroups(battalions));
   });
 
+  it('includes the added battalions and keeps data ordered by type, rank, then name', () => {
+    const expected = [
+      'Advance Corps', 'Barrage Soldiers', 'Battering Fists', 'Cavalry Crushers', 'Enclosing Shielders',
+      'Flame Strategists', 'Flank Guards', "Fliers' Affliction", 'Healer Collective', 'Hellfire Chargers',
+      'Holy-Magic Wardens', 'Ice Mages', 'Iron Bulwarks', 'Lightning Callers', 'Pavise Flankers',
+      'Poison Storm Co.', 'Poison Tacticians', 'Pyro Mages', 'Python Warriors', 'Quad Defenders',
+      'Quelling Archers', 'Rampart Regiment', 'Resonance Healers', 'Scatter Defenders', 'Serpent Warriors',
+      'Torrent Troop', 'Trap Springers', 'V-Form Defenders', 'Warden Troop', 'White-Magic Mages',
+    ];
+    const names = new Set(battalions.map((battalion) => battalion.name));
+    expect(names.size).toBe(battalions.length);
+    expect(expected.every((name) => names.has(name))).toBeTrue();
+
+    const compare = (left: Battalion, right: Battalion) =>
+      BATTALION_TYPE_ORDER.indexOf(left.type) - BATTALION_TYPE_ORDER.indexOf(right.type) ||
+      BATTALION_RANK_ORDER.indexOf(left.rank) - BATTALION_RANK_ORDER.indexOf(right.rank) ||
+      left.name.localeCompare(right.name);
+    expect(battalions.every((battalion, index) => index === 0 || compare(battalions[index - 1], battalion) <= 0)).toBeTrue();
+  });
+
   it('shows the rank, flat stat bonuses, their total and the skill for each battalion', () => {
     const first = battalions[0];
     const cells = Array.from(rowNamed(first.name)!.querySelectorAll('td')).map((cell) =>
@@ -51,6 +71,17 @@ describe('BattalionsPageComponent', () => {
       String(first.total),
       `${first.skillName} ${first.skillDescription}`,
     ]);
+  });
+
+  it('uses the reconciled skill names and battalion-specific descriptions', () => {
+    const skill = (name: string) => rowNamed(name)!.querySelector('.detail-title')!.textContent!.trim();
+    const description = (name: string) => rowNamed(name)!.querySelector('.detail-text')!.textContent!.trim();
+
+    expect(skill('Fenghuang Squad')).toBe('Line of Lances+');
+    expect(description('Warden Troop')).toContain('inflicts Foil on foe');
+    expect(description('Shadow Mages')).toContain('Heals 70% and inflicts Poison on allies in an AoE ring around them.');
+    expect(description('Resonance Healers')).toBe('Restores some HP to allies in range.');
+    expect(description('Shen Yang Squad')).toBe('Restores a lot of HP to allies in range.');
   });
 
   it('shows a Rank column right after the battalion name, and no HP column', () => {

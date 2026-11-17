@@ -33,6 +33,17 @@ describe('RecruitmentDataService', () => {
     }
   });
 
+  it('preserves Blaze art requirements and nullable Manage Blaze', () => {
+    const eshmel = service.forUnit('Eshmel')!.blaze!;
+
+    expect(eshmel.manage).toBeNull();
+    expect(eshmel.arts.map((art) => art.req)).toEqual([null, '3 Bars', '6 Bars', '9 Bars', '11 Bars']);
+
+    const cai = service.forUnit('Cai')!.blaze!;
+    expect(cai.manage?.name).toBe('Underworld Calm');
+    expect(cai.arts.at(-1)?.req).toBe('6 Bars');
+  });
+
   it("reads every route, and each chapter's level, class, stats and skill ranks", () => {
     for (const file of files) {
       const unit = service.forUnit(file.UnitId)!;

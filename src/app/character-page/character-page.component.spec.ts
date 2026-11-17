@@ -61,6 +61,7 @@ describe('CharacterPageComponent recruitment', () => {
       personalAbility: { name: 'Zhu Ming', description: 'Hit+10.' },
       bloodmark: { name: 'Diadem', description: 'Hit+20.' },
       levelUpAbilities: [{ name: 'Amplify Magic', description: 'Atk+4.', level: 50 }],
+      blaze: null,
       routes: [
         route('Prologue', [chapter(1, 'Ovate', 15), chapter(3, 'Noble/Commoner', 6)]),
         route('Leda', []),
@@ -97,6 +98,39 @@ describe('CharacterPageComponent recruitment', () => {
     expect(text('.route-tabs-tab')).toEqual(['Prologue', 'War Arc']);
     expect(text('.route-status .tag')).toEqual(['Recruitable']);
     expect(text('.route-status-requirement')).toEqual(['Give 3,000G · Support Lv 3 · Renown Lv 8']);
+  });
+
+  it('shows Blaze as a separate tab and displays art requirements and Manage Blaze when present', () => {
+    recruitment = {
+      ...recruitment!,
+      blaze: {
+        type: { name: 'Celestial Wells', description: 'Gauge grows when attacking.' },
+        ability: { name: 'Grasp Truths', description: 'Allows use of Blaze Arts.' },
+        arts: [
+          {
+            name: 'Purifying Flash+',
+            description: 'Effective vs. undead.',
+            atk: '25', damageType: 'Phys', hit: '100', crit: '0', range: '0-3',
+            blazeCost: '2', hpCost: '30%', levelGained: '--', effectiveType: ['Undead'], req: '3 Bars',
+          },
+        ],
+        manage: { name: 'Manage Blaze', description: 'Reverts Blaze Gauge to 0.' },
+        source: null,
+      },
+    };
+
+    fixture = TestBed.createComponent(CharacterPageComponent);
+    host = fixture.nativeElement;
+    fixture.detectChanges();
+
+    expect(text('.tabs-tab')).toContain('Blaze');
+    host.querySelector<HTMLButtonElement>('.tabs-tab[role="tab"]:last-child')!.click();
+    fixture.detectChanges();
+
+    expect(text('#blaze-type-title')).toEqual(['Celestial Wells']);
+    expect(text('section[aria-labelledby="manage-blaze-title"] .ability-name')).toEqual(['Manage Blaze']);
+    expect(text('.blaze-arts .inventory-item')).toEqual(['Purifying Flash+']);
+    expect(text('.blaze-arts .inventory-stat')).toContain('Req 3 Bars');
   });
 
   it("offers the route's chapters and shows the chosen one", () => {

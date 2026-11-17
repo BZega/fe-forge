@@ -5,6 +5,7 @@ import {
   InventoryEntry,
   InventoryGroup,
   RawAbility,
+  RawBlaze,
   RawChapter,
   RawPath,
   RawRecruitment,
@@ -115,7 +116,43 @@ function toRecruitment(file: RawRecruitment): UnitRecruitment {
     levelUpAbilities: (file.LevelUpPersonalAbilities ?? [])
       .map((ability) => ({ ...toAbility(ability)!, level: ability.LevelAcquired }))
       .sort((a, b) => a.level - b.level),
+    blaze: toBlaze(file.Blaze),
     routes: (file.Paths ?? []).map(toRoute),
+  };
+}
+
+function toBlaze(blaze: RawBlaze | null | undefined): UnitRecruitment['blaze'] {
+  if (!blaze) {
+    return null;
+  }
+
+  return {
+    type: blaze.BlazeType ? { name: blaze.BlazeType.Type, description: blaze.BlazeType.Description } : null,
+    ability: toAbility(blaze.BlazeAbility),
+    arts: (blaze.BlazeArts ?? []).map((art) => ({
+      name: art.Name,
+      description: art.Description,
+      atk: art.Atk ?? null,
+      damageType: art.DamageType ?? null,
+      hit: art.Hit ?? null,
+      crit: art.Crit ?? null,
+      range: art.Rng ?? null,
+      blazeCost: art.BlazeCost ?? null,
+      hpCost: art.HpCost ?? null,
+      levelGained: art.LevelGained ?? null,
+      effectiveType: art.EffectiveType ?? [],
+      req: art.Req ?? null,
+    })),
+    manage: toAbility(blaze.ManageBlaze),
+    source: blaze.Source
+      ? {
+          name: blaze.Source.Name,
+          description: blaze.Source.Description,
+          statBonus: blaze.Source.StatBonus
+            ? { stat: blaze.Source.StatBonus.StatType, bonus: blaze.Source.StatBonus.Bonus }
+            : null,
+        }
+      : null,
   };
 }
 

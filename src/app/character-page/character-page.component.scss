@@ -335,6 +335,14 @@
   padding: 1.25rem 0;
 }
 
+.blaze-sheet {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  .sheet-col {
+    grid-column: auto;
+  }
+}
+
 .sheet-col {
   display: flex;
   flex-direction: column;

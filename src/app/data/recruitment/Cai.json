@@ -4,10 +4,16 @@
     "Name": "Brio",
     "Description": "Grants Mov\u002B1."
   },
-  "Bloodmark": {
-    "Name": "Diadem of the Apostle",
-    "Description": "Grants Hit\u002B20 when attacking, Trigger % = 20."
-  },
+  "Bloodmark": [
+    {
+      "Name": "Diadem of the Apostle",
+      "Description": "Grants Hit\u002B20 when attacking, Trigger % = 20."
+    },
+    {
+      "Name": "Diadem of Duality",
+      "Description": "Grants Atk\u002B3 when attacking. Trigger % = 25."
+    }
+  ],
   "LevelUpPersonalAbilities": [
     {
       "Name": "Flamekeeper",
@@ -15,6 +21,72 @@
       "Description": "Unit and allies are unaffected by Underworld Flames and take half damage from attacks while in Underworld Flames."
     }
   ],
+  "Blaze": {
+    "BlazeType": {
+      "Type": "Underworld",
+      "Description": "Blaze Gauge increases when in combat with cursed treasures. Burst reduces max HP."
+    },
+    "BlazeAbility": {
+      "Name": "Control",
+      "Description": "Allows use of the Underworld Calm command."
+    },
+    "BlazeArts": [
+      {
+        "Name": "Underworld Burst",
+        "Description": "Unleashes dark flames.",
+        "Atk": "12",
+        "DamageType": "Mys",
+        "Hit": "90",
+        "Crit": "0",
+        "Rng": "1-4",
+        "BlazeCost": "2",
+        "HpCost": "20%",
+        "LevelGained": "--",
+        "EffectiveType": [],
+        "Req": null
+      },
+      {
+        "Name": "Blackfire",
+        "Description": "Unleashes dark flames over a wide area.",
+        "Atk": "15",
+        "DamageType": "Mys",
+        "Hit": "85",
+        "Crit": "0",
+        "Rng": "--",
+        "BlazeCost": "3",
+        "HpCost": "30%",
+        "LevelGained": "--",
+        "EffectiveType": [],
+        "Req": null
+      },
+      {
+        "Name": "Underworld Inferno",
+        "Description": "Unleashes dark flames that explode on hit. Applies Underworld Flame to spaces in range. (Once per map.)",
+        "Atk": "20",
+        "DamageType": "Mys",
+        "Hit": "80",
+        "Crit": "0",
+        "Rng": "1-10",
+        "BlazeCost": "4",
+        "HpCost": "30%",
+        "LevelGained": "--",
+        "EffectiveType": [],
+        "Req": "6 Bars"
+      }
+    ],
+    "ManageBlaze": {
+      "Name": "Underworld Calm",
+      "Description": "Reverts Blaze Gauge to 0."
+    },
+    "Source": {
+      "Name": "Red Jewel",
+      "Description": "The gem embedded in Cai\u0027s left hand, surging with the power of black flames. Grants Mag\u002B3.",
+      "StatBonus": {
+        "StatType": "Mag",
+        "Bonus": 3
+      }
+    }
+  },
   "Paths": [
     {
       "Path": "Cai",
@@ -55,10 +127,12 @@
                 "Wt": 5,
                 "Avo": 0,
                 "Range": "1",
-                "Skill": {
-                  "SkillType": "Spear",
-                  "SkillRank": "E"
-                }
+                "Skills": [
+                  {
+                    "SkillType": "Spear",
+                    "SkillRank": "E"
+                  }
+                ]
               }
             ],
             "Items": [],
@@ -125,13 +199,13 @@
     },
     {
       "Path": "WarArc",
-      "IsRecruitable": true,
+      "IsRecruitable": false,
       "Requirement": null,
       "Chapters": []
     },
     {
       "Path": "SalvationArc",
-      "IsRecruitable": true,
+      "IsRecruitable": false,
       "Requirement": null,
       "Chapters": []
     }

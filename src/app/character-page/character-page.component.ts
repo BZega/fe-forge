@@ -18,7 +18,7 @@ type Tone = 'positive' | 'negative' | 'zero' | 'base';
 
 type Pill = StatRowItem;
 
-type CharacterTab = 'build' | 'skill' | 'recruitment';
+type CharacterTab = 'build' | 'skill' | 'recruitment' | 'blaze';
 
 const SKILL_ICON_COLORS: Record<SkillPreference, string> = { good: 'gold', neutral: 'black', bad: 'silver' };
 
@@ -36,11 +36,12 @@ export class CharacterPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly panels = viewChildren(GrowthCalculatorComponent);
 
-  readonly tabs: readonly { key: CharacterTab; label: string }[] = [
-    { key: 'build', label: 'Build' },
-    { key: 'skill', label: 'Skill' },
-    { key: 'recruitment', label: 'Recruitment' },
-  ];
+  readonly tabs = computed(() => [
+    { key: 'build' as const, label: 'Build' },
+    { key: 'skill' as const, label: 'Skill' },
+    { key: 'recruitment' as const, label: 'Recruitment' },
+    ...(this.recruitment()?.blaze ? [{ key: 'blaze' as const, label: 'Blaze' }] : []),
+  ]);
 
   readonly statKeys = STAT_KEYS;
   readonly statLabels = STAT_LABELS;

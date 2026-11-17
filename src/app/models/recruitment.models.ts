@@ -26,7 +26,29 @@ export interface RawRecruitment {
   PersonalAbility: RawAbility | null;
   Bloodmark: RawAbility | null;
   LevelUpPersonalAbilities: (RawAbility & { LevelAcquired: number })[] | null;
+  Blaze?: RawBlaze | null;
   Paths: RawPath[];
+}
+
+export interface RawBlazeArt extends RawAbility {
+  Atk?: string | null;
+  DamageType?: string | null;
+  Hit?: string | null;
+  Crit?: string | null;
+  Rng?: string | null;
+  BlazeCost?: string | null;
+  HpCost?: string | null;
+  LevelGained?: string | null;
+  EffectiveType?: string[] | null;
+  Req?: string | null;
+}
+
+export interface RawBlaze {
+  BlazeType: { Type: string; Description: string } | null;
+  BlazeAbility: RawAbility | null;
+  BlazeArts: RawBlazeArt[] | null;
+  ManageBlaze?: RawAbility | null;
+  Source?: { Name: string; Description: string; StatBonus?: { StatType: string; Bonus: number } | null } | null;
 }
 
 export interface RawPath {
@@ -51,6 +73,27 @@ export interface RawChapter {
 export interface Ability {
   name: string;
   description: string;
+}
+
+export interface BlazeArt extends Ability {
+  atk: string | null;
+  damageType: string | null;
+  hit: string | null;
+  crit: string | null;
+  range: string | null;
+  blazeCost: string | null;
+  hpCost: string | null;
+  levelGained: string | null;
+  effectiveType: readonly string[];
+  req: string | null;
+}
+
+export interface BlazeInfo {
+  type: { name: string; description: string } | null;
+  ability: Ability | null;
+  arts: readonly BlazeArt[];
+  manage: Ability | null;
+  source: { name: string; description: string; statBonus: { stat: string; bonus: number } | null } | null;
 }
 
 export interface LevelUpAbility extends Ability {
@@ -98,6 +141,7 @@ export interface UnitRecruitment {
   personalAbility: Ability | null;
   bloodmark: Ability | null;
   levelUpAbilities: readonly LevelUpAbility[];
+  blaze: BlazeInfo | null;
   routes: readonly RecruitmentRoute[];
 }
 
