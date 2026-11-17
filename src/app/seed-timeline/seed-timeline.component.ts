@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, effect, input, signal, untracked } from '@angular/core';
-import { GrowthRates, STAT_KEYS, STAT_LABELS, StatKey } from '../models/growth.models';
+import { ChangeDetectionStrategy, Component, computed, effect, input, model, signal, untracked } from '@angular/core';
+import { GrowthRates, Mount, mountBonusAt, mountGrowthAt, STAT_KEYS, STAT_LABELS, StatKey } from '../models/growth.models';
 import type { SectionView, SeedMapperPageComponent, StatTotal } from '../seed-mapper-page/seed-mapper-page.component';
+import { SearchableSelectComponent } from '../searchable-select/searchable-select.component';
+import { skillIconUrl, useFallbackIcon } from '../icon-links';
 
 interface TimelineLevel {
   kind: 'level';
@@ -14,6 +16,10 @@ interface TimelineLevel {
   editable: boolean;
   source: string | null;
   note: string | null;
+  mount: Mount | null;
+  bondLevel: number | null;
+  mountEditable: boolean;
+  mountHasBonus: boolean;
 }
 
 interface ForkOption {
@@ -41,6 +47,7 @@ interface TimelineGrowth {
   key: string;
   className: string;
   growth: GrowthRates;
+  details: Record<StatKey, { boosted: boolean; title: string }>;
 }
 
 type TimelineItem = TimelineLevel | TimelineFork | TimelineBranch | TimelineGrowth;
@@ -52,17 +59,20 @@ interface TimelineOption {
 
 @Component({
   selector: 'app-seed-timeline',
+  imports: [SearchableSelectComponent],
   templateUrl: './seed-timeline.component.html',
   styleUrl: './seed-timeline.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeedTimelineComponent {
   readonly mapper = input.required<SeedMapperPageComponent>();
+  readonly mountEditorKey = signal<string | null>(null);
+  readonly useFallbackIcon = useFallbackIcon;
 
   readonly statKeys = STAT_KEYS;
   readonly statLabels = STAT_LABELS;
 
-  readonly focusId = signal<number | null>(null);
+  readonly focusId = model<number | null>(null);
 
   private readonly views = computed(() => this.mapper().sectionViews());
 
@@ -173,6 +183,10 @@ export class SeedTimelineComponent {
       note = `Reclass: ${mapper.className(row.reclassTo)}`;
     }
 
+    const { mount, level: bondLevel } = mapper.rowMount(view, rowIndex);
+    const mountGrowth = mountGrowthAt(mount, bondLevel);
+    const mountBonus = mountBonusAt(mount, bondLevel);
+
     return {
       kind: 'level',
       key: `level-${view.section.id}-${row.id}`,
@@ -185,6 +199,10 @@ export class SeedTimelineComponent {
       editable: ownRow && !inherited,
       source,
       note,
+      mount,
+      bondLevel,
+      mountEditable: !inherited,
+      mountHasBonus: this.statKeys.some((stat) => mountGrowth[stat] !== 0 || mountBonus[stat] !== 0),
     };
   }
 
@@ -202,7 +220,8 @@ export class SeedTimelineComponent {
 
     const pushLevel = (view: SectionView, rowIndex: number) => {
       const growth = mapper.rowGrowth(view, rowIndex);
-      const growthKey = growth && this.statKeys.map((stat) => growth[stat]).join(',');
+      const details = mapper.rowGrowthDetails(view, rowIndex);
+      const growthKey = growth && this.statKeys.map((stat) => `${growth[stat]}:${details[stat].title}`).join(',');
 
       if (growth && growthKey !== shownGrowth) {
         shownGrowth = growthKey;
@@ -211,6 +230,7 @@ export class SeedTimelineComponent {
           key: `growth-${view.section.id}-${view.section.rows[rowIndex].id}`,
           className: mapper.className(mapper.rowClassId(view, rowIndex)),
           growth,
+          details,
         });
       }
 
@@ -288,6 +308,16 @@ export class SeedTimelineComponent {
 
     const row = item.view.section.rows[item.rowIndex];
     this.mapper().setSharedMark(item.view, item.rowIndex, stat, !(row.marks[stat] > 0));
+  }
+
+  mountIcon(item: TimelineLevel): string {
+    const preference = item.mountEditable && this.mountEditorKey() === item.key ? 'neutral' : item.mountHasBonus ? 'good' : 'bad';
+    return skillIconUrl('riding', preference) ?? this.mountFallbackIcon(item);
+  }
+
+  mountFallbackIcon(item: TimelineLevel): string {
+    const color = item.mountEditable && this.mountEditorKey() === item.key ? 'black' : item.mountHasBonus ? 'gold' : 'silver';
+    return `icons/skills/${color}/riding.svg`;
   }
 
   branchFrom(item: TimelineLevel): void {

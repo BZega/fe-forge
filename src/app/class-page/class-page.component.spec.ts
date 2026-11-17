@@ -81,8 +81,7 @@ describe('ClassPageComponent class switcher keyboard', () => {
     const speed = Array.from(page.host.querySelectorAll<HTMLElement>('#stat-panel-bonus .stat-row'))
       .find((row) => row.querySelector('.stat-row-label')!.textContent!.trim() === 'Spd')!;
     expect(speed.title).toBe('Base Value 0; Class +3; Modifier +0');
-    expect(speed.querySelector('.stat-bonus')).not.toBeNull();
-    expect(getComputedStyle(speed.querySelector('.stat-bonus')!).color).toBe('rgb(240, 192, 74)');
+    expect(speed.querySelector('.stat-bonus')).toBeNull();
     page.host.querySelector<HTMLButtonElement>('#stat-tab-base')!.click();
     page.fixture.detectChanges();
     expect(value('Spd')).toBe('8');

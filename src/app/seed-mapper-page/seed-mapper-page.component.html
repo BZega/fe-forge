@@ -24,9 +24,9 @@
     <button
       type="button"
       class="ghost-button"
-      [disabled]="!canTakeLatestExam()"
-      [title]="latestExamHint()"
-      (click)="openLatestExam()"
+      [disabled]="!canAppendExam(focusedTimeline())"
+      [title]="appendExamHint(focusedTimeline())"
+      (click)="openAppendExam(focusedTimeline())"
     >
       Exam / Reclass
     </button>
@@ -63,7 +63,7 @@
     </section>
   }
 
-  <app-seed-timeline [mapper]="this" />
+  <app-seed-timeline [mapper]="this" [(focusId)]="timelineFocusId" />
 
   <section class="saves">
     <header class="saves-header">
@@ -306,6 +306,7 @@
         <span class="picker-label">Bond Level</span>
         <select
           class="picker-select"
+          aria-label="Bond Level"
           [value]="view.mountLevel"
           (change)="onMountLevelChange(view, $any($event.target).value)"
         >

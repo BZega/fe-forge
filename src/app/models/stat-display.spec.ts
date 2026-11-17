@@ -6,11 +6,10 @@ describe('stat display', () => {
     expect(statBreakdown('unknown', -2, 0)).toBe('Base Value unknown; Class -2; Modifier +0');
   });
 
-  it('highlights positive bonuses, but not unmodified values or penalties alone', () => {
+  it('highlights only positive non-class modifiers', () => {
     expect(hasStatBonus(3)).toBeTrue();
-    expect(hasStatBonus(0, 4)).toBeTrue();
-    expect(hasStatBonus(-2, 4)).toBeTrue();
+    expect(hasStatBonus(4)).toBeTrue();
     expect(hasStatBonus(0)).toBeFalse();
-    expect(hasStatBonus(-2, -1)).toBeFalse();
+    expect(hasStatBonus(-2)).toBeFalse();
   });
 });

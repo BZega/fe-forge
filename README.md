@@ -68,9 +68,9 @@ label plus `2x weapon Might` or `3x weapon Might`, respectively. Legacy `Extra`
 prefixes map to `Effective+` without changing saved or source data.
 These are text badges, not verified game icon assets.
 
-Stat values with a positive class bonus or non-class modifier are gold with a
+Stat values with a positive non-class modifier are gold with a
 small up arrow in Growth Mapper, projection results, and Character/Class details.
-Unmodified values and penalties alone use the base text color. Hover breakdowns
+Class-only bonuses, unmodified values and penalties alone use the base text color. Hover breakdowns
 separate `Base Value`, `Class`, and `Modifier`; modifiers include the applied
 (capped) equipment, mount, ability and other non-class bonuses. Base projection
 views exclude these bonuses. Class floor increases remain part of the base value.
@@ -79,6 +79,24 @@ Cai's Mag+3) in the value and Modifier tooltip. Structured Blaze source bonuses
 take precedence over legacy fallback values and are applied once, not stacked.
 The Blaze tab retains the source description without a duplicate stat bonus row.
 Bonus arrows sit outside the value's layout box so stat alignment is unchanged.
+Character recruitment growth rates also use the gold indicator for personal
+growth bonuses, such as Mu's +20%, retaining their base/bonus hover breakdown.
+Growth Mapper growth rows likewise highlight positive mount and personal growth
+modifiers, with Base Value / Class / Modifier percentage tooltips for each row's
+current class and mount. Class growth alone does not trigger a gold indicator.
+Class growth gates apply after gaining stats at Lv 35/45 for Charioteer and
+Lv 45 for Elephant Rider: the new growth starts at Lv 36/46 and Lv 46, respectively.
+Charioteer doubles its selected mount's growth bonuses.
+A Riding-icon button beside each mounted timeline level opens Mount and Bond Level
+controls, including on exam/reclass branches. Changes apply to that level's growth
+and all subsequent levels until changed again, without altering earlier levels.
+Use **Use previous mount** to remove a level's override. Mount changes persist with
+the map and are included in projected history; Seed setup retains its starting-mount
+controls. Shared ancestor levels must be edited on their own timeline.
+The header's **Exam / Reclass** action adds a level to the selected timeline;
+**Current** follows the latest branch.
+Riding icons are silver without mount bonuses, gold with mount bonuses, and black
+with a gold outline while that level's picker is open.
 Usable skills use a gold border, retaining the normal green panel background and
 the boon/bane icon colors.
 

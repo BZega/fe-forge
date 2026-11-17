@@ -92,16 +92,33 @@
               <span class="tgrid-class">{{ growthRow.className }}</span>
             </div>
             @for (stat of statKeys; track stat) {
-              <div class="tgrid-growth" [class.negative]="growthRow.growth[stat] < 0">{{ growthRow.growth[stat] }}%</div>
+              <div class="tgrid-growth" [class.negative]="growthRow.growth[stat] < 0" [title]="growthRow.details[stat].title"><span [class.stat-bonus]="growthRow.details[stat].boosted">{{ growthRow.growth[stat] }}%</span></div>
             }
             <div class="tgrid-corner"></div>
           </div>
         }
 
         @if (asLevel(item); as level) {
-          <div class="tgrid-label" [title]="level.className">
-            <span class="tgrid-level">Lv {{ level.level }}</span>
-            <span class="tgrid-class">{{ level.className }}</span>
+          <div class="tgrid-label" [class.tgrid-label--mount]="level.mount" [title]="level.className">
+            <span class="tgrid-level-line">
+              <span class="tgrid-level">Lv {{ level.level }}</span>
+              @if (level.mount) {
+                <button
+                  type="button"
+                  class="mount-button"
+                  [class.mount-button--selected]="level.mountEditable && mountEditorKey() === level.key"
+                  [disabled]="!level.mountEditable"
+                  [title]="level.mount.name + (level.bondLevel === null ? '' : ' · Bond Lv ' + level.bondLevel) + (level.mountEditable ? ': change from Lv ' + level.level : ': focus this timeline to edit')"
+                  [attr.aria-label]="'Change mount at Lv ' + level.level"
+                  [attr.aria-expanded]="mountEditorKey() === level.key"
+                  [attr.aria-controls]="level.key + '-mount'"
+                  (click)="mountEditorKey.set(mountEditorKey() === level.key ? null : level.key)"
+                >
+                  <img [src]="mountIcon(level)" alt="" referrerpolicy="no-referrer"
+                    (error)="useFallbackIcon($event, mountFallbackIcon(level))" />
+                </button>
+              }
+            </span>
           </div>
 
           @for (stat of statKeys; track stat) {
@@ -129,6 +146,39 @@
           >
             +
           </button>
+
+          @if (level.mount && level.mountEditable && mountEditorKey() === level.key) {
+            <div class="tgrid-mount-editor" role="group" [id]="level.key + '-mount'" [attr.aria-label]="'Mount from Lv ' + level.level">
+              <span class="mount-editor-label">From Lv {{ level.level }}</span>
+              <app-searchable-select
+                label="Mount"
+                [items]="mapperRef.mountItems(mapperRef.rowClassId(level.view, level.rowIndex), level.mount.id)"
+                [clearable]="false"
+                [value]="level.mount.id"
+                (valueChange)="mapperRef.onRowMountChange(level.view, level.rowIndex, $event)"
+              />
+              @if (mapperRef.bondLevelsOf(level.mount).length > 0) {
+                <label>
+                  Bond Level
+                  <select
+                    class="timeline-select"
+                    aria-label="Bond Level"
+                    [value]="level.bondLevel"
+                    (change)="mapperRef.onRowMountLevelChange(level.view, level.rowIndex, $any($event.target).value)"
+                  >
+                    @for (bond of mapperRef.bondLevelsOf(level.mount); track bond.level) {
+                      <option [value]="bond.level" [selected]="bond.level === level.bondLevel">Level {{ bond.level }}</option>
+                    }
+                  </select>
+                </label>
+              }
+              @if (level.view.section.rows[level.rowIndex].mount) {
+                <button type="button" class="ghost-button" (click)="mapperRef.clearRowMount(level.view, level.rowIndex)">Use previous mount</button>
+              }
+              <button type="button" class="ghost-button" (click)="mountEditorKey.set(null)">Done</button>
+              <span class="mount-editor-hint">Applies to this level and later levels until changed again.</span>
+            </div>
+          }
 
           @if (level.note) {
             <div class="tgrid-note">{{ level.note }}</div>

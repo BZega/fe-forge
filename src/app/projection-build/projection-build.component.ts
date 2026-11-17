@@ -319,7 +319,7 @@ export class ProjectionBuildComponent {
         label: this.statLabels[stat],
         distribution,
         summary,
-        boosted: hasStatBonus(classBonus, modifier),
+        boosted: hasStatBonus(modifier),
         detail: statBreakdown(this.fixed(summary.mean - classBonus - modifier), classBonus, modifier),
         growthRate: growth?.[stat] ?? null,
         actual,

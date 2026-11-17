@@ -123,16 +123,15 @@ export class CharacterPageComponent {
     const stats: Pill[] = STAT_KEYS.filter((stat) => stat !== 'hp')
       .map((stat) => ({
         label: STAT_LABELS[stat], value: String(chapterStats[stat]), tone: 'base',
-        boosted: hasStatBonus(unitClass?.bonusStats[stat] ?? 0, modifiers[stat]),
+        boosted: hasStatBonus(modifiers[stat]),
         detail: statBreakdown(chapter.stats[stat], unitClass?.bonusStats[stat] ?? 0, modifiers[stat]),
       }));
     const profile: Pill[] = [
       { label: STAT_LABELS.hp, value: String(chapterStats.hp), tone: 'base', wide: true,
-        boosted: hasStatBonus(unitClass?.bonusStats.hp ?? 0, modifiers.hp),
+        boosted: hasStatBonus(modifiers.hp),
         detail: statBreakdown(chapter.stats.hp, unitClass?.bonusStats.hp ?? 0, modifiers.hp) },
       { label: 'Lv', value: String(chapter.level), tone: 'base', wide: true },
       { label: 'Mov', value: unitClass ? String(BASE_MOVE + unitClass.bonusStats.mov) : '—', tone: 'base',
-        boosted: (unitClass?.bonusStats.mov ?? 0) > 0,
         detail: statBreakdown(unitClass ? BASE_MOVE : '—', unitClass?.bonusStats.mov ?? 0) },
       { label: 'Bld', value: String(buildFromStrength(strength)), tone: 'base' },
     ];
@@ -154,6 +153,7 @@ export class CharacterPageComponent {
             label: STAT_LABELS[stat],
             value: `${growth.growth[stat]}%`,
             tone: toneOf(growth.growth[stat]),
+            boosted: hasStatBonus(bonus?.[stat] ?? 0),
             wide: stat === 'hp',
             detail:
               baseUnit && bonus && bonus[stat] !== 0

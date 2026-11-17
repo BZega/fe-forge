@@ -98,7 +98,6 @@ export class ClassPageComponent {
       label: this.bonusStatLabels[stat],
       value: this.signed(stats?.[stat] ?? 0),
       tone: this.tone(stats?.[stat] ?? 0),
-      boosted: (stats?.[stat] ?? 0) > 0,
       detail: statBreakdown(0, stats?.[stat] ?? 0),
     }));
   });

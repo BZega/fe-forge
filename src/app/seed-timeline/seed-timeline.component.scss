@@ -120,6 +120,76 @@
   text-transform: uppercase;
 }
 
+.tgrid-label--mount {
+  position: relative;
+  padding-right: 1.7rem;
+}
+
+.tgrid-level-line {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.mount-button {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+
+  img {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  &:hover:not(:disabled),
+  &:focus-visible,
+  &--selected {
+    border-color: var(--accent);
+    background: #1b3639;
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.55;
+  }
+}
+
+.tgrid-mount-editor {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  background: #1b3639;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  font-size: 0.8rem;
+
+  app-searchable-select {
+    flex: 1 1 12rem;
+    min-width: 0;
+  }
+}
+
+.mount-editor-label {
+  font-weight: 700;
+}
+
+.mount-editor-hint {
+  flex-basis: 100%;
+  opacity: 0.7;
+}
+
 .tgrid-class {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -326,6 +396,19 @@
 
   .tgrid-class {
     display: none;
+  }
+
+  .tgrid-label--mount {
+    padding-right: 1.4rem;
+  }
+
+  .mount-button {
+    padding: 0.1rem;
+
+    img {
+      width: 1rem;
+      height: 1rem;
+    }
   }
 
   .tgrid-note {

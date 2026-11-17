@@ -192,7 +192,7 @@ export class ProjectionDialogComponent implements OnInit {
         bonus: classBonus,
         extraBonus: shown[stat] - classBonus,
         total,
-        boosted: hasStatBonus(appliedClass, modifier),
+        boosted: hasStatBonus(modifier),
         detail: statBreakdown(this.fixed(projected[stat]), appliedClass, modifier),
         actualDetail: shownActual === null ? '' :
           statBreakdown(shownActual - appliedClass - modifier, appliedClass, modifier),

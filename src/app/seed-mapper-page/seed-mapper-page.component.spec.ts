@@ -426,7 +426,7 @@ describe('SeedMapperPageComponent starting stats', () => {
     });
 
     it('adds a new level that starts with the reclass from Exam / Reclass', () => {
-      component.openLatestExam();
+      component.openAppendExam(seed());
       component.onExamConfirmed(reclassDraft(hunter().id));
 
       expect(rows().length).toBe(3);
@@ -486,7 +486,7 @@ describe('SeedMapperPageComponent starting stats', () => {
 
     it('adds a level that starts with the exam from Exam / Reclass, in the same section', () => {
       state.setUnit(unitId('Hong Hua'));
-      component.openLatestExam();
+      component.openAppendExam(seed());
       component.onExamConfirmed(examDraft(hunter().id));
 
       expect(state.seedMap().sections.length).toBe(1);

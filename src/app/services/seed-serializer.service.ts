@@ -46,6 +46,13 @@ export class SeedSerializerService {
         equipment: [...(section.equipment ?? [])],
         weapon: section.weapon,
         rows: section.rows,
+        ...(section.mountChanges?.length ? {
+          mountChanges: section.mountChanges.map((change) => ({
+            row: change.rowIndex,
+            mount: this.nameOf(this.mounts(), change.mountId),
+            mountLevel: change.mountLevel,
+          })),
+        } : {}),
         reclasses: section.reclasses.flatMap((reclass) => {
           const unitClass = this.nameOf(this.classes(), reclass.classId);
           return unitClass === null ? [] : [{ row: reclass.rowIndex, unitClass }];
@@ -93,6 +100,13 @@ export class SeedSerializerService {
         equipment: [...(section.equipment ?? [])],
         weapon: section.weapon,
         rows: section.rows,
+        ...(section.mountChanges?.length ? {
+          mountChanges: section.mountChanges.map((change) => ({
+            rowIndex: change.row,
+            mountId: this.idOf(this.mounts(), change.mount),
+            mountLevel: change.mountLevel,
+          })),
+        } : {}),
         reclasses: section.reclasses.flatMap((reclass) => {
           const classId = this.idOf(this.classes(), reclass.unitClass);
           return classId === null ? [] : [{ rowIndex: reclass.row, classId }];
@@ -135,6 +149,9 @@ export class SeedSerializerService {
     for (const section of seed.sections) {
       check(this.classes(), section.unitClass);
       check(this.mounts(), section.mount);
+      for (const change of section.mountChanges ?? []) {
+        check(this.mounts(), change.mount);
+      }
       for (const name of section.equipment ?? []) {
         if (!ITEMS.some((item) => item.Name === name)) {
           missing.add(name);

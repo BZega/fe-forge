@@ -100,16 +100,16 @@ describe('CharacterPageComponent recruitment', () => {
     expect(text('.route-status-requirement')).toEqual(['Give 3,000G · Support Lv 3 · Renown Lv 8']);
   });
 
-  it('marks class-boosted recruitment stats and provides their base/class/modifier breakdown', () => {
+  it('keeps class-only recruitment bonuses unhighlighted with a base/class/modifier breakdown', () => {
     openRecruitment();
     const view = fixture.componentInstance.chapterView()!;
     const mag = view.stats.find((row) => row.label === 'Mag')!;
     const bonus = classes.find((candidate) => candidate.name === 'Ovate')!.bonusStats.mag;
-    expect(mag.boosted).toBe(bonus > 0);
+    expect(mag.boosted).toBeFalse();
     expect(mag.detail).toBe(`Base Value 0; Class +${bonus}; Modifier +0`);
     const row = Array.from(host.querySelectorAll<HTMLElement>('.stat-row'))
       .find((row) => row.title === mag.detail && row.querySelector('.stat-row-label')!.textContent === 'Mag')!;
-    expect(row.querySelector('.stat-row-value')!.classList.contains('stat-bonus')).toBe(bonus > 0);
+    expect(row.querySelector('.stat-row-value')!.classList.contains('stat-bonus')).toBeFalse();
   });
 
   it('shows Blaze as a separate tab and displays art requirements and Manage Blaze when present', () => {
@@ -428,6 +428,12 @@ describe("CharacterPageComponent Mu's recruitment", () => {
 
       expect(hp.querySelector('.stat-row-value')!.textContent!.trim()).toBe(`${muStar.hp + noble.hp}%`);
       expect(hp.getAttribute('title')).toBe(`Base: ${mu.hp + noble.hp}% + Bonus: ${muStar.hp - mu.hp}%`);
+      for (const stat of STAT_KEYS) {
+        const value = growthRow(STAT_LABELS[stat]).querySelector('.stat-row-value')!;
+        expect(value.classList.contains('stat-bonus')).toBeTrue();
+        expect(getComputedStyle(value).color).toBe('rgb(240, 192, 74)');
+        expect(getComputedStyle(value, '::after').position).toBe('absolute');
+      }
     });
   }
 
@@ -446,6 +452,7 @@ describe("CharacterPageComponent Mu's recruitment", () => {
     const { host } = open('Hong Hua');
 
     expect(host.querySelector('section[aria-labelledby="growth-title"] .stat-row[title]')).toBeNull();
+    expect(host.querySelector('section[aria-labelledby="growth-title"] .stat-bonus')).toBeNull();
   });
 });
 

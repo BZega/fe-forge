@@ -10,6 +10,7 @@ export interface SeedRow {
   marks: GrowthRates;
   reclassTo?: number;
   exam?: InlineExam;
+  mount?: { mountId: number | null; mountLevel: number };
 }
 
 export interface InlineExam {
@@ -117,6 +118,21 @@ export function classAtRow(
   }
 
   return classId;
+}
+
+export function mountAtRow(section: SeedSection, rowId: number | null): { mountId: number | null; mountLevel: number } {
+  let mount = { mountId: section.mountId, mountLevel: section.mountLevel };
+
+  if (rowId !== null) {
+    for (const row of section.rows) {
+      mount = row.mount ?? mount;
+      if (row.id === rowId) {
+        break;
+      }
+    }
+  }
+
+  return mount;
 }
 
 export function availableClassIds(
@@ -229,6 +245,9 @@ export class SeedMapperStateService {
           equipment: [...(section.equipment ?? [])],
           weapon: section.weapon,
           rows: section.rows.map((row) => ({ ...row.marks })),
+          ...(section.rows.some((row) => row.mount) ? {
+            mountChanges: section.rows.flatMap((row, rowIndex) => row.mount ? [{ rowIndex, ...row.mount }] : []),
+          } : {}),
           reclasses: section.rows.flatMap((row, rowIndex) =>
             row.reclassTo === undefined ? [] : [{ rowIndex, classId: row.reclassTo }],
           ),
@@ -250,10 +269,14 @@ export class SeedMapperStateService {
     for (const entry of snapshot.sections) {
       const rows = entry.rows.map((marks, rowIndex) => {
         const exam = entry.exams.find((candidate) => candidate.rowIndex === rowIndex);
+        const mount = entry.mountChanges?.find((candidate) => candidate.rowIndex === rowIndex);
 
         return withExam(
           withReclass(
-            { id: this.nextRowId++, marks: { ...marks } },
+            {
+              id: this.nextRowId++, marks: { ...marks },
+              ...(mount ? { mount: { mountId: mount.mountId, mountLevel: mount.mountLevel } } : {}),
+            },
             entry.reclasses.find((reclass) => reclass.rowIndex === rowIndex)?.classId ?? null,
           ),
           exam
@@ -429,6 +452,26 @@ export class SeedMapperStateService {
 
   setMountLevel(sectionId: number, mountLevel: number): void {
     this.patch(sectionId, (section) => ({ ...section, mountLevel }));
+  }
+
+  setRowMount(sectionId: number, rowId: number, mountId: number | null, mountLevel: number): void {
+    this.patch(sectionId, (section) => ({
+      ...section,
+      rows: section.rows.map((row) => row.id === rowId ? { ...row, mount: { mountId, mountLevel } } : row),
+    }));
+  }
+
+  clearRowMount(sectionId: number, rowId: number): void {
+    this.patch(sectionId, (section) => ({
+      ...section,
+      rows: section.rows.map((row) => {
+        if (row.id !== rowId) {
+          return row;
+        }
+        const { mount: _, ...rest } = row;
+        return rest;
+      }),
+    }));
   }
 
   addLevel(sectionId: number): void {
@@ -622,8 +665,8 @@ export class SeedMapperStateService {
         ...(draft.passed && draft.keepClass ? { keepClass: true } : {}),
       },
       classId: null,
-      mountId: switches ? null : parent.mountId,
-      mountLevel: switches ? DEFAULT_MOUNT_BOND_LEVEL : parent.mountLevel,
+      mountId: switches ? null : mountAtRow(parent, afterRowId).mountId,
+      mountLevel: switches ? DEFAULT_MOUNT_BOND_LEVEL : mountAtRow(parent, afterRowId).mountLevel,
       abilities: [...parent.abilities],
       equipment: [...(parent.equipment ?? [])],
       weapon: parent.weapon,
@@ -659,8 +702,8 @@ export class SeedMapperStateService {
         ...(keepClass ? { keepClass: true } : {}),
       },
       classId: null,
-      mountId: switches ? null : parent.mountId,
-      mountLevel: switches ? DEFAULT_MOUNT_BOND_LEVEL : parent.mountLevel,
+      mountId: switches ? null : mountAtRow(parent, afterRowId).mountId,
+      mountLevel: switches ? DEFAULT_MOUNT_BOND_LEVEL : mountAtRow(parent, afterRowId).mountLevel,
       abilities: [...parent.abilities],
       equipment: [...(parent.equipment ?? [])],
       weapon: parent.weapon,
@@ -932,11 +975,15 @@ function foldEndExams(sections: SeedSection[]): SeedSection[] {
       }
 
       const [first, ...rest] = section.rows;
+      const parentMount = mountAtRow(parent, exam.afterRowId);
+      const firstRow = first.mount || (section.mountId === parentMount.mountId && section.mountLevel === parentMount.mountLevel)
+        ? first
+        : { ...first, mount: { mountId: section.mountId, mountLevel: section.mountLevel } };
       const merged: SeedSection = {
         ...parent,
         rows: [
           ...parent.rows,
-          withExam(withReclass(first, null), {
+          withExam(withReclass(firstRow, null), {
             classId: exam.classId,
             chance: exam.chance,
             passed: exam.passed,
@@ -969,9 +1016,10 @@ function foldEndExams(sections: SeedSection[]): SeedSection[] {
 function canFold(section: SeedSection, parent: SeedSection, exam: SeedExam): boolean {
   const atEnd = parent.rows.length > 0 && exam.afterRowId === parent.rows.at(-1)!.id;
   const switches = switchesClass(exam);
+  const parentMount = mountAtRow(parent, exam.afterRowId);
   const sameMount = switches
-    ? section.mountId === null || section.mountId === parent.mountId
-    : section.mountId === parent.mountId && section.mountLevel === parent.mountLevel;
+    ? section.mountId === null || (section.mountId === parentMount.mountId && section.mountLevel === parentMount.mountLevel)
+    : section.mountId === parentMount.mountId && section.mountLevel === parentMount.mountLevel;
   const sameClass = !switches || section.classId === null || section.classId === exam.classId;
   const first = section.rows[0];
 

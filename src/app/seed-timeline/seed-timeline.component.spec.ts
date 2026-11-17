@@ -3,11 +3,15 @@ import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import unitClassData from '../data/unit-classes.json';
 import unitData from '../data/units.json';
-import { STAT_KEYS, StatKey, Unit, UnitClass, ZERO_GROWTH } from '../models/growth.models';
+import { CLASS_LEVEL_CONFIGS, mountGrowthAt, scaleGrowth, STAT_KEYS, StatKey, sumGrowth, toGrowth, Unit, UnitClass, ZERO_GROWTH } from '../models/growth.models';
 import { SeedMapperStateService } from '../services/seed-mapper-state.service';
 import { SeedSerializerService } from '../services/seed-serializer.service';
 import { SeedMapperPageComponent } from '../seed-mapper-page/seed-mapper-page.component';
 import { SeedTimelineComponent } from './seed-timeline.component';
+import { SearchableSelectComponent } from '../searchable-select/searchable-select.component';
+import { migrateSave } from '../models/seed-save';
+import { skillIconUrl } from '../icon-links';
+import { MAX_LEVEL } from '../services/seed-mapper-state.service';
 
 const classes = unitClassData as UnitClass[];
 const classId = (name: string) => classes.find((unitClass) => unitClass.name === name)!.id;
@@ -249,6 +253,20 @@ describe('SeedTimelineComponent', () => {
     expect(host.querySelector('.saves')).not.toBeNull();
   });
 
+  it('only shows class helper text in the growth row, not beneath each level', () => {
+    const { host } = render();
+
+    expect(host.querySelectorAll('.tgrid-level-line').length).toBeGreaterThan(0);
+    for (const label of host.querySelectorAll('.tgrid-level-line')) {
+      expect(label.parentElement!.querySelector('.tgrid-class')).toBeNull();
+    }
+    const classLabels = host.querySelectorAll('.tgrid-class');
+    expect(classLabels.length).toBeGreaterThan(0);
+    for (const label of classLabels) {
+      expect(label.closest('.tgrid-band--growth')).not.toBeNull();
+    }
+  });
+
   it('opens equipment for the focused timeline', () => {
     const { fixture, page, host } = render();
     const equipmentButton = () => Array.from(host.querySelectorAll<HTMLButtonElement>('button'))
@@ -305,6 +323,71 @@ describe('SeedTimelineComponent', () => {
     expect(select.value).toBe('current');
     expect(timeline.focused()!.section.id).toBe(second);
 
+  });
+
+  for (const reclass of [false, true]) {
+    for (const selected of [false, true]) {
+      it(`appends a ${reclass ? 'reclass' : 'exam'} to ${selected ? 'the selected branch' : 'Current'} from the header`, () => {
+        const { fixture, page, host } = render();
+        const first = state.addBranch(seed().id, seed().rows[0].id, { classId: classId('Diviner'), chance: 40, passed: false })!;
+        const latest = state.addBranch(seed().id, seed().rows[0].id, { classId: classId('Gladiator'), chance: 40, passed: false })!;
+        state.addAvailableClass(classId('Hunter'));
+        fixture.detectChanges();
+
+        const select = host.querySelector<HTMLSelectElement>('.timeline-select')!;
+        select.value = selected ? String(first) : 'current';
+        select.dispatchEvent(new Event('change'));
+        fixture.detectChanges();
+
+        const targetId = selected ? first : latest;
+        const target = () => page.sectionViews().find((view) => view.section.id === targetId)!;
+        const counts = new Map(state.seedMap().sections.map((section) => [section.id, section.rows.length]));
+        const button = toggleButton(host, 'Exam / Reclass')!;
+        expect(button.disabled).toBeFalse();
+        expect(button.title).toContain(target().title);
+        button.click();
+        fixture.detectChanges();
+
+        expect(page.examDialog()!.parentId).toBe(targetId);
+        expect(page.examDialog()!.inline).toBeTrue();
+        page.onExamConfirmed({ classId: classId('Hunter'), chance: 40, passed: true, reclass });
+        fixture.detectChanges();
+
+        for (const section of state.seedMap().sections) {
+          expect(section.rows.length).toBe(counts.get(section.id)! + (section.id === targetId ? 1 : 0));
+        }
+        const row = target().section.rows.at(-1)!;
+        if (reclass) {
+          expect(row.reclassTo).toBe(classId('Hunter'));
+        } else {
+          expect(row.exam!.classId).toBe(classId('Hunter'));
+        }
+      });
+    }
+  }
+
+  it('uses the selected timeline level limit for the header action and hint', () => {
+    const { fixture, page, host } = render();
+    const branchId = state.addBranch(seed().id, seed().rows[0].id, { classId: classId('Diviner'), chance: 40, passed: false })!;
+    const branch = () => page.sectionViews().find((view) => view.section.id === branchId)!;
+    while (page.endLevelOf(branch()) < MAX_LEVEL) {
+      state.addLevel(branchId);
+    }
+    fixture.detectChanges();
+
+    const button = toggleButton(host, 'Exam / Reclass')!;
+    expect(button.disabled).toBeTrue();
+    expect(button.title).toBe(`There is no level after Lv ${MAX_LEVEL}`);
+
+    const select = host.querySelector<HTMLSelectElement>('.timeline-select')!;
+    select.value = String(seed().id);
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(button.disabled).toBeFalse();
+    expect(button.title).toContain('Seed');
+    button.click();
+    expect(page.examDialog()!.parentId).toBe(seed().id);
   });
 
   it('returns to Current when a map is loaded', () => {
@@ -386,6 +469,362 @@ describe('SeedTimelineComponent', () => {
     );
     expect(labels.filter((label) => label.startsWith('Growth'))).toEqual(['Growth Noble/Commoner', 'Growth Gladiator']);
     expect(host.querySelectorAll('.tgrid-growth').length).toBe(2 * STAT_KEYS.length);
+  });
+
+  it('highlights Mu’s personal growth bonuses but not class growth alone', () => {
+    const { fixture, host } = render();
+    state.setUnit(unitId('Mu'));
+    fixture.detectChanges();
+    const cells = host.querySelectorAll<HTMLElement>('.tgrid-growth');
+    expect(cells.length).toBe(STAT_KEYS.length);
+    for (const cell of Array.from(cells)) {
+      expect(cell.querySelector('.stat-bonus')).not.toBeNull();
+      expect(cell.title).toContain('Modifier +20%');
+    }
+    state.setUnit(unitId('Cai'));
+    state.setClass(seed().id, classId('Gladiator'));
+    fixture.detectChanges();
+    expect(host.querySelector('.tgrid-growth .stat-bonus')).toBeNull();
+  });
+
+  it('highlights mount growth contributions and updates them when changing class', () => {
+    const { fixture, page, host } = render();
+    state.addAvailableClass(classId('Ornius Rider'));
+    page.onClassChange(page.sectionViews()[0], classId('Ornius Rider'));
+    fixture.detectChanges();
+    const mount = page.mountsForClass(classId('Ornius Rider')).find((mount) => mount.name === 'Wild Ornius')!;
+    page.onMountChange(page.sectionViews()[0], mount.id);
+    fixture.detectChanges();
+    const view = page.sectionViews()[0];
+    expect(view.mount).not.toBeNull();
+    const mountGrowth = mountGrowthAt(view.mount, view.mountLevel);
+    expect(STAT_KEYS.some((stat) => mountGrowth[stat] > 0)).toBeTrue();
+    const cells = host.querySelectorAll<HTMLElement>('.tgrid-growth');
+    STAT_KEYS.forEach((stat, index) => {
+      expect(cells[index].querySelector('.stat-bonus') !== null).toBe(mountGrowth[stat] > 0);
+      expect(cells[index].title).toContain(`Modifier ${mountGrowth[stat] >= 0 ? '+' : ''}${mountGrowth[stat]}%`);
+    });
+
+    state.setClass(seed().id, classId('Gladiator'));
+    fixture.detectChanges();
+    expect(host.querySelector('.tgrid-growth .stat-bonus')).toBeNull();
+  });
+
+  for (const name of ['Charioteer', 'Elephant Rider']) {
+    it(`applies ${name} gates after the level reaching 35 and 45, including timeline breakdowns`, () => {
+      const { fixture, page, host } = render();
+      const id = classId(name);
+      state.addAvailableClass(id);
+      state.setStatsLevel(33);
+      page.onClassChange(page.sectionViews()[0], id);
+      while (seed().rows.length < 13) {
+        state.addLevel(seed().id);
+      }
+      fixture.detectChanges();
+
+      const view = page.sectionViews()[0];
+      const at = (level: number) => page.rowGrowth(view, level - view.firstLevel)!;
+      const config = CLASS_LEVEL_CONFIGS[name];
+      const base = at(34);
+      for (const level of [34, 35, 36, 44, 45, 46]) {
+        const bonus = toGrowth(config.bonuses[level > 45 ? 45 : level > 35 ? 35 : config.levels[0]]);
+        expect(at(level)).withContext(`Lv ${level}`).toEqual(sumGrowth(base, bonus));
+        const details = page.rowGrowthDetails(view, level - view.firstLevel);
+        const unitClass = classes.find((candidate) => candidate.id === id)!;
+        expect(details.hp.title).toContain(`Class +${unitClass.hp + bonus.hp}%`);
+        expect(details.hp.boosted).toBeFalse();
+      }
+      const timeline = fixture.debugElement.query(By.directive(SeedTimelineComponent)).componentInstance as SeedTimelineComponent;
+      const growthRows = timeline.items().filter((item) => item.kind === 'growth');
+      expect(growthRows.length).toBe(name === 'Charioteer' ? 3 : 2);
+      const items = timeline.items();
+      expect(growthRows.slice(1).map((growth) => {
+        const next = items[items.indexOf(growth) + 1];
+        return next.kind === 'level' ? next.level : null;
+      })).toEqual(name === 'Charioteer' ? [36, 46] : [46]);
+      expect(host.querySelectorAll('.tgrid-band--growth').length).toBe(growthRows.length);
+    });
+  }
+
+  it('uses the pre-level-up level for class gates on branches and inline class changes', () => {
+    const { fixture, page } = render();
+    state.setStatsLevel(33);
+    const id = state.addBranch(seed().id, seed().rows[0].id, {
+      classId: classId('Charioteer'), chance: 100, passed: true,
+    })!;
+    const view = () => page.sectionViews().find((candidate) => candidate.section.id === id)!;
+    while (view().section.rows.length < 12) {
+      state.addLevel(id);
+    }
+    state.addAvailableClass(classId('Elephant Rider'));
+    const classGrowth = (name: string) => {
+      const unit = unitData.find((candidate) => candidate.id === unitId('Cai'))!;
+      return sumGrowth(toGrowth(unit), toGrowth(classes.find((candidate) => candidate.name === name)));
+    };
+    fixture.detectChanges();
+    expect(view().firstLevel).toBe(35);
+    expect(page.rowGrowth(view(), 0)).toEqual(classGrowth('Charioteer'));
+    expect(page.rowGrowth(view(), 1)).toEqual(sumGrowth(classGrowth('Charioteer'), toGrowth(CLASS_LEVEL_CONFIGS['Charioteer'].bonuses[35])));
+    state.setReclass(id, view().section.rows[10].id, classId('Elephant Rider'));
+    fixture.detectChanges();
+    expect(page.levelOf(view(), 10)).toBe(45);
+    expect(page.rowGrowth(view(), 10)).toEqual(classGrowth('Elephant Rider'));
+    expect(page.rowGrowth(view(), 11)).toEqual(sumGrowth(classGrowth('Elephant Rider'), toGrowth(CLASS_LEVEL_CONFIGS['Elephant Rider'].bonuses[45])));
+  });
+
+  it('doubles selected Charioteer mount growth through bond changes and class gates', () => {
+    const { fixture, page } = render();
+    const id = classId('Charioteer');
+    state.addAvailableClass(id);
+    state.setStatsLevel(43);
+    page.onClassChange(page.sectionViews()[0], id);
+    fixture.detectChanges();
+    const view = () => page.sectionViews()[0];
+    const mount = page.mountsForClass(id).find((candidate) =>
+      STAT_KEYS.some((stat) => mountGrowthAt(candidate, candidate.bondLevels.at(-1)?.level)[stat] > 0),
+    )!;
+    expect(mount).toBeDefined();
+    const base = page.rowGrowth(view(), 0)!;
+    const previous = page.rowMount(view(), 0);
+    const level = mount.bondLevels.at(-1)?.level ?? null;
+    page.onRowMountChange(view(), 1, mount.id);
+    if (level !== null) {
+      page.onRowMountLevelChange(view(), 1, String(level));
+    }
+    fixture.detectChanges();
+
+    const config = CLASS_LEVEL_CONFIGS['Charioteer'];
+    const mountOnly = sumGrowth(
+      base,
+      scaleGrowth(mountGrowthAt(previous.mount, previous.level), -2),
+      scaleGrowth(mountGrowthAt(mount, level), 2),
+    );
+    const expected = sumGrowth(
+      mountOnly,
+      scaleGrowth(toGrowth(config.bonuses[35]), -1),
+      toGrowth(config.bonuses[45]),
+    );
+    expect(page.rowGrowth(view(), 0)).toEqual(base);
+    expect(page.rowGrowth(view(), 1)).toEqual(mountOnly);
+    expect(page.rowGrowth(view(), 2)).toEqual(expected);
+    for (const stat of STAT_KEYS) {
+      const modifier = mountGrowthAt(mount, level)[stat] * 2;
+      expect(page.rowGrowthDetails(view(), 1)[stat].title).toContain(`Modifier +${modifier}%`);
+    }
+  });
+
+  it('lets the focused branch change mounts and bond levels without changing the seed', () => {
+    const { fixture, page, host } = render();
+    const branch = state.addBranch(seed().id, seed().rows[0].id, {
+      classId: classId('Ornius Rider'), chance: 100, passed: true,
+    })!;
+    fixture.detectChanges();
+    host.querySelector<HTMLButtonElement>('.mount-button')!.click();
+    fixture.detectChanges();
+    const mount = page.mountsForClass(classId('Ornius Rider')).find((mount) => mount.name === 'Wild Ornius')!;
+    const picker = fixture.debugElement.queryAll(By.directive(SearchableSelectComponent))
+      .map((element) => element.componentInstance as SearchableSelectComponent)
+      .find((select) => select.label() === 'Mount')!;
+    picker.valueChange.emit(mount.id);
+    fixture.detectChanges();
+    const view = page.sectionViews().find((view) => view.section.id === branch)!;
+    expect(page.rowMount(view, 0).mount?.id).toBe(mount.id);
+    expect(seed().mountId).toBeNull();
+    const bond = host.querySelector<HTMLSelectElement>('.timeline select[aria-label="Bond Level"]')!;
+    expect(bond).not.toBeNull();
+    bond.value = bond.options[bond.options.length - 1].value;
+    bond.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(state.seedMap().sections.find((section) => section.id === branch)!.rows[0].mount?.mountLevel).toBe(Number(bond.value));
+  });
+
+  it('updates mounts and bonds from a chosen level onward, leaving earlier levels unchanged', () => {
+    const { fixture, page, host } = render();
+    state.addAvailableClass(classId('Ornius Rider'));
+    page.onClassChange(page.sectionViews()[0], classId('Ornius Rider'));
+    state.addLevel(seed().id);
+    fixture.detectChanges();
+    const currentView = () => page.sectionViews()[0];
+    const original = page.rowMount(currentView(), 0).mount!;
+    const originalGrowth = page.rowGrowth(currentView(), 0)!;
+    const wild = page.mountsForClass(classId('Ornius Rider')).find((mount) => mount.name === 'Wild Ornius')!;
+    const white = page.mountsForClass(classId('Ornius Rider')).find((mount) => mount.name === 'White Ornius')!;
+    const buttons = () => host.querySelectorAll<HTMLButtonElement>('.mount-button');
+    const icons = () => Array.from(buttons()).map((button) => button.querySelector('img')!.getAttribute('src'));
+    expect(buttons().length).toBe(4);
+    expect(icons()).toEqual(Array(4).fill(skillIconUrl('riding', 'bad')));
+    buttons()[1].click();
+    fixture.detectChanges();
+    expect(icons()[1]).toBe(skillIconUrl('riding', 'neutral'));
+    expect(buttons()[1].classList.contains('mount-button--selected')).toBeTrue();
+    expect(getComputedStyle(buttons()[1]).borderTopColor).toBe('rgb(240, 192, 74)');
+    const picker = fixture.debugElement.queryAll(By.directive(SearchableSelectComponent))
+      .find((element) => element.nativeElement.closest('.tgrid-mount-editor'))!
+      .componentInstance as SearchableSelectComponent;
+    picker.valueChange.emit(wild.id);
+    fixture.detectChanges();
+    let bond = host.querySelector<HTMLSelectElement>('.tgrid-mount-editor select')!;
+    bond.value = '5';
+    bond.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(page.rowMount(currentView(), 0).mount?.id).toBe(original.id);
+    expect(page.rowGrowth(currentView(), 0)).toEqual(originalGrowth);
+    expect(page.rowMount(currentView(), 1)).toEqual({ mount: wild, level: 5 });
+    expect(page.rowMount(currentView(), 3)).toEqual({ mount: wild, level: 5 });
+    expect(page.rowGrowth(currentView(), 1)!.spd - originalGrowth.spd).toBe(10);
+    expect(page.rowGrowth(currentView(), 1)!.dex - originalGrowth.dex).toBe(15);
+    expect(host.querySelectorAll('.tgrid-growth').length).toBe(2 * STAT_KEYS.length);
+    expect(icons()).toEqual([
+      skillIconUrl('riding', 'bad'),
+      skillIconUrl('riding', 'neutral'),
+      skillIconUrl('riding', 'good'),
+      skillIconUrl('riding', 'good'),
+    ]);
+
+    buttons()[2].click();
+    fixture.detectChanges();
+    expect(icons()[1]).toBe(skillIconUrl('riding', 'good'));
+    expect(buttons()[1].classList.contains('mount-button--selected')).toBeFalse();
+    expect(icons()[2]).toBe(skillIconUrl('riding', 'neutral'));
+    bond = host.querySelector<HTMLSelectElement>('.tgrid-mount-editor select')!;
+    expect(bond.value).toBe('5');
+    page.onRowMountChange(currentView(), 2, white.id);
+    page.onRowMountLevelChange(currentView(), 2, '2');
+    fixture.detectChanges();
+    expect(page.rowMount(currentView(), 1)).toEqual({ mount: wild, level: 5 });
+    expect(page.rowMount(currentView(), 2)).toEqual({ mount: white, level: 2 });
+    expect(page.rowMount(currentView(), 3)).toEqual({ mount: white, level: 2 });
+    expect(page.rowGrowth(currentView(), 2)!.res - originalGrowth.res).toBe(5);
+    const reset = Array.from(host.querySelectorAll<HTMLButtonElement>('.tgrid-mount-editor button'))
+      .find((button) => button.textContent!.includes('Use previous mount'))!;
+    reset.click();
+    fixture.detectChanges();
+    expect(seed().rows[2].mount).toBeUndefined();
+    expect(page.rowMount(currentView(), 3)).toEqual({ mount: wild, level: 5 });
+    buttons()[2].click();
+    fixture.detectChanges();
+    expect(icons()[2]).toBe(skillIconUrl('riding', 'good'));
+    page.onRowMountChange(currentView(), 2, original.id);
+    fixture.detectChanges();
+    expect(icons()[1]).toBe(skillIconUrl('riding', 'good'));
+    expect(icons()[2]).toBe(skillIconUrl('riding', 'bad'));
+    expect(icons()[3]).toBe(skillIconUrl('riding', 'bad'));
+  });
+
+  it('uses per-level mounts in ending stat bonuses and projected history, and excludes them for foot classes', () => {
+    const { fixture, page, host } = render();
+    STAT_KEYS.forEach((stat) => state.setStartStat(stat, 20));
+    state.addAvailableClass(classId('Ornius Rider'));
+    page.onClassChange(page.sectionViews()[0], classId('Ornius Rider'));
+    state.addLevel(seed().id);
+    fixture.detectChanges();
+    const currentView = () => page.sectionViews()[0];
+    const wild = page.mountsForClass(classId('Ornius Rider')).find((mount) => mount.name === 'Wild Ornius')!;
+    const before = page.endStatsOf(currentView());
+    page.onRowMountChange(currentView(), 1, wild.id);
+    page.onRowMountLevelChange(currentView(), 1, '5');
+    fixture.detectChanges();
+    const after = page.endStatsOf(currentView());
+    expect(after[STAT_KEYS.indexOf('spd')].value! - before[STAT_KEYS.indexOf('spd')].value!).toBe(2);
+    expect(after[STAT_KEYS.indexOf('dex')].value! - before[STAT_KEYS.indexOf('dex')].value!).toBe(3);
+    page.openProjection(currentView());
+    const steps = page.projection()!.history.steps;
+    expect(steps[0].mount?.name).toBe('Ornius');
+    expect(steps[1].mount?.id).toBe(wild.id);
+    expect(steps[1].bondLevel).toBe(5);
+    page.projection.set(null);
+
+    page.onMountChange(currentView(), wild.id);
+    state.addAvailableClass(classId('Gladiator'));
+    state.addReclassLevel(seed().id, classId('Gladiator'));
+    fixture.detectChanges();
+    const footRowIndex = seed().rows.length - 1;
+    expect(page.rowMount(currentView(), footRowIndex).mount).toBeNull();
+    expect(host.querySelectorAll('.mount-button').length).toBe(4);
+    expect(page.rowGrowthDetails(currentView(), footRowIndex).spd.boosted).toBeFalse();
+    expect(page.endStatsOf(currentView()).every((total) => total.mountBonus === 0)).toBeTrue();
+  });
+
+  it('preserves level mount changes through saves and inherits the mount at a branch point', () => {
+    const { fixture, page, host } = render();
+    state.addAvailableClass(classId('Ornius Rider'));
+    page.onClassChange(page.sectionViews()[0], classId('Ornius Rider'));
+    state.addLevel(seed().id);
+    state.addLevel(seed().id);
+    fixture.detectChanges();
+    const wild = page.mountsForClass(classId('Ornius Rider')).find((mount) => mount.name === 'Wild Ornius')!;
+    page.onRowMountChange(page.sectionViews()[0], 1, wild.id);
+    page.onRowMountLevelChange(page.sectionViews()[0], 1, '4');
+    const branchId = state.addBranch(seed().id, seed().rows[1].id, {
+      classId: classId('Diviner'), chance: 20, passed: false,
+    })!;
+    fixture.detectChanges();
+    let branch = page.sectionViews().find((view) => view.section.id === branchId)!;
+    expect(page.rowMount(branch, 0)).toEqual({ mount: wild, level: 4 });
+    const ancestorButtons = host.querySelectorAll<HTMLButtonElement>('.mount-button');
+    expect(ancestorButtons[0].disabled).toBeTrue();
+    expect(ancestorButtons[1].disabled).toBeTrue();
+    expect(ancestorButtons[2].disabled).toBeFalse();
+    page.onRowMountLevelChange(branch, 0, '5');
+    expect(page.rowMount(page.sectionViews()[0], 2).level).toBe(4);
+
+    const serializer = TestBed.inject(SeedSerializerService);
+    const dto = serializer.toDto(state.snapshot());
+    expect(dto.sections[0].mountChanges).toEqual([{ row: 1, mount: 'Wild Ornius', mountLevel: 4 }]);
+    expect(serializer.missingNames(dto)).toEqual([]);
+    const loaded = migrateSave(JSON.parse(JSON.stringify({ version: 2, seed: dto })));
+    state.restore(serializer.fromDto(loaded.seed), null);
+    fixture.detectChanges();
+    expect(page.rowMount(page.sectionViews()[0], 0).mount?.name).toBe('Ornius');
+    expect(page.rowMount(page.sectionViews()[0], 2)).toEqual({ mount: wild, level: 4 });
+    branch = page.sectionViews()[1];
+    expect(page.rowMount(branch, 0)).toEqual({ mount: wild, level: 5 });
+    dto.sections[0].mountChanges![0].mount = 'Missing mount';
+    expect(serializer.missingNames(dto)).toContain('Missing mount');
+  });
+
+  it('rejects invalid level mount changes when importing saves and accepts older saves', () => {
+    const { page } = render();
+    const serializer = TestBed.inject(SeedSerializerService);
+    const dto = serializer.toDto(state.snapshot());
+    expect(migrateSave({ version: 2, seed: dto }).seed.sections[0].mountChanges).toBeUndefined();
+    for (const change of [
+      { row: -1, mount: 'Wild Ornius', mountLevel: 1 },
+      { row: 99, mount: 'Wild Ornius', mountLevel: 1 },
+      { row: 0, mount: 'Wild Ornius', mountLevel: 0 },
+      { row: 0, mount: 42, mountLevel: 1 },
+    ]) {
+      const invalid = { ...dto, sections: [{ ...dto.sections[0], mountChanges: [change] }] };
+      expect(() => migrateSave({ version: 2, seed: invalid })).toThrowError();
+    }
+    dto.sections[0].mountChanges = [
+      { row: 0, mount: 'Wild Ornius', mountLevel: 1 },
+      { row: 0, mount: 'Wild Ornius', mountLevel: 2 },
+    ];
+    expect(() => migrateSave({ version: 2, seed: dto })).toThrowError();
+  });
+
+  it('keeps mount overrides when restoring and folding a single end-of-timeline exam', () => {
+    const { fixture, page } = render();
+    state.addAvailableClass(classId('Ornius Rider'));
+    page.onClassChange(page.sectionViews()[0], classId('Ornius Rider'));
+    fixture.detectChanges();
+    const wild = page.mountsForClass(classId('Ornius Rider')).find((mount) => mount.name === 'Wild Ornius')!;
+    page.onRowMountChange(page.sectionViews()[0], 2, wild.id);
+    page.onRowMountLevelChange(page.sectionViews()[0], 2, '4');
+    const branchId = state.addExam(seed().id, seed().rows[2].id, {
+      classId: classId('Diviner'), chance: 20, passed: false,
+    })!;
+    fixture.detectChanges();
+    const branch = page.sectionViews().find((view) => view.section.id === branchId)!;
+    page.onRowMountLevelChange(branch, 0, '5');
+    state.restore(state.snapshot(), null);
+    fixture.detectChanges();
+    expect(page.sectionViews().length).toBe(1);
+    expect(seed().rows[3].exam?.passed).toBeFalse();
+    expect(page.rowMount(page.sectionViews()[0], 2)).toEqual({ mount: wild, level: 4 });
+    expect(page.rowMount(page.sectionViews()[0], 3)).toEqual({ mount: wild, level: 5 });
   });
 
   it('marks modified totals gold with an up arrow and a capped breakdown', () => {

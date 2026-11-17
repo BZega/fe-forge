@@ -36,6 +36,18 @@ export interface ReclassSnapshot {
   classId: number;
 }
 
+export interface MountChangeSnapshot {
+  rowIndex: number;
+  mountId: number | null;
+  mountLevel: number;
+}
+
+export interface MountChangeDto {
+  row: number;
+  mount: string | null;
+  mountLevel: number;
+}
+
 export interface InlineExamSnapshot {
   rowIndex: number;
   classId: number | null;
@@ -58,6 +70,7 @@ export interface InlineExamDto {
 }
 
 export interface SectionSnapshot {
+  mountChanges?: MountChangeSnapshot[];
   equipment?: string[];
   exam: ExamSnapshot | null;
   classId: number | null;
@@ -97,6 +110,7 @@ export interface ExamDto {
 }
 
 export interface SectionDto {
+  mountChanges?: MountChangeDto[];
   equipment?: string[];
   exam: ExamDto | null;
   unitClass: string | null;
@@ -239,6 +253,9 @@ function readSeedMap(raw: unknown): SeedMapDto {
       equipment: readNames(section['equipment']),
       weapon: WEAPON_KEYS.find((weapon) => weapon === section['weapon']) ?? null,
       rows,
+      ...(section['mountChanges'] === undefined ? {} : {
+        mountChanges: readMountChanges(section['mountChanges'], rows.length),
+      }),
       reclasses: readReclasses(section['reclasses'], rows.length),
       exams: readInlineExams(section['exams'], rows.length),
       comparators: readComparators(section['comparators']),
@@ -377,6 +394,33 @@ function readReclasses(raw: unknown, rowCount: number): ReclassDto[] {
     return typeof row === 'number' && Number.isInteger(row) && row >= 0 && row < rowCount && unitClass
       ? [{ row, unitClass }]
       : [];
+  });
+}
+
+function readMountChanges(raw: unknown, rowCount: number): MountChangeDto[] {
+  if (!Array.isArray(raw)) {
+    return fail('mount changes must be a list');
+  }
+
+  const seen = new Set<number>();
+  return raw.map((entry) => {
+    if (!isRecord(entry)) {
+      return fail('a mount change is not an object');
+    }
+
+    const { row, mount, mountLevel } = entry;
+    if (typeof row !== 'number' || !Number.isInteger(row) || row < 0 || row >= rowCount || seen.has(row)) {
+      return fail('a mount change has an invalid or duplicate level');
+    }
+    if (mount !== null && (typeof mount !== 'string' || mount.length === 0)) {
+      return fail('a mount change has an invalid mount');
+    }
+    if (typeof mountLevel !== 'number' || !Number.isInteger(mountLevel) || mountLevel < 1) {
+      return fail('a mount change has an invalid bond level');
+    }
+
+    seen.add(row);
+    return { row, mount, mountLevel };
   });
 }
 
