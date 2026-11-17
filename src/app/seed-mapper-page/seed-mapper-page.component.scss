@@ -608,11 +608,11 @@
 }
 
 .stat-value--bonus-up {
-  color: #7ee08a;
+  color: var(--accent);
 }
 
 .stat-value--bonus-down {
-  color: #ff8d8d;
+  color: inherit;
 
   .stat-value-unknown {
     color: inherit;
@@ -991,4 +991,3 @@
     width: 100%;
   }
 }
-

@@ -3,6 +3,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { DEFAULT_MOUNT_BOND_LEVEL, GrowthRates, MAX_EQUIPPED_ABILITIES, STAT_KEYS, StatKey, WeaponKey, ZERO_GROWTH } from '../models/growth.models';
 import { EMPTY_STATS, SeedMapSnapshot, StatValues } from '../models/seed-save';
 import { GrowthDataService } from './growth-data.service';
+import { equippedItems, equipmentWeapon, hasEquipmentWeapon } from '../models/equipment';
 
 export interface SeedRow {
   id: number;
@@ -37,6 +38,7 @@ export interface SeedExam {
 }
 
 export interface SeedSection {
+  equipment?: string[];
   id: number;
   exam: SeedExam | null;
   classId: number | null;
@@ -224,6 +226,7 @@ export class SeedMapperStateService {
           mountId: section.mountId,
           mountLevel: section.mountLevel,
           abilities: [...section.abilities],
+          equipment: [...(section.equipment ?? [])],
           weapon: section.weapon,
           rows: section.rows.map((row) => ({ ...row.marks })),
           reclasses: section.rows.flatMap((row, rowIndex) =>
@@ -286,6 +289,7 @@ export class SeedMapperStateService {
         mountId: entry.mountId,
         mountLevel: entry.mountLevel,
         abilities: [...entry.abilities],
+        equipment: [...(entry.equipment ?? [])],
         weapon: entry.weapon,
         rows,
         comparators: entry.comparators.map((comparator) => ({
@@ -415,7 +419,12 @@ export class SeedMapperStateService {
   }
 
   setWeapon(sectionId: number, weapon: WeaponKey | null): void {
-    this.patch(sectionId, (section) => ({ ...section, weapon }));
+    this.patch(sectionId, (section) => hasEquipmentWeapon(section.equipment) ? section : ({ ...section, weapon }));
+  }
+
+  setEquipment(sectionId: number, names: readonly string[]): void {
+    const equipment = equippedItems(names).map((item) => item.Name);
+    this.patch(sectionId, (section) => ({ ...section, equipment, weapon: equipmentWeapon(equipment) }));
   }
 
   setMountLevel(sectionId: number, mountLevel: number): void {
@@ -616,6 +625,7 @@ export class SeedMapperStateService {
       mountId: switches ? null : parent.mountId,
       mountLevel: switches ? DEFAULT_MOUNT_BOND_LEVEL : parent.mountLevel,
       abilities: [...parent.abilities],
+      equipment: [...(parent.equipment ?? [])],
       weapon: parent.weapon,
       rows: [this.createRow()],
       comparators: [],
@@ -652,6 +662,7 @@ export class SeedMapperStateService {
       mountId: switches ? null : parent.mountId,
       mountLevel: switches ? DEFAULT_MOUNT_BOND_LEVEL : parent.mountLevel,
       abilities: [...parent.abilities],
+      equipment: [...(parent.equipment ?? [])],
       weapon: parent.weapon,
       rows: [this.createRow()],
       comparators: [],
@@ -784,6 +795,7 @@ export class SeedMapperStateService {
             mountId: null,
             mountLevel: DEFAULT_MOUNT_BOND_LEVEL,
             abilities: [],
+            equipment: [],
             weapon: null,
             rows: [this.createRow()],
             comparators: [],

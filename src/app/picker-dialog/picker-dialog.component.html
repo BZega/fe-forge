@@ -15,6 +15,24 @@
     <p class="dialog-context">{{ context() }}</p>
   }
 
+  @if (tabs().length) {
+    <div class="picker-tabs" role="tablist" aria-label="Item categories" (keydown)="onTabKeydown($event)">
+      @for (tab of tabs(); track tab; let index = $index) {
+        <button
+          type="button"
+          role="tab"
+          class="picker-tab"
+          [id]="'picker-tab-' + index"
+          aria-controls="picker-panel"
+          [class.picker-tab--active]="activeTab() === tab"
+          [attr.aria-selected]="activeTab() === tab"
+          [attr.tabindex]="activeTab() === tab ? 0 : -1"
+          (click)="activeTab.set(tab)"
+        >{{ tab }}</button>
+      }
+    </div>
+  }
+
   <div class="picker-bar">
     <input
       class="picker-search"
@@ -29,32 +47,46 @@
     </span>
   </div>
 
-  <div class="picker-list">
+  <div
+    class="picker-list"
+    id="picker-panel"
+    [attr.role]="tabs().length ? 'tabpanel' : null"
+    [attr.aria-labelledby]="tabs().length ? 'picker-tab-' + tabs().indexOf(activeTab()) : null"
+    [attr.tabindex]="tabs().length ? 0 : null"
+  >
     @for (group of filtered(); track group.label) {
       @if (group.label) {
         <p class="picker-group">{{ group.label }}</p>
       }
       @for (item of group.items; track item.id) {
-        <label class="picker-item" [class.picker-item--disabled]="isDisabled(item)" [class.picker-item--on]="isPicked(item)">
-          <input
-            type="checkbox"
-            [checked]="isPicked(item)"
-            [disabled]="isDisabled(item)"
-            (change)="toggle(item)"
-          />
-          <span class="picker-item-text">
-            <span class="picker-item-name">{{ item.name }}</span>
-            @if (item.description) {
-              <span class="picker-item-description">{{ item.description }}</span>
-            }
-            @if (item.locked) {
-              <span class="picker-item-locked">{{ item.locked }}</span>
-            }
-          </span>
-        </label>
+        @if (itemTemplate(); as template) {
+          <ng-container [ngTemplateOutlet]="template" [ngTemplateOutletContext]="{ $implicit: item, picker: this }" />
+        } @else {
+          <label class="picker-item" [class.picker-item--disabled]="isDisabled(item)" [class.picker-item--on]="isPicked(item)">
+            <input
+              type="checkbox"
+              [checked]="isPicked(item)"
+              [disabled]="isDisabled(item)"
+              (change)="toggle(item)"
+            />
+            <span class="picker-item-text">
+              <span class="picker-item-name">{{ item.name }}</span>
+              @if (item.description) {
+                <span class="picker-item-description">{{ item.description }}</span>
+              }
+              @if (item.locked) {
+                <span class="picker-item-locked">{{ item.locked }}</span>
+              }
+            </span>
+          </label>
+        }
       }
     } @empty {
-      <p class="hint">Nothing matches "{{ query() }}".</p>
+      @if (tabs().length && !query()) {
+        <p class="hint">No items in this category yet.</p>
+      } @else {
+        <p class="hint">Nothing matches "{{ query() }}".</p>
+      }
     }
   </div>
 

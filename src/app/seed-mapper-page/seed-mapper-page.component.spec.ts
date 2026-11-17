@@ -4,6 +4,7 @@ import unitClassData from '../data/unit-classes.json';
 import unitData from '../data/units.json';
 import { STAT_KEYS, Unit, UnitClass } from '../models/growth.models';
 import { migrateSave } from '../models/seed-save';
+import { ITEMS } from '../models/equipment';
 import { SeedMapperStateService } from '../services/seed-mapper-state.service';
 import { SeedSerializerService } from '../services/seed-serializer.service';
 import { SeedMapperPageComponent } from './seed-mapper-page.component';
@@ -33,6 +34,85 @@ describe('SeedMapperPageComponent starting stats', () => {
   const baseStats = () => component.endStatsOf(component.sectionViews()[0]).map((total) => total.value);
   const allow = (...names: string[]) =>
     names.forEach((name) => state.addAvailableClass(classes.find((unitClass) => unitClass.name === name)!.id));
+
+  describe('equipment', () => {
+    const sword = ITEMS.find((item) => item.Name === 'Wooden Sword')!;
+    const original = sword.BonusStats;
+    beforeEach(() => { sword.BonusStats = [{ Spd: 4, Str: 2 }]; });
+    afterEach(() => { sword.BonusStats = original; });
+
+    it('shares the stat cap with abilities and names equipment in the bonus tooltip', () => {
+      const id = state.seedMap().sections[0].id;
+      const spd = STAT_KEYS.indexOf('spd');
+      const str = STAT_KEYS.indexOf('str');
+      state.setEquipment(id, [sword.Name]);
+      let totals = component.endStatsOf(component.sectionViews()[0]);
+      expect(totals[spd].value).toBe(10 + spd + 4);
+      expect(totals[str].value).toBe(10 + str + 2);
+      expect(component.statTotalTitle(totals[spd])).toContain('Wooden Sword');
+      allow('The Blade');
+      state.setAbilities(id, ['Divine Insight']);
+      totals = component.endStatsOf(component.sectionViews()[0]);
+      expect(totals[spd].value).toBe(10 + spd + 10);
+      expect(totals[spd].capped).toBe(4);
+      expect(component.statTotalTitle(totals[spd])).toContain('Class +0; Modifier +10');
+      expect(component.statHasBonus(totals[spd])).toBeTrue();
+      state.setEquipment(id, []);
+      expect(component.endStatsOf(component.sectionViews()[0])[str].value).toBe(10 + str);
+    });
+
+    it('retains equipment through exams, serialization, migration and restoration', () => {
+      const id = state.seedMap().sections[0].id;
+      component.equipmentSectionId.set(id);
+      component.onEquipmentConfirmed([sword.Name]);
+      expect(component.equipmentSectionId()).toBeNull();
+      state.addLevel(id);
+      state.addExam(id, state.seedMap().sections[0].rows[0].id, {
+        classId: gladiator.id, chance: 100, passed: true,
+      });
+      const serializer = TestBed.inject(SeedSerializerService);
+      const seed = serializer.toDto(state.snapshot());
+      const loaded = migrateSave({ version: 2, seed });
+      state.reset();
+      state.restore(serializer.fromDto(loaded.seed), null);
+      expect(state.seedMap().sections.map((section) => section.equipment)).toEqual([[sword.Name], [sword.Name]]);
+      expect(state.seedMap().sections.map((section) => section.weapon)).toEqual(['sword', 'sword']);
+      expect(serializer.missingNames(seed)).toEqual([]);
+      seed.sections[0].equipment = ['Missing item'];
+      expect(serializer.missingNames(seed)).toContain('Missing item');
+    });
+
+    it('loads older saves without equipment', () => {
+      const serializer = TestBed.inject(SeedSerializerService);
+      const seed = serializer.toDto(state.snapshot());
+      seed.sections.forEach((section) => delete section.equipment);
+      const loaded = migrateSave({ version: 2, seed });
+      state.restore(serializer.fromDto(loaded.seed), null);
+      expect(state.seedMap().sections[0].equipment).toEqual([]);
+    });
+
+    it('preserves the exact upgrade name through serialization and restoration', () => {
+      state.setEquipment(state.seedMap().sections[0].id, ['Wooden Sword+1']);
+      const serializer = TestBed.inject(SeedSerializerService);
+      const seed = serializer.toDto(state.snapshot());
+      expect(serializer.missingNames(seed)).toEqual([]);
+      state.reset();
+      state.restore(serializer.fromDto(seed), null);
+      expect(state.seedMap().sections[0].equipment).toEqual(['Wooden Sword+1']);
+      expect(state.seedMap().sections[0].weapon).toBe('sword');
+    });
+
+    it('passes equipment to projections and hides the legacy ability weapon picker', () => {
+      component.onUnitChange(unitId('Cai'));
+      const id = state.seedMap().sections[0].id;
+      state.setEquipment(id, [sword.Name]);
+      component.openAbilityPicker(component.sectionViews()[0]);
+      expect(component.pickerConfig()!.weapon).toBeUndefined();
+      state.addLevel(id);
+      component.openProjection(component.sectionViews()[0]);
+      expect(component.projection()!.equipment).toEqual([sword.Name]);
+    });
+  });
 
   it('shows the entered stats as-is while the base section is Noble/Commoner', () => {
     state.setClass(state.seedMap().sections[0].id, noble.id);
@@ -172,7 +252,6 @@ describe('SeedMapperPageComponent starting stats', () => {
     };
     const stat = (key: (typeof STAT_KEYS)[number]) => baseStats()[STAT_KEYS.indexOf(key)]!;
     const base = (key: (typeof STAT_KEYS)[number]) => 10 + STAT_KEYS.indexOf(key);
-    // The seed's last level is one past its starting level.
     const reach = (level: number) => state.setStatsLevel(level - 1);
 
     it('is offered to Mu, under character abilities, locked until she learns it', () => {

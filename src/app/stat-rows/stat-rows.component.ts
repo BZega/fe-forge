@@ -6,6 +6,7 @@ export interface StatRowItem {
   tone: 'positive' | 'negative' | 'zero' | 'base';
   wide?: boolean;
   detail?: string;
+  boosted?: boolean;
 }
 
 @Component({
@@ -15,7 +16,7 @@ export interface StatRowItem {
       @for (item of items(); track item.label) {
         <li class="stat-row" [class.stat-row--wide]="item.wide" [attr.data-tone]="item.tone" [attr.title]="item.detail ?? null">
           <span class="stat-row-label">{{ item.label }}</span>
-          <span class="stat-row-value">{{ item.value }}</span>
+          <span class="stat-row-value" [class.stat-bonus]="item.boosted">{{ item.value }}</span>
         </li>
       }
     </ul>

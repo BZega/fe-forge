@@ -138,9 +138,14 @@ describe('ProjectionDialogComponent', () => {
 
     dialog.onAbilitiesConfirmed(['Divine Insight']);
     expect(spd()).toBeCloseTo(before + 10, 10);
+    const speed = () => dialog.projection().find((row) => row.stat === 'spd')!;
+    expect(speed().boosted).toBeTrue();
+    expect(speed().detail).toContain('Modifier +10');
 
     dialog.view.set('base');
     const base = spd();
+    expect(speed().boosted).toBeFalse();
+    expect(speed().detail).toContain('Class +0; Modifier +0');
     dialog.onAbilitiesConfirmed([]);
     expect(spd()).toBeCloseTo(base, 10);
   });

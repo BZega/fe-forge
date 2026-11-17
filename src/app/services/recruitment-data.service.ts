@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { RECRUITMENT_FILES } from '../data/recruitment';
 import { characterKey, SKILL_KEYS, SkillKey, STAT_KEYS, toGrowth } from '../models/growth.models';
+import { Item, ITEMS } from '../models/equipment';
 import {
   InventoryEntry,
   InventoryGroup,
@@ -9,6 +10,7 @@ import {
   RawChapter,
   RawPath,
   RawRecruitment,
+  RawInventoryItem,
   RecruitmentChapter,
   RecruitmentRoute,
   routeLabel,
@@ -200,10 +202,11 @@ function toChapter(chapter: RawChapter): RecruitmentChapter {
   };
 }
 
-function toInventory(inventory: Record<string, Row[] | null>): InventoryGroup[] {
+function toInventory(inventory: Record<string, RawInventoryItem[] | null>): InventoryGroup[] {
   return INVENTORY_LAYOUT.map(({ key, label, columns }) => {
     const rows = inventory[key] ?? [];
     const entries: InventoryEntry[] = rows.map((row) => ({
+      ...(key === 'CombatArts' ? {} : { item: recruitmentItem(row, key) }),
       name: String(row['Name'] ?? ''),
       description: String(row['Description'] ?? ''),
       values: Object.fromEntries(columns.map(([column, value]) => [column, display(value(row))])),
@@ -217,6 +220,32 @@ function toInventory(inventory: Record<string, Row[] | null>): InventoryGroup[] 
       entries,
     };
   }).filter((group) => group.entries.length > 0);
+}
+
+function recruitmentItem(row: RawInventoryItem, category: string): Item {
+  const catalog = ITEMS.find((item) => item.Name === row.Name);
+  const skills = row.Skills ?? (row.Skill ? [row.Skill] : catalog?.Skills ?? []);
+  const type = row.WeaponType ?? catalog?.WeaponType ??
+    (category === 'MagicTomes' ? 'Black Magic' : category === 'WhiteTomes' ? 'White Magic' :
+      skills[0]?.SkillType ?? 'Item');
+
+  return {
+    Name: row.Name,
+    Description: row.Description ?? catalog?.Description ?? '',
+    WeaponType: type,
+    Durability: row.Durability ?? (row.Uses == null ? catalog?.Durability ?? '--' : String(row.Uses)),
+    EffectiveType: row.EffectiveType ?? catalog?.EffectiveType ?? [],
+    Mt: row.Mt ?? catalog?.Mt ?? '--',
+    ...(row.Pwr === undefined ? {} : { Pwr: row.Pwr }),
+    Hit: row.Hit ?? catalog?.Hit ?? '--',
+    Crit: row.Crit ?? catalog?.Crit ?? '--',
+    Curse: row.Curse ?? catalog?.Curse ?? '--',
+    Wt: row.Wt ?? catalog?.Wt ?? '--',
+    Avo: row.Avo ?? catalog?.Avo ?? '--',
+    Range: row.Range ?? catalog?.Range ?? '--',
+    Skills: skills,
+    BonusStats: row.BonusStats ?? row.BonusStat ?? catalog?.BonusStats ?? catalog?.BonusStat ?? null,
+  };
 }
 
 function toAbility(ability: RawAbility | readonly unknown[] | null | undefined): { name: string; description: string } | null {

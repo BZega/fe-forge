@@ -1,3 +1,4 @@
+import { Item } from './equipment';
 import {
   CLASS_LEVEL_CONFIGS,
   ClassLevelConfig,
@@ -63,9 +64,31 @@ export interface RawChapter {
   Level: number;
   ClassName: string;
   SkillRanks: Record<string, string> | null;
-  Inventory: Record<string, Record<string, unknown>[] | null> | null;
+  Inventory: Record<string, RawInventoryItem[] | null> | null;
   Stats: Record<string, number> | null;
   EquippedAbilities: RawAbility[] | null;
+}
+
+export interface RawInventoryItem extends Record<string, unknown> {
+  Name: string;
+  Description: string;
+  WeaponType?: string;
+  MagicType?: string;
+  Durability?: string;
+  Uses?: number | string;
+  EffectiveType?: string[] | null;
+  Mt?: number | string;
+  Pwr?: number | string;
+  Hit?: number | string;
+  Crit?: number | string;
+  Curse?: string;
+  Wt?: number | string;
+  Avo?: number | string;
+  Range?: string;
+  Skills?: Item['Skills'] | null;
+  Skill?: Item['Skills'][number] | null;
+  BonusStats?: Item['BonusStats'];
+  BonusStat?: Item['BonusStat'];
 }
 
 // --- what the character page works with ---------------------------------------
@@ -107,6 +130,7 @@ export interface RouteRequirement {
 }
 
 export interface InventoryEntry {
+  item?: Item;
   name: string;
   description: string;
   values: Readonly<Record<string, string>>;

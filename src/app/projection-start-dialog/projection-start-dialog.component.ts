@@ -9,9 +9,12 @@ import { SearchableSelectComponent } from '../searchable-select/searchable-selec
 import { GrowthDataService } from '../services/growth-data.service';
 import { RecruitmentDataService } from '../services/recruitment-data.service';
 import { SpoilerService } from '../services/spoiler.service';
+import { EquipmentDialogComponent } from '../equipment-dialog/equipment-dialog.component';
+import { equipmentWeapon, hasEquipmentWeapon } from '../models/equipment';
 
 export type StartSource = 'chapter' | 'manual';
 export interface ProjectionStart {
+  equipment?: readonly string[];
   source: StartSource;
   unit: Unit;
   name: string;
@@ -58,7 +61,7 @@ const emptyStats = (): StatInputs => Object.fromEntries(STAT_KEYS.map((stat) => 
 
 @Component({
   selector: 'app-projection-start-dialog',
-  imports: [ClassPlanComponent, PickerDialogComponent, SearchableSelectComponent],
+  imports: [ClassPlanComponent, EquipmentDialogComponent, PickerDialogComponent, SearchableSelectComponent],
   templateUrl: './projection-start-dialog.component.html',
   styleUrls: ['../exam-dialog/exam-dialog.component.scss', './projection-start-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -172,6 +175,15 @@ export class ProjectionStartDialogComponent implements OnInit {
   }
 
   readonly abilityPickerOpen = signal(false);
+  readonly equipmentPickerOpen = signal(false);
+  readonly equipment = signal<readonly string[]>([]);
+  readonly hasEquipmentWeapon = computed(() => hasEquipmentWeapon(this.equipment()));
+
+  onEquipmentConfirmed(names: string[]): void {
+    this.equipment.set(names);
+    this.weapon.set(equipmentWeapon(names));
+    this.equipmentPickerOpen.set(false);
+  }
 
   onAbilitiesConfirmed(names: string[]): void {
     this.abilityNames.set(names);
@@ -179,6 +191,9 @@ export class ProjectionStartDialogComponent implements OnInit {
   }
 
   setWeapon(value: string): void {
+    if (this.hasEquipmentWeapon()) {
+      return;
+    }
     this.weapon.set(WEAPON_KEYS.find((weapon) => weapon === value) ?? null);
   }
 
@@ -276,6 +291,7 @@ export class ProjectionStartDialogComponent implements OnInit {
     }
 
     const bonus = inGameBonus(this.enteredName(), this.actualLevel()!, step?.unitClass ?? null, step?.mount ?? null, step?.bondLevel ?? null, {
+      equipment: this.equipment(),
       abilities: this.equippedAbilities(),
       weapon: this.weapon(),
       battalion: this.battalion(),
@@ -327,6 +343,7 @@ export class ProjectionStartDialogComponent implements OnInit {
       this.options.set({ ...initial.options });
       this.abilityNames.set((initial.abilities ?? []).map((ability) => ability.name));
       this.weapon.set(initial.weapon ?? null);
+      this.equipment.set(initial.equipment ?? []);
       this.battalion.set(initial.battalion ?? null);
       this.inGameStats.set(initial.inGameStats ?? initial.actual?.inGame ?? false);
 
@@ -425,6 +442,7 @@ export class ProjectionStartDialogComponent implements OnInit {
       ? { level: actualLevel, stats: { ...this.actualInputs() }, inGame }
       : null;
     const shared = {
+      equipment: inGame ? this.equipment() : [],
       inGameStats: entered === 'start' && inGame,
       actual,
       abilities: inGame ? this.equippedAbilities() : [],
@@ -505,7 +523,7 @@ export class ProjectionStartDialogComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   close(): void {
-    if (this.abilityPickerOpen()) {
+    if (this.abilityPickerOpen() || this.equipmentPickerOpen()) {
       return;
     }
 

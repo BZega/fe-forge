@@ -21,8 +21,7 @@
   opacity: 0.5;
 
   &--usable {
-    border-color: var(--gold-line);
-    background: var(--gold-soft);
+    border-color: var(--accent);
     opacity: 1;
   }
 }

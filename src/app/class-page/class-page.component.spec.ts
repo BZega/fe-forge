@@ -78,10 +78,16 @@ describe('ClassPageComponent class switcher keyboard', () => {
       .querySelector('.stat-row-value')!.textContent!.trim();
 
     expect(value('Spd')).toBe('+3');
+    const speed = Array.from(page.host.querySelectorAll<HTMLElement>('#stat-panel-bonus .stat-row'))
+      .find((row) => row.querySelector('.stat-row-label')!.textContent!.trim() === 'Spd')!;
+    expect(speed.title).toBe('Base Value 0; Class +3; Modifier +0');
+    expect(speed.querySelector('.stat-bonus')).not.toBeNull();
+    expect(getComputedStyle(speed.querySelector('.stat-bonus')!).color).toBe('rgb(240, 192, 74)');
     page.host.querySelector<HTMLButtonElement>('#stat-tab-base')!.click();
     page.fixture.detectChanges();
     expect(value('Spd')).toBe('8');
-    expect(value('HP')).toBe('—');
+    expect(page.host.querySelector('#stat-panel-base .stat-bonus')).toBeNull();
+    expect(value('HP')).toBe(String(unitClass.classFloorStats.hp));
   });
 
   it('places class stats in two columns with five rows on the left', () => {

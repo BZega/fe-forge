@@ -13,6 +13,9 @@ import { GrowthDataService } from '../services/growth-data.service';
 import { RecruitmentDataService } from '../services/recruitment-data.service';
 import { StatRowItem, StatRowsComponent } from '../stat-rows/stat-rows.component';
 import { SkillGridComponent } from '../skill-grid/skill-grid.component';
+import { ItemCardComponent } from '../item-card/item-card.component';
+import { hasStatBonus, statBreakdown } from '../models/stat-display';
+import { blazeBonusOf, MAX_EXTRA_BONUS } from '../models/bonuses';
 
 type Tone = 'positive' | 'negative' | 'zero' | 'base';
 
@@ -24,7 +27,7 @@ const SKILL_ICON_COLORS: Record<SkillPreference, string> = { good: 'gold', neutr
 
 @Component({
   selector: 'app-character-page',
-  imports: [GrowthCalculatorComponent, NgTemplateOutlet, ProjectionDialogComponent, RouterLink, SkillGridComponent, StatRowsComponent],
+  imports: [GrowthCalculatorComponent, ItemCardComponent, NgTemplateOutlet, ProjectionDialogComponent, RouterLink, SkillGridComponent, StatRowsComponent],
   templateUrl: './character-page.component.html',
   styleUrls: ['../styles/detail-cards.scss', './character-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -111,14 +114,26 @@ export class CharacterPageComponent {
 
     const unitClass = this.classes().find((candidate) => candidate.name === chapter.className) ?? null;
     const classMountType = this.api.mountTypeOfClass(chapter.className);
-    const chapterStats = unitClass ? sumGrowth(chapter.stats, unitClass.bonusStats) : chapter.stats;
+    const blaze = blazeBonusOf(unit.name);
+    const modifiers = toGrowth(Object.fromEntries(STAT_KEYS.map((stat) =>
+      [stat, Math.min(MAX_EXTRA_BONUS, blaze[stat])],
+    )));
+    const chapterStats = sumGrowth(chapter.stats, toGrowth(unitClass?.bonusStats ?? null), modifiers);
     const strength = chapterStats.str;
     const stats: Pill[] = STAT_KEYS.filter((stat) => stat !== 'hp')
-      .map((stat) => ({ label: STAT_LABELS[stat], value: String(chapterStats[stat]), tone: 'base' }));
+      .map((stat) => ({
+        label: STAT_LABELS[stat], value: String(chapterStats[stat]), tone: 'base',
+        boosted: hasStatBonus(unitClass?.bonusStats[stat] ?? 0, modifiers[stat]),
+        detail: statBreakdown(chapter.stats[stat], unitClass?.bonusStats[stat] ?? 0, modifiers[stat]),
+      }));
     const profile: Pill[] = [
-      { label: STAT_LABELS.hp, value: String(chapterStats.hp), tone: 'base', wide: true },
+      { label: STAT_LABELS.hp, value: String(chapterStats.hp), tone: 'base', wide: true,
+        boosted: hasStatBonus(unitClass?.bonusStats.hp ?? 0, modifiers.hp),
+        detail: statBreakdown(chapter.stats.hp, unitClass?.bonusStats.hp ?? 0, modifiers.hp) },
       { label: 'Lv', value: String(chapter.level), tone: 'base', wide: true },
-      { label: 'Mov', value: unitClass ? String(BASE_MOVE + unitClass.bonusStats.mov) : '—', tone: 'base' },
+      { label: 'Mov', value: unitClass ? String(BASE_MOVE + unitClass.bonusStats.mov) : '—', tone: 'base',
+        boosted: (unitClass?.bonusStats.mov ?? 0) > 0,
+        detail: statBreakdown(unitClass ? BASE_MOVE : '—', unitClass?.bonusStats.mov ?? 0) },
       { label: 'Bld', value: String(buildFromStrength(strength)), tone: 'base' },
     ];
     const { growthUnit, baseUnit } = this.growthUnitsFor(unit);

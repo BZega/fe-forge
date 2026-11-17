@@ -5,6 +5,37 @@
   max-height: min(80vh, 680px);
 }
 
+.picker-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--panel-border);
+  margin-top: 0.75rem;
+}
+
+.picker-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.6rem;
+  opacity: 0.7;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+  }
+
+  &--active {
+    border-bottom-color: var(--accent);
+    color: var(--accent);
+    opacity: 1;
+  }
+}
+
 .picker-bar {
   display: flex;
   align-items: center;

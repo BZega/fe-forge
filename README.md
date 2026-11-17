@@ -15,7 +15,7 @@ with the reference pages.
 
 | Page | What it does |
 | --- | --- |
-| Growth Mapper | Mark which stats rose on each level up to map a save's fixed growth rolls, then replay them through other classes (comparators), exams and reclasses. Includes a timeline view, Seed RNG roll ranges and saves |
+| Growth Mapper | Mark which stats rose on each level up to map a save's fixed growth rolls, then explore exam and reclass branches. Uses the Timeline view exclusively, with Seed RNG roll ranges and saves |
 | Calculator | Stacks unit + class + mount growths; compare any two calculators side by side, using **Change** in the comparison to switch either build's unit, class (and its level), mount or bond level |
 | Projected Stats | Projects a unit's stats to any level across a planned class path, with each stat's average, spread and histogram; compare two builds side by side |
 
@@ -30,6 +30,74 @@ with the reference pages.
 
 The nav bar also has **Suggestions** (send feedback) and **Spoilers** (hide War Arc,
 Salvation Arc and DLC units, classes and mounts).
+
+### Equipment
+
+Projected Stats (in-game view and in-game stat entry) and each Growth Mapper
+section have an **Equipment** modal. Weapons are separated into Sword, Spear,
+Axe, Bow and Gauntlets tabs; Shield, Mask, Staff and Accessory share the Equipment
+tab. Other weapon types in the catalog get their own tabs. Equip one weapon, plus one each of Shield,
+Mask, Staff, and Accessory. Selecting another item in the same slot replaces it;
+untick an item to remove it. Changes apply only on Confirm.
+Item details are collapsed initially. Click or tap an item's name or disclosure
+arrow to show or hide its details; use its checkbox to equip or unequip it.
+Only one item's details can be open at a time.
+Weapon names show their skill icon. Expanded details show the description,
+then two columns: Mt/Hit/Crit/Curse and Wt/Avo/Rng/Skill, with skill icons beside
+the required ranks. Durability stays visible beside the dropdown arrow on the
+item's top row; effectiveness and bonus stats appear inside the details.
+
+The standalone `ItemCardComponent` (`app-item-card`) renders this item display
+without a modal. Pass `[item]` to show a read-only card. For equip selection,
+set `[selectable]="true"`, bind `[selected]` and `[disabled]`, and handle
+`(selectionChange)`. Cards with the same `[disclosureGroup]` allow only one
+description open at a time; use a different group for each independent list.
+Character Details converts each recruitment chapter's weapons, tomes and items
+into read-only item cards using the recruitment document's values. Weapon type
+comes from `WeaponType` or the item's `Skills`/legacy `Skill` requirement; magic
+groups supply Black/White Magic. The item catalog can fill missing fields, but
+items such as Cai's Wooden Spear do not need a catalog entry. Combat arts keep
+their own display. Missing/non-applicable combat stats remain `--`, and white
+magic retains its Pwr value.
+
+Item cards display effectiveness as colored boxes containing only the target type
+(for example, `Cavalry`): orange for Effective and red for Effective+. They are centered
+between the item name and durability and visible while details are collapsed.
+Hover text and accessible labels show the full `Effective <type>` or `Effective+ <type>`
+label plus `2x weapon Might` or `3x weapon Might`, respectively. Legacy `Extra`
+prefixes map to `Effective+` without changing saved or source data.
+These are text badges, not verified game icon assets.
+
+Stat values with a positive class bonus or non-class modifier are gold with a
+small up arrow in Growth Mapper, projection results, and Character/Class details.
+Unmodified values and penalties alone use the base text color. Hover breakdowns
+separate `Base Value`, `Class`, and `Modifier`; modifiers include the applied
+(capped) equipment, mount, ability and other non-class bonuses. Base projection
+views exclude these bonuses. Class floor increases remain part of the base value.
+Character recruitment stats also include passive Blaze modifiers (for example,
+Cai's Mag+3) in the value and Modifier tooltip. Structured Blaze source bonuses
+take precedence over legacy fallback values and are applied once, not stacked.
+The Blaze tab retains the source description without a duplicate stat bonus row.
+Bonus arrows sit outside the value's layout box so stat alignment is unchanged.
+Usable skills use a gold border, retaining the normal green panel background and
+the boon/bane icon colors.
+
+Selectable equipment cards group catalog entries such as `Wooden Sword` and
+`Wooden Sword+1` into one card with an upgrade dropdown. Blank selects the base
+item; only existing single-digit upgrades (0-9) are offered. Each upgrade uses its
+own catalog stats and name, including in saves. Changing a dropdown does not equip
+an unchecked item; equipped items switch variants in the dialog draft until confirmed.
+Read-only cards have no upgrade controls.
+The upgrade control sits directly after the base name: a down arrow for the base
+item, or a subtly outlined `+X` suffix with a highlighted border on focus.
+
+Items with no combat values or skill requirements (such as Vulnerary) show only
+their description when expanded, instead of an all-placeholder combat table.
+
+Item stat bonuses share the existing +10 per-stat non-class bonus limit with
+abilities, mounts and other bonuses. They do not change level-up growth or class
+floors. An equipped weapon also supplies the type for weapon-dependent abilities.
+Growth Mapper saves and new exam/reclass sections retain equipment by item name.
 
 ## Running it
 
@@ -83,6 +151,7 @@ so the app works with no server and no fetches:
 | `base-stats.json` | Each unit's Lv 1 base stats |
 | `class-abilities.json` | Class abilities and combat arts, with descriptions |
 | `stat-boost-abilities.json` | Abilities that raise the unit's own stats while equipped |
+| `item.json` | Weapons and equipment, including descriptions, requirements and optional flat stat bonuses |
 | `unit-skill-preferences.json` | Each unit's good/neutral/bad skill (weapon, magic, movement) preferences |
 | `battalions.json` | Battalion stat bonuses, type, rank and skill (maintained by hand) |
 
@@ -103,9 +172,16 @@ node tools/refresh-data.js https://localhost:7252 # https profile
 The other files don't come from the API, so the refresh leaves them alone; edit
 them directly.
 
-`GrowthDataService` is the only place that reads these files. It exposes the
+`GrowthDataService` reads the main growth data. It exposes the
 same observable-returning methods the HTTP service used, so nothing else in the
-app knows the difference.
+app knows the difference. The shared equipment model reads `item.json` directly.
+This catalog is a JSON array with unique `Name` values. `WeaponType` values
+`Shield`, `Mask`, `Staff`, and `Accessory` use their own slots; other types share
+the single weapon slot. `BonusStats` is null, omitted, or an array such as
+`[{"Spd": 2, "Str": 1}]`; only HP, Str, Mag, Spd, Dex, Def, Res, Lck and Cha
+(case-insensitive) contribute stat bonuses. The singular `BonusStat` is also
+accepted. Combat values such as Mt, Hit and Wt are displayed but not added to
+these stats.
 
 ### Recruitment
 

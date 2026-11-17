@@ -10,20 +10,6 @@
     <button
       type="button"
       class="ghost-button"
-      [attr.aria-pressed]="timelineView()"
-      [title]="
-        timelineView()
-          ? 'Show every section and comparator'
-          : 'One Lv 1–99 timeline at a time, with branches at each exam or reclass'
-      "
-      (click)="timelineView.set(!timelineView())"
-    >
-      {{ timelineView() ? 'Section view' : 'Timeline view' }}
-    </button>
-
-    <button
-      type="button"
-      class="ghost-button"
       [disabled]="!canOpenRng()"
       [title]="
         canOpenRng()
@@ -48,525 +34,36 @@
 </header>
 
 <div class="seeds">
-  @if (timelineView()) {
-    @if (sectionViews()[0]; as seedView) {
-      <section class="seed seed--setup" aria-label="Seed setup">
-        <header class="seed-header">
-          <h2>Seed</h2>
-          <ng-container [ngTemplateOutlet]="unitPicker" />
-          <div class="picker picker--inline">
-            <app-searchable-select
-              class="compact"
-              label="Starting Class"
-              placeholder="— Starting class —"
-              [groups]="availableClassGroups(seedView)"
-              [clearable]="false"
-              [value]="seedView.classId"
-              (valueChange)="onClassChange(seedView, $event)"
-            />
-          </div>
-          <ng-container [ngTemplateOutlet]="classesButton" [ngTemplateOutletContext]="{ view: seedView }" />
-        </header>
-
-        @if (mountsForClass(seedView.classId).length > 0) {
-          <div class="pickers">
-            <ng-container [ngTemplateOutlet]="mountPickers" [ngTemplateOutletContext]="{ view: seedView }" />
-          </div>
-        }
-
-        <ng-container [ngTemplateOutlet]="startStats" [ngTemplateOutletContext]="{ view: seedView }" />
-      </section>
-    }
-
-    <app-seed-timeline [mapper]="this" />
-  }
-
-  @for (view of timelineView() ? [] : sectionViews(); track view.section.id) {
-    @let section = view.section;
-    @let exam = section.exam;
-
-    <div
-      class="seed-group"
-      [class.seed-group--compact]="section.comparators.length === 0"
-      [id]="anchorOf(view)"
-    >
-      <section class="seed" [class.seed--exam]="!!exam">
-        <header class="seed-header">
-          <h2>{{ view.title }}</h2>
-
-          @if (exam && view.reclass) {
-            <span class="tag">Reclass</span>
-          } @else if (exam) {
-            <span class="tag" [class.tag--pass]="exam.passed" [class.tag--fail]="!exam.passed">
-              {{ exam.passed ? 'Passed' : 'Failed' }}
-            </span>
-            <span class="seed-summary">
-              {{ className(exam.classId) }} exam
-            </span>
-            <button type="button" class="ghost-button" title="Edit exam" (click)="editExam(view)">
-              <span class="label-long">Edit exam</span><span class="label-short">Edit</span>
-            </button>
-          } @else {
-            <ng-container [ngTemplateOutlet]="unitPicker" />
-            <ng-container [ngTemplateOutlet]="classesButton" [ngTemplateOutletContext]="{ view: view }" />
-          }
-
-          <button
-            type="button"
-            class="ghost-button"
-            [title]="'Stat abilities: ' + pickerSummary(equippedAbilityNames(view))"
-            (click)="openAbilityPicker(view)"
-          >
-            Abilities<span class="label-count"> ({{ equippedAbilities(view).length }}/{{ maxAbilities }})</span>
-          </button>
-
-          @if (usesWeapon(view)) {
-            <select
-              class="picker-select"
-              aria-label="Equipped weapon"
-              title="Equipped weapon, for weapon-dependent abilities"
-              [value]="section.weapon ?? ''"
-              (change)="onWeaponChange(view, $any($event.target).value)"
-            >
-              <option value="" [selected]="section.weapon === null">— Weapon —</option>
-              @for (weapon of weaponKeys; track weapon) {
-                <option [value]="weapon" [selected]="weapon === section.weapon">{{ weaponLabels[weapon] }}</option>
-              }
-            </select>
-          }
-
-          <button
-            type="button"
-            class="ghost-button"
-            [disabled]="!canAddComparator(view)"
-            title="Add comparator"
-            (click)="addComparator(view)"
-          >
-            <span class="label-long">Add comparator</span><span class="label-short">+ Comparator</span>
-          </button>
-
-          <button
-            type="button"
-            class="ghost-button"
-            [disabled]="!canProject(view)"
-            [title]="projectionHint(view)"
-            (click)="openProjection(view)"
-          >
-            <span class="label-long">Projected Stats</span><span class="label-short">Projection</span>
-          </button>
-
-          @if (exam) {
-            <button
-              type="button"
-              class="icon icon--danger"
-              [title]="
-                canRemoveSection(view)
-                  ? 'Remove this exam'
-                  : 'Remove the exams taken after this one first'
-              "
-              aria-label="Remove this exam"
-              [disabled]="!canRemoveSection(view)"
-              (click)="removeSection(view)"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z"
-                />
-              </svg>
-            </button>
-          }
-        </header>
-
-        @if (!exam) {
-          <ng-container [ngTemplateOutlet]="startStats" [ngTemplateOutletContext]="{ view: view }" />
-        }
-
-        <div class="blocks">
-          <article class="block">
-            <header class="block-header">
-              <h3>{{ view.title }}</h3>
-              <span class="tag">Base</span>
-            </header>
-
-            <ng-container [ngTemplateOutlet]="classPickers" [ngTemplateOutletContext]="{ view: view }" />
-
-            <div class="grid grid--actions" [style.--stat-count]="statKeys.length">
-              <div class="grid-corner"></div>
-              @for (stat of statKeys; track stat) {
-                <div class="grid-head">{{ statLabels[stat] }}</div>
-              }
-              <div class="grid-corner"></div>
-
-              <div class="grid-label">Growth</div>
-              @for (stat of statKeys; track stat) {
-                <div class="grid-growth" [class.negative]="view.growth[stat] < 0">
-                  {{ view.growth[stat] }}%
-                </div>
-              }
-              <div class="grid-corner"></div>
-
-              @if (exam) {
-                @let carried = startStatsOf(view);
-
-                <div class="grid-caption">
-                  Lv {{ startLevelOf(view) }} stats
-                  <span class="grid-caption-note">carried over from {{ view.parentTitle }}</span>
-                </div>
-                <div class="grid-label">Stats</div>
-                @for (stat of statKeys; track stat; let statIndex = $index) {
-                  <ng-container
-                    [ngTemplateOutlet]="statTotal"
-                    [ngTemplateOutletContext]="{ total: carried[statIndex] }"
-                  />
-                }
-                <div class="grid-corner"></div>
-              }
-
-              @if (exam && view.exam) {
-                <ng-container
-                  [ngTemplateOutlet]="examRow"
-                  [ngTemplateOutletContext]="{ view: view, exam: exam }"
-                />
-                <div class="grid-corner"></div>
-              }
-
-              @for (row of section.rows; track row.id; let rowIndex = $index) {
-                @let examHere = hasExamAt(view, rowIndex);
-                @let examSection = examSectionAt(view, rowIndex);
-                @let anchored = isBranchRow(view, rowIndex);
-                @let rowGrowths = rowGrowth(view, rowIndex);
-                @let cells = effectiveRow(rowGrowths, row, slotOf(view, rowIndex));
-
-                @if (row.exam; as inlineExam) {
-                  @let boost = inlineBoostOf(view, rowIndex);
-                  @let examOptions = inlineExamOptions(view, row);
-
-                  <div class="grid-label" [title]="'Uses the roll before Lv ' + levelOf(view, rowIndex)">
-                    <span class="level level--exam">{{ inlineExam.passed ? 'Exam' : 'Skip' }}</span>
-                  </div>
-                  <div class="grid-inline">
-                    <app-searchable-select
-                      class="compact"
-                      style="flex: 0 1 14rem; min-width: 0"
-                      label="Exam class"
-                      placeholder="— Select a class —"
-                      [groups]="examOptions"
-                      [focusGroup]="focusRank(examOptions, levelOf(view, rowIndex))"
-                      [clearable]="false"
-                      [value]="inlineExam.classId"
-                      (valueChange)="onInlineExamClass(view, row, $event)"
-                    />
-                    <input
-                      class="level-input level-input--inline"
-                      type="number"
-                      inputmode="numeric"
-                      min="0"
-                      max="100"
-                      aria-label="Pass chance"
-                      title="Pass chance %"
-                      [value]="inlineExam.chance"
-                      (change)="onInlineExamChance(view, row, $event)"
-                    />%
-                    <button
-                      type="button"
-                      class="ghost-button"
-                      [class.tag--pass]="inlineExam.passed"
-                      [class.tag--fail]="!inlineExam.passed"
-                      [attr.aria-pressed]="inlineExam.passed"
-                      [title]="inlineExam.passed ? 'Passed; click to mark as failed' : 'Failed; click to mark as passed'"
-                      (click)="onInlineExamPassed(view, row, !inlineExam.passed)"
-                    >
-                      {{ inlineExam.passed ? 'Passed' : 'Failed' }}
-                    </button>
-                    @if (inlineExam.passed) {
-                      <label class="switch-class" title="Untick to unlock the class but stay in the current one">
-                        <input
-                          type="checkbox"
-                          [checked]="!inlineExam.keepClass"
-                          (change)="onInlineExamSwitch(view, row, $any($event.target).checked)"
-                        />
-                        Switch class
-                      </label>
-                    }
-                  </div>
-                  <button
-                    type="button"
-                    class="level-remove"
-                    title="Remove this exam (keeps the level)"
-                    aria-label="Remove this exam"
-                    (click)="removeInlineExam(view, row)"
-                  >
-                    &times;
-                  </button>
-
-                  @if (hasInlineBoost(view, rowIndex)) {
-                    <div class="grid-label">Base</div>
-                    @for (stat of statKeys; track stat) {
-                      @if (boost[stat] > 0) {
-                        <div class="floor-cell" [title]="inlineBoostTitle(view, row, rowIndex, stat)">+{{ boost[stat] }}</div>
-                      } @else {
-                        <div class="grid-corner"></div>
-                      }
-                    }
-                    <div class="grid-corner"></div>
-                  }
-
-                  @if (inlineExam.passed && !inlineExam.keepClass) {
-                    <div class="grid-label">Growth</div>
-                    @for (stat of statKeys; track stat) {
-                      <div class="grid-growth" [class.negative]="(rowGrowths?.[stat] ?? 0) < 0">
-                        {{ rowGrowths?.[stat] ?? 0 }}%
-                      </div>
-                    }
-                    <div class="grid-corner"></div>
-                  }
-                }
-
-                @if (row.reclassTo !== undefined) {
-                  @let reclassChoices = reclassOptions(view, rowIndex);
-                  <div class="grid-label">
-                    <span class="level level--exam">Reclass</span>
-                  </div>
-                  <div class="grid-inline">
-                    <app-searchable-select
-                      class="compact"
-                      style="flex: 0 1 14rem; min-width: 0"
-                      label="Reclass to"
-                      placeholder="— Select a class —"
-                      [groups]="reclassChoices"
-                      [focusGroup]="focusRank(reclassChoices, levelOf(view, rowIndex))"
-                      [clearable]="false"
-                      [value]="row.reclassTo"
-                      (valueChange)="onReclassChange(view, row, $event)"
-                    />
-                    <span class="grid-caption-note">from Lv {{ levelOf(view, rowIndex) }}</span>
-                  </div>
-                  <button
-                    type="button"
-                    class="level-remove"
-                    title="Remove this reclass"
-                    aria-label="Remove this reclass"
-                    (click)="removeReclass(view, row)"
-                  >
-                    &times;
-                  </button>
-
-                  <div class="grid-label">Growth</div>
-                  @for (stat of statKeys; track stat) {
-                    <div class="grid-growth" [class.negative]="(rowGrowths?.[stat] ?? 0) < 0">
-                      {{ rowGrowths?.[stat] ?? 0 }}%
-                    </div>
-                  }
-                  <div class="grid-corner"></div>
-                }
-
-                <div class="grid-label">
-                  <span class="level">Lv {{ levelOf(view, rowIndex) }}</span>
-                  @if (rowIndex > 0) {
-                    <button
-                      type="button"
-                      class="level-remove"
-                      [title]="anchored ? 'An exam branches off at or right after this level' : 'Remove this level'"
-                      aria-label="Remove this level"
-                      [disabled]="anchored"
-                      (click)="removeLevel(view, row)"
-                    >
-                      &times;
-                    </button>
-                  }
-                </div>
-
-                @for (stat of statKeys; track stat) {
-                  <button
-                    type="button"
-                    class="cell"
-                    [class.cell--on]="cells.marks[stat] > 0"
-                    [class.cell--auto]="cells.auto[stat]"
-                    (click)="toggleStat(view, row, stat)"
-                  >
-                    {{ cells.marks[stat] }}
-                  </button>
-                }
-
-                <button
-                  type="button"
-                  class="exam-add"
-                  [class.exam-add--used]="examHere"
-                  [title]="
-                    examSection
-                      ? 'Another exam or reclass at Lv ' + levelOf(view, rowIndex) + ', beside ' + examSection.title
-                      : 'Exam in place of Lv ' + levelOf(view, rowIndex) + ', or reclass from Lv ' + levelOf(view, rowIndex)
-                  "
-                  [attr.aria-label]="'Exam or reclass at Lv ' + levelOf(view, rowIndex)"
-                  [disabled]="!canTakeExamAtRow(view, rowIndex)"
-                  (click)="openExamAt(view, rowIndex)"
-                >
-                  +
-                </button>
-              }
-
-              <ng-container
-                [ngTemplateOutlet]="endStats"
-                [ngTemplateOutletContext]="{ view: view, totals: endStatsOf(view), actions: true }"
-              />
-            </div>
-          </article>
-
-          @for (
-            comparator of section.comparators;
-            track comparator.id;
-            let comparatorIndex = $index
-          ) {
-            @let options = comparatorClasses(view, comparator);
-
-            <article class="block block--comparator">
-              <header class="block-header">
-                <h3>{{ view.title }}</h3>
-                <span class="tag">Comparator {{ comparatorIndex + 1 }}</span>
-                <button
-                  type="button"
-                  class="icon icon--danger"
-                  title="Remove this comparator"
-                  aria-label="Remove this comparator"
-                  (click)="removeComparator(view, comparator)"
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path
-                      d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 12H7L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z"
-                    />
-                  </svg>
-                </button>
-              </header>
-
-              <div class="pickers">
-                <div class="picker">
-                  <span class="picker-label">Class</span>
-                  <app-searchable-select
-                    label="Class"
-                    placeholder="— Select a class —"
-                    [items]="options"
-                    [disabled]="options.length === 0"
-                    [value]="comparator.classId"
-                    (valueChange)="onComparatorClassChange(view, comparator, $event)"
-                  />
-                </div>
-
-                @if (mountsForClass(comparator.classId).length > 0) {
-                  <div class="picker">
-                    <span class="picker-label">Mount</span>
-                    <app-searchable-select
-                      label="Mount"
-                      [items]="mountItems(comparator.classId, comparatorMountOf(comparator)?.id)"
-                      [clearable]="false"
-                      [value]="comparatorMountOf(comparator)?.id ?? null"
-                      (valueChange)="onComparatorMountChange(view, comparator, $event)"
-                    />
-                  </div>
-
-                  @let comparatorBonds = bondLevelsOf(comparatorMountOf(comparator));
-                  @if (comparatorBonds.length > 0) {
-                    @let comparatorLevel = comparatorMountLevel(comparator);
-                    <label class="picker">
-                      <span class="picker-label">Bond Level</span>
-                      <select
-                        class="picker-select"
-                        [value]="comparatorLevel"
-                        (change)="
-                          onComparatorMountLevelChange(view, comparator, $any($event.target).value)
-                        "
-                      >
-                        @for (bond of comparatorBonds; track bond.level) {
-                          <option [value]="bond.level" [selected]="bond.level === comparatorLevel">
-                            Level {{ bond.level }}
-                          </option>
-                        }
-                      </select>
-                    </label>
-                  }
-                }
-              </div>
-
-              @let comparatorGrowths = comparatorGrowth(comparator);
-
-              <div class="grid" [style.--stat-count]="statKeys.length">
-                <div class="grid-corner"></div>
-                @for (stat of statKeys; track stat) {
-                  <div class="grid-head">{{ statLabels[stat] }}</div>
-                }
-
-                <div class="grid-label">Growth</div>
-                @for (stat of statKeys; track stat) {
-                  <div
-                    class="grid-growth"
-                    [class.negative]="comparatorGrowths[stat] < 0"
-                  >
-                    {{ comparatorGrowths[stat] }}%
-                  </div>
-                }
-
-                @if (exam && view.exam) {
-                  <ng-container
-                    [ngTemplateOutlet]="examRow"
-                    [ngTemplateOutletContext]="{ view: view, exam: exam }"
-                  />
-                }
-
-                @for (
-                  row of comparator.rows;
-                  track row.id;
-                  let rowIndex = $index
-                ) {
-                  @let comparatorCells = effectiveRow(
-                    comparator.classId === null ? null : comparatorGrowths,
-                    row,
-                    slotOf(view, rowIndex)
-                  );
-
-                  <div class="grid-label">
-                    <span class="level">Lv {{ levelOf(view, rowIndex) }}</span>
-                  </div>
-
-                  @for (stat of statKeys; track stat) {
-                    <button
-                      type="button"
-                      class="cell"
-                      [class.cell--on]="comparatorCells.marks[stat] > 0"
-                      [class.cell--auto]="comparatorCells.auto[stat]"
-                      (click)="toggleComparatorStat(view, comparator, row, stat)"
-                    >
-                      {{ comparatorCells.marks[stat] }}
-                    </button>
-                  }
-                }
-
-                <ng-container
-                  [ngTemplateOutlet]="endStats"
-                  [ngTemplateOutletContext]="{
-                    view: view,
-                    totals: endStatsOf(view, comparator),
-                    actions: false,
-                  }"
-                />
-              </div>
-            </article>
-          }
+  @if (sectionViews()[0]; as seedView) {
+    <section class="seed seed--setup" aria-label="Seed setup">
+      <header class="seed-header">
+        <h2>Seed</h2>
+        <ng-container [ngTemplateOutlet]="unitPicker" />
+        <div class="picker picker--inline">
+          <app-searchable-select
+            class="compact"
+            label="Starting Class"
+            placeholder="— Starting class —"
+            [groups]="availableClassGroups(seedView)"
+            [clearable]="false"
+            [value]="seedView.classId"
+            (valueChange)="onClassChange(seedView, $event)"
+          />
         </div>
+        <ng-container [ngTemplateOutlet]="classesButton" [ngTemplateOutletContext]="{ view: seedView }" />
+      </header>
 
-        <footer class="seed-footer">
-          <button
-            type="button"
-            class="icon"
-            [title]="canAddLevel(view) ? 'Add the next level' : 'Lv ' + maxLevel + ' is the highest level'"
-            aria-label="Add the next level"
-            [disabled]="!canAddLevel(view)"
-            (click)="addLevel(view)"
-          >
-            +
-          </button>
-        </footer>
-      </section>
-    </div>
+      @if (mountsForClass(seedView.classId).length > 0) {
+        <div class="pickers">
+          <ng-container [ngTemplateOutlet]="mountPickers" [ngTemplateOutletContext]="{ view: seedView }" />
+        </div>
+      }
+
+      <ng-container [ngTemplateOutlet]="startStats" [ngTemplateOutletContext]="{ view: seedView }" />
+    </section>
   }
+
+  <app-seed-timeline [mapper]="this" />
 
   <section class="saves">
     <header class="saves-header">
@@ -724,59 +221,6 @@
   </section>
 </div>
 
-<ng-template #statTotal let-total="total">
-  @let delta = total.gained + total.floorBoost + total.classBonus + total.mountBonus + total.abilityBonus;
-  @let bonus = total.classBonus + total.mountBonus + total.abilityBonus;
-  <div
-    class="stat-value"
-    [class.stat-value--bonus-up]="bonus > 0"
-    [class.stat-value--bonus-down]="bonus < 0"
-    [title]="statTotalTitle(total)"
-  >
-    @if (total.value !== null) {
-      <span>{{ total.value }}</span>
-    } @else {
-      <span class="stat-value-unknown">{{ delta < 0 ? '' : '+' }}{{ delta }}</span>
-    }
-  </div>
-</ng-template>
-
-<ng-template #endStats let-view="view" let-totals="totals" let-actions="actions">
-  <div class="grid-caption grid-caption--end">Lv {{ endLevelOf(view) }} stats</div>
-  <div class="grid-label">Stats</div>
-  @for (stat of statKeys; track stat; let statIndex = $index) {
-    <ng-container
-      [ngTemplateOutlet]="statTotal"
-      [ngTemplateOutletContext]="{ total: totals[statIndex] }"
-    />
-  }
-  @if (actions) {
-    <div class="grid-corner"></div>
-  }
-</ng-template>
-
-<ng-template #examRow let-view="view" let-exam="exam">
-  @let boost = examBoostOf(view);
-  <div class="grid-label" [title]="'Used the Lv ' + (view.exam.level + 1) + ' roll'">
-    <span class="level level--exam">{{ examLabel(view) }}</span>
-  </div>
-
-  @for (stat of statKeys; track stat) {
-    @if (stat === 'str' && !exam.passed) {
-      <div
-        class="exam-cell exam-cell--fail"
-        [title]="className(exam.classId) + ' exam failed at ' + exam.chance + '%'"
-      >
-        ✗ {{ exam.chance }}%
-      </div>
-    } @else if (boost[stat] > 0) {
-      <div class="floor-cell" [title]="examBoostTitle(view, stat)">+{{ boost[stat] }}</div>
-    } @else {
-      <div class="blank-cell" aria-hidden="true"></div>
-    }
-  }
-</ng-template>
-
 <ng-template #unitPicker>
   <div class="picker picker--inline">
     <app-searchable-select
@@ -841,34 +285,6 @@
         />
       }
     </div>
-  </div>
-</ng-template>
-
-<ng-template #classPickers let-view="view">
-  @let exam = view.section.exam;
-
-  <div class="pickers">
-    <div class="picker">
-      <span class="picker-label">
-        Class
-        @if (exam && !exam.passed) {
-          <span class="picker-note">(unchanged)</span>
-        } @else if (exam && view.section.classId === null) {
-          <span class="picker-note">(from exam)</span>
-        }
-      </span>
-      <app-searchable-select
-        label="Class"
-        placeholder="— Select a class —"
-        [groups]="availableClassGroups(view)"
-        [clearable]="false"
-        [disabled]="!!exam && !exam.passed"
-        [value]="view.classId"
-        (valueChange)="onClassChange(view, $event)"
-      />
-    </div>
-
-    <ng-container [ngTemplateOutlet]="mountPickers" [ngTemplateOutletContext]="{ view: view }" />
   </div>
 </ng-template>
 
@@ -954,7 +370,16 @@
     [history]="projected.history"
     [actuals]="projected.actuals"
     [abilities]="projected.abilities"
+    [equipment]="projected.equipment"
     [weapon]="projected.weapon"
     (closed)="projection.set(null)"
+  />
+}
+
+@if (equipmentSection(); as section) {
+  <app-equipment-dialog
+    [selected]="section.equipment ?? []"
+    (confirmed)="onEquipmentConfirmed($event)"
+    (closed)="equipmentSectionId.set(null)"
   />
 }

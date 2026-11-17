@@ -96,4 +96,36 @@ describe('RecruitmentDataService', () => {
     expect(weapons.columns).toContain('Mt');
     expect(weapons.entries[0].values['Rank']).toMatch(/^\w+ [A-Z+]+$/);
   });
+
+  it("converts Cai's Wooden Spear directly from recruitment data into an item card model", () => {
+    const inventory = service.forUnit('Cai')!.routes.flatMap((route) => route.chapters).flatMap((chapter) => chapter.inventory);
+    const spear = inventory.flatMap((group) => group.entries).find((entry) => entry.name === 'Wooden Spear')!.item!;
+    expect(spear).toEqual(jasmine.objectContaining({
+      Name: 'Wooden Spear', WeaponType: 'Spear', Durability: '10/10',
+      Description: 'A light, simple spear made of wood.',
+      Mt: 3, Hit: 90, Crit: 0, Wt: 5, Avo: 0, Range: '1', Curse: '--',
+      EffectiveType: ['Cavalry'], Skills: [{ SkillType: 'Spear', SkillRank: 'E' }],
+    }));
+    expect(inventory.find((group) => group.label === 'Combat Arts')!.entries[0].item).toBeUndefined();
+  });
+
+  it('adapts singular Skill, magic Uses, white magic power and non-combat items without inventing stats', () => {
+    const entries = (name: string) => service.forUnit(name)!.routes.flatMap((route) => route.chapters)
+      .flatMap((chapter) => chapter.inventory).flatMap((group) => group.entries);
+    const gauntlets = entries('Mu').find((entry) => entry.name === 'Wooden Gauntlets')!.item!;
+    expect(gauntlets.WeaponType).toBe('Gauntlet');
+    expect(gauntlets.Skills).toEqual([{ SkillType: 'Gauntlet', SkillRank: 'E' }]);
+    const heal = entries('Mu').find((entry) => entry.name === 'Heal')!.item!;
+    expect(heal.WeaponType).toBe('White Magic');
+    expect(heal.Pwr).toBe('10');
+    expect(heal.Hit).toBe('--');
+    expect(heal.Durability).toBe('10');
+    const tome = entries('Hong Hua').find((entry) => entry.name === 'Bolganone')!.item!;
+    expect(tome.WeaponType).toBe('Black Magic');
+    expect(tome.Durability).toBe('0');
+    const vulnerary = entries('Eshmel').find((entry) => entry.name === 'Vulnerary')!.item!;
+    expect(vulnerary.WeaponType).toBe('Item');
+    expect(vulnerary.Mt).toBe('--');
+    expect(vulnerary.Skills).toEqual([]);
+  });
 });

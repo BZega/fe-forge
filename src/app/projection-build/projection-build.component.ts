@@ -9,6 +9,9 @@ import { PickerDialogComponent } from '../picker-dialog/picker-dialog.component'
 import { DEFAULT_PROJECTION_OPTIONS, ProjectionStart } from '../projection-start-dialog/projection-start-dialog.component';
 import { GrowthDataService } from '../services/growth-data.service';
 import { StatHistogramComponent } from '../stat-histogram/stat-histogram.component';
+import { EquipmentDialogComponent } from '../equipment-dialog/equipment-dialog.component';
+import { equipmentWeapon, hasEquipmentWeapon } from '../models/equipment';
+import { hasStatBonus, statBreakdown } from '../models/stat-display';
 
 export interface BuildResult {
   label: string;
@@ -23,6 +26,8 @@ export interface StatRow {
   label: string;
   distribution: StatDistribution;
   summary: DistributionSummary;
+  boosted: boolean;
+  detail: string;
   growthRate: number | null;
   actual: number | null;
   rank: Ranking | null;
@@ -37,7 +42,7 @@ const NO_ABILITIES: readonly StatBoostAbility[] = [];
 
 @Component({
   selector: 'app-projection-build',
-  imports: [PickerDialogComponent, StatHistogramComponent],
+  imports: [EquipmentDialogComponent, PickerDialogComponent, StatHistogramComponent],
   templateUrl: './projection-build.component.html',
   styleUrl: './projection-build.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -83,6 +88,15 @@ export class ProjectionBuildComponent {
   readonly weaponOptions = WEAPON_OPTIONS;
   readonly personalWeapon = computed(() => usesWeapon(this.start()?.name ?? '', this.level(), []));
   readonly abilityPickerOpen = signal(false);
+  readonly equipmentPickerOpen = signal(false);
+  readonly equipment = linkedSignal<readonly string[]>(() => this.start()?.equipment ?? []);
+  readonly hasEquipmentWeapon = computed(() => hasEquipmentWeapon(this.equipment()));
+
+  onEquipmentConfirmed(names: string[]): void {
+    this.equipment.set(names);
+    this.weapon.set(equipmentWeapon(names));
+    this.equipmentPickerOpen.set(false);
+  }
 
   private readonly battalions = toSignal(this.api.getBattalions(), { initialValue: [] as Battalion[] });
   readonly battalionGroups = computed(() =>
@@ -107,6 +121,9 @@ export class ProjectionBuildComponent {
   }
 
   setWeapon(value: string): void {
+    if (this.hasEquipmentWeapon()) {
+      return;
+    }
     this.weapon.set(WEAPON_KEYS.find((weapon) => weapon === value) ?? null);
   }
 
@@ -157,10 +174,11 @@ export class ProjectionBuildComponent {
   private readonly enteredGear = computed<InGameGear>(() => {
     const start = this.start();
 
-    return { abilities: start?.abilities ?? [], weapon: start?.weapon ?? null, battalion: start?.battalion ?? null };
+    return { abilities: start?.abilities ?? [], weapon: start?.weapon ?? null, battalion: start?.battalion ?? null, equipment: start?.equipment };
   });
 
   private readonly cardGear = computed<InGameGear>(() => ({
+    equipment: this.equipment(),
     abilities: this.equippedAbilities(),
     weapon: this.weapon(),
     battalion: this.battalion(),
@@ -293,12 +311,16 @@ export class ProjectionBuildComponent {
       const low = Math.min(quantile(distribution, 0.005), actual ?? Infinity);
       const high = Math.max(quantile(distribution, 0.995), actual ?? -Infinity);
       const at = (value: number) => (high === low ? 50 : ((value - low) / (high - low)) * 100);
+      const classBonus = this.view() === 'inGame' ? step?.unitClass.bonusStats[stat] ?? 0 : 0;
+      const modifier = this.viewBonus()[stat] - classBonus;
 
       return {
         stat,
         label: this.statLabels[stat],
         distribution,
         summary,
+        boosted: hasStatBonus(classBonus, modifier),
+        detail: statBreakdown(this.fixed(summary.mean - classBonus - modifier), classBonus, modifier),
         growthRate: growth?.[stat] ?? null,
         actual,
         rank,

@@ -230,7 +230,7 @@
                     <section aria-labelledby="ranks-title">
                       <div class="sheet-head">
                         <h2 class="sheet-title" id="ranks-title">Skill Lv</h2>
-                        <span class="section-hint">Highlighted = usable</span>
+                        <span class="section-hint">Gold border = usable</span>
                       </div>
                       <app-skill-grid [items]="view.skillRanks" />
                     </section>
@@ -285,11 +285,6 @@
                 <section aria-labelledby="blaze-source-title">
                   <h2 class="sheet-title" id="blaze-source-title">{{ source.name }}</h2>
                   <p class="inventory-description">{{ source.description }}</p>
-                  @if (source.statBonus; as bonus) {
-                    <ul class="inventory-stats">
-                      <li class="inventory-stat"><span class="inventory-stat-label">{{ bonus.stat }}</span>+{{ bonus.bonus }}</li>
-                    </ul>
-                  }
                 </section>
               }
             </div>
@@ -374,23 +369,26 @@
     <ul class="inventory">
       @for (entry of group.entries; track $index) {
         <li class="inventory-entry">
-          <span class="inventory-item">{{ entry.name }}</span>
-          <ul class="inventory-stats">
-            @for (column of group.columns; track column) {
-              @if (entry.values[column]) {
-                <li class="inventory-stat">
-                  <span class="inventory-stat-label">{{ column }}</span>
-                  {{ entry.values[column] }}
-                </li>
+          @if (entry.item; as item) {
+            <app-item-card [item]="item" disclosureGroup="character-recruitment-inventory" />
+          } @else {
+            <span class="inventory-item">{{ entry.name }}</span>
+            <ul class="inventory-stats">
+              @for (column of group.columns; track column) {
+                @if (entry.values[column]) {
+                  <li class="inventory-stat">
+                    <span class="inventory-stat-label">{{ column }}</span>
+                    {{ entry.values[column] }}
+                  </li>
+                }
               }
+            </ul>
+            @if (entry.description) {
+              <span class="inventory-description">{{ entry.description }}</span>
             }
-          </ul>
-          @if (entry.description) {
-            <span class="inventory-description">{{ entry.description }}</span>
           }
         </li>
       }
     </ul>
   </section>
 </ng-template>
-

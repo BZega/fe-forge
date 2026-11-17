@@ -8,6 +8,7 @@ import { BONUS_STAT_KEYS, BONUS_STAT_LABELS, CLASS_LEVEL_CONFIGS, CLASS_RANK_ORD
 import { GrowthDataService } from '../services/growth-data.service';
 import { SpoilerService } from '../services/spoiler.service';
 import { StatRowItem, StatRowsComponent } from '../stat-rows/stat-rows.component';
+import { statBreakdown } from '../models/stat-display';
 import { SkillGridComponent } from '../skill-grid/skill-grid.component';
 
 type StatTab = 'bonus' | 'base';
@@ -97,6 +98,8 @@ export class ClassPageComponent {
       label: this.bonusStatLabels[stat],
       value: this.signed(stats?.[stat] ?? 0),
       tone: this.tone(stats?.[stat] ?? 0),
+      boosted: (stats?.[stat] ?? 0) > 0,
+      detail: statBreakdown(0, stats?.[stat] ?? 0),
     }));
   });
 
@@ -106,6 +109,7 @@ export class ClassPageComponent {
       label: this.statLabels[stat],
       value: (stats?.[stat] ?? 0) > 0 ? String(stats![stat]) : '—',
       tone: (stats?.[stat] ?? 0) > 0 ? 'base' : 'zero',
+      detail: statBreakdown(stats?.[stat] ?? 0),
     }));
   });
 

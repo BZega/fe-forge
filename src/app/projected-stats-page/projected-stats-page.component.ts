@@ -28,6 +28,7 @@ export class ProjectedStatsPageComponent {
     'With Guaranteed minimum on, a level up that raises too few stats (fewer than 2 in Part I, 1 after) gets extra ones. Which stats the game picks isn’t known, so they’re assumed to be spread evenly over the stats that could have risen; turn it off to see plain independent rolls.',
     'Rolls are fixed per save (see the Growth Mapper), but until you know them each is treated as an even 0–99 roll.',
     'Compare Builds (with two or more builds) shows two of them side by side, with the chance each ends higher.',
+    'Equipment equips one weapon and one each of Shield, Mask, Staff, and Accessory. Item stat bonuses share the +10 non-class bonus limit with other bonuses in the in-game view; they do not change base growth.',
   ];
 
   private nextId = 1;

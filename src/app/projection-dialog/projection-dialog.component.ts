@@ -7,12 +7,15 @@ import { levelUpGrowth, projectStats, RecruitmentChapter, stepAtLevel } from '..
 import { PickerDialogComponent } from '../picker-dialog/picker-dialog.component';
 import { ProjectionActual } from '../projection-start-dialog/projection-start-dialog.component';
 import { GrowthDataService } from '../services/growth-data.service';
+import { EquipmentDialogComponent } from '../equipment-dialog/equipment-dialog.component';
+import { equipmentWeapon, hasEquipmentWeapon } from '../models/equipment';
+import { hasStatBonus, statBreakdown } from '../models/stat-display';
 
 export type ActualTone = 'higher' | 'even' | 'lower';
 
 @Component({
   selector: 'app-projection-dialog',
-  imports: [ClassPlanComponent, PickerDialogComponent],
+  imports: [ClassPlanComponent, EquipmentDialogComponent, PickerDialogComponent],
   templateUrl: './projection-dialog.component.html',
   styleUrls: ['../exam-dialog/exam-dialog.component.scss', './projection-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,6 +32,16 @@ export class ProjectionDialogComponent implements OnInit {
   readonly abilities = input<readonly StatBoostAbility[]>([]);
   readonly weapon = input<WeaponKey | null>(null);
   readonly battalion = input<Battalion | null>(null);
+  readonly equipment = input<readonly string[]>([]);
+  readonly chosenEquipment = linkedSignal(() => this.equipment());
+  readonly equipmentPickerOpen = signal(false);
+  readonly hasEquipmentWeapon = computed(() => hasEquipmentWeapon(this.chosenEquipment()));
+
+  onEquipmentConfirmed(names: string[]): void {
+    this.chosenEquipment.set(names);
+    this.chosenWeapon.set(equipmentWeapon(names));
+    this.equipmentPickerOpen.set(false);
+  }
 
   readonly view = signal<'base' | 'inGame'>('inGame');
 
@@ -64,6 +77,9 @@ export class ProjectionDialogComponent implements OnInit {
   }
 
   setWeapon(value: string): void {
+    if (this.hasEquipmentWeapon()) {
+      return;
+    }
     this.chosenWeapon.set(WEAPON_KEYS.find((weapon) => weapon === value) ?? null);
   }
 
@@ -154,8 +170,8 @@ export class ProjectionDialogComponent implements OnInit {
     const step = this.endStep();
     const bonusWith = (gear: InGameGear) =>
       inGameBonus(unit.name, end, step?.unitClass ?? null, step?.mount ?? null, step?.bondLevel ?? null, gear);
-    const shown = bonusWith({ abilities: this.equippedAbilities(), weapon: this.chosenWeapon(), battalion: this.chosenBattalion() });
-    const enteredWith = bonusWith({ abilities: this.abilities(), weapon: this.weapon(), battalion: this.battalion() });
+    const shown = bonusWith({ equipment: this.chosenEquipment(), abilities: this.equippedAbilities(), weapon: this.chosenWeapon(), battalion: this.chosenBattalion() });
+    const enteredWith = bonusWith({ equipment: this.equipment(), abilities: this.abilities(), weapon: this.weapon(), battalion: this.battalion() });
     const inGame = this.view() === 'inGame';
     const actual = this.actuals().find((candidate) => candidate.level === end) ?? null;
     const showActual = actual !== null;
@@ -166,6 +182,8 @@ export class ProjectionDialogComponent implements OnInit {
       const entered = showActual ? actual.stats[stat] : null;
       const shownActual =
         entered === null ? null : entered - (actual!.inGame ? enteredWith[stat] : 0) + (inGame ? shown[stat] : 0);
+      const appliedClass = inGame ? classBonus : 0;
+      const modifier = inGame ? shown[stat] - classBonus : 0;
 
       return {
         stat,
@@ -174,6 +192,10 @@ export class ProjectionDialogComponent implements OnInit {
         bonus: classBonus,
         extraBonus: shown[stat] - classBonus,
         total,
+        boosted: hasStatBonus(appliedClass, modifier),
+        detail: statBreakdown(this.fixed(projected[stat]), appliedClass, modifier),
+        actualDetail: shownActual === null ? '' :
+          statBreakdown(shownActual - appliedClass - modifier, appliedClass, modifier),
         actual: shownActual,
         tone: shownActual === null ? null : actualTone(shownActual, total),
       };
@@ -209,7 +231,7 @@ export class ProjectionDialogComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   close(): void {
-    if (this.abilityPickerOpen()) {
+    if (this.abilityPickerOpen() || this.equipmentPickerOpen()) {
       return;
     }
 

@@ -90,7 +90,10 @@
           >
             Abilities ({{ equippedAbilities().length }}/{{ maxAbilities }})
           </button>
-          @if (needsWeapon()) {
+          <button type="button" class="ghost-button" [title]="chosenEquipment().join(', ') || 'No equipment'" (click)="equipmentPickerOpen.set(true)">
+            Inventory ({{ chosenEquipment().length }}/5)
+          </button>
+          @if (needsWeapon() && !hasEquipmentWeapon()) {
             <select class="results-weapon" aria-label="Equipped weapon" (change)="setWeapon($any($event.target).value)">
               <option value="" [selected]="chosenWeapon() === null">— Weapon —</option>
               @for (key of weaponKeys; track key) {
@@ -130,13 +133,13 @@
         @for (row of projection(); track row.stat) {
           <li
             class="results-stat"
-            [title]="'Levelled ' + fixed(row.base) + (row.bonus ? ' + class bonus ' + row.bonus : '') + (row.extraBonus ? ' + other bonuses ' + row.extraBonus + ' (max 10)' : '')"
+            [title]="row.detail"
           >
             <span class="results-label">{{ row.label }}</span>
             @if (row.actual !== null) {
-              <span class="results-actual" [attr.data-tone]="row.tone" [title]="'Actual ' + row.actual">{{ row.actual }}</span>
+              <span class="results-actual" [class.stat-bonus]="row.boosted" [attr.data-tone]="row.tone" [title]="'Actual; ' + row.actualDetail">{{ row.actual }}</span>
             }
-            <span class="results-value">{{ fixed(row.total) }}</span>
+            <span class="results-value" [class.stat-bonus]="row.boosted">{{ fixed(row.total) }}</span>
           </li>
         }
       </ul>
@@ -158,10 +161,19 @@
     [selected]="equippedAbilityNames()"
     [max]="maxAbilities"
     (confirmed)="onAbilitiesConfirmed($event)"
-    [weaponOptions]="weaponOptions"
+    [weaponOptions]="hasEquipmentWeapon() ? null : weaponOptions"
     [weapon]="chosenWeapon()"
     [weaponNeeded]="personalWeapon()"
     (weaponChosen)="setWeapon($event ?? '')"
     (closed)="abilityPickerOpen.set(false)"
+  />
+}
+
+@if (equipmentPickerOpen()) {
+  <app-equipment-dialog
+    eyebrow="Projected Stats"
+    [selected]="chosenEquipment()"
+    (confirmed)="onEquipmentConfirmed($event)"
+    (closed)="equipmentPickerOpen.set(false)"
   />
 }

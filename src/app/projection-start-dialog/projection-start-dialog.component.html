@@ -180,7 +180,7 @@
       <div class="start-kind-options">
         <label>
           <input type="radio" name="stats-kind" [checked]="!inGameStats()" (change)="setInGame(false)" />
-          Base stats <small>(no class, mount or ability bonuses)</small>
+          Base stats <small>(no class, mount, equipment or ability bonuses)</small>
         </label>
         <label>
           <input type="radio" name="stats-kind" [checked]="inGameStats()" (change)="setInGame(true)" />
@@ -198,7 +198,10 @@
           >
             Abilities ({{ equippedAbilities().length }}/{{ maxAbilities }})
           </button>
-          @if (needsWeapon()) {
+          <button type="button" class="ghost-button" [title]="equipment().join(', ') || 'No equipment'" (click)="equipmentPickerOpen.set(true)">
+            Inventory ({{ equipment().length }}/5)
+          </button>
+          @if (needsWeapon() && !hasEquipmentWeapon()) {
             <select class="start-select" aria-label="Equipped weapon" (change)="setWeapon($any($event.target).value)">
               <option value="" [selected]="weapon() === null">— Weapon —</option>
               @for (key of weaponKeys; track key) {
@@ -216,7 +219,7 @@
               </optgroup>
             }
           </select>
-          <span class="start-kind-hint">Class, mount, battalion and abilities are taken off to compare.</span>
+          <span class="start-kind-hint">Class, mount, battalion, equipment and abilities are taken off to compare.</span>
         </div>
       }
     </fieldset>
@@ -306,10 +309,19 @@
     [selected]="equippedAbilityNames()"
     [max]="maxAbilities"
     (confirmed)="onAbilitiesConfirmed($event)"
-    [weaponOptions]="weaponOptions"
+    [weaponOptions]="hasEquipmentWeapon() ? null : weaponOptions"
     [weapon]="weapon()"
     [weaponNeeded]="personalWeapon()"
     (weaponChosen)="setWeapon($event ?? '')"
     (closed)="abilityPickerOpen.set(false)"
+  />
+}
+
+@if (equipmentPickerOpen()) {
+  <app-equipment-dialog
+    eyebrow="Projected Stats"
+    [selected]="equipment()"
+    (confirmed)="onEquipmentConfirmed($event)"
+    (closed)="equipmentPickerOpen.set(false)"
   />
 }

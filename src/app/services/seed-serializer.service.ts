@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Mount, Unit, UnitClass } from '../models/growth.models';
 import { SeedMapDto, SeedMapSnapshot } from '../models/seed-save';
 import { GrowthDataService } from './growth-data.service';
+import { ITEMS } from '../models/equipment';
 
 @Injectable({ providedIn: 'root' })
 export class SeedSerializerService {
@@ -42,6 +43,7 @@ export class SeedSerializerService {
         mount: this.nameOf(this.mounts(), section.mountId),
         mountLevel: section.mountLevel,
         abilities: [...section.abilities],
+        equipment: [...(section.equipment ?? [])],
         weapon: section.weapon,
         rows: section.rows,
         reclasses: section.reclasses.flatMap((reclass) => {
@@ -88,6 +90,7 @@ export class SeedSerializerService {
         mountId: this.idOf(this.mounts(), section.mount),
         mountLevel: section.mountLevel,
         abilities: [...section.abilities],
+        equipment: [...(section.equipment ?? [])],
         weapon: section.weapon,
         rows: section.rows,
         reclasses: section.reclasses.flatMap((reclass) => {
@@ -132,6 +135,11 @@ export class SeedSerializerService {
     for (const section of seed.sections) {
       check(this.classes(), section.unitClass);
       check(this.mounts(), section.mount);
+      for (const name of section.equipment ?? []) {
+        if (!ITEMS.some((item) => item.Name === name)) {
+          missing.add(name);
+        }
+      }
 
       if (section.exam) {
         check(this.classes(), section.exam.unitClass);

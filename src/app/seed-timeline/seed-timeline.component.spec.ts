@@ -184,7 +184,7 @@ describe('Seed timeline branches', () => {
     expect(ranks()).toContain('Speciality');
   });
 
-  it('lets the section view + add another exam at a level that already branches', () => {
+  it('lets an exam action add another exam at a level that already branches', () => {
     exam('Diviner');
 
     expect(page.canTakeExamAtRow(seedView(), 11)).toBeTrue();
@@ -237,18 +237,33 @@ describe('SeedTimelineComponent', () => {
       button.textContent!.includes(label),
     );
 
-  it('opens in the timeline view, with a Section view toggle in the page header', () => {
-    const { fixture, host } = render();
+  it('only offers the timeline view, without a section view toggle', () => {
+    const { host } = render();
 
     expect(host.querySelector('app-seed-timeline')).not.toBeNull();
     expect(host.querySelector('.seed-group')).toBeNull();
 
-    toggleButton(host, 'Section view')!.click();
-    fixture.detectChanges();
+    expect(toggleButton(host, 'Section view')).toBeUndefined();
+    expect(toggleButton(host, 'Timeline view')).toBeUndefined();
+    expect(host.querySelector('[aria-label="Seed setup"]')).not.toBeNull();
+    expect(host.querySelector('.saves')).not.toBeNull();
+  });
 
-    expect(host.querySelector('.seed-group')).not.toBeNull();
-    expect(host.querySelector('app-seed-timeline')).toBeNull();
-    expect(toggleButton(host, 'Timeline view')).toBeDefined();
+  it('opens equipment for the focused timeline', () => {
+    const { fixture, page, host } = render();
+    const equipmentButton = () => Array.from(host.querySelectorAll<HTMLButtonElement>('button'))
+      .find((button) => button.textContent!.includes('Inventory ('))!;
+    equipmentButton().click();
+    fixture.detectChanges();
+    expect(page.equipmentSectionId()).toBe(seed().id);
+    expect(host.querySelector('app-equipment-dialog')).not.toBeNull();
+    page.onEquipmentConfirmed(['Wooden Sword']);
+    fixture.detectChanges();
+    expect(equipmentButton().textContent).toContain('1/5');
+    expect(equipmentButton().title).toBe('Wooden Sword');
+    equipmentButton().click();
+    fixture.detectChanges();
+    expect(host.querySelector('app-equipment-dialog')).not.toBeNull();
   });
 
   it('labels each timeline with only its final branch action', () => {
@@ -290,13 +305,6 @@ describe('SeedTimelineComponent', () => {
     expect(select.value).toBe('current');
     expect(timeline.focused()!.section.id).toBe(second);
 
-    toggleButton(host, 'Section view')!.click();
-    fixture.detectChanges();
-    toggleButton(host, 'Timeline view')!.click();
-    fixture.detectChanges();
-    const restored = fixture.debugElement.query(By.directive(SeedTimelineComponent)).componentInstance as SeedTimelineComponent;
-    expect(restored.focused()!.section.id).toBe(second);
-    expect(host.querySelector<HTMLSelectElement>('.timeline-select')!.value).toBe('current');
   });
 
   it('returns to Current when a map is loaded', () => {
@@ -311,6 +319,20 @@ describe('SeedTimelineComponent', () => {
     fixture.detectChanges();
     expect(timeline.focused()!.section.id).toBe(branch);
     expect(host.querySelector<HTMLSelectElement>('.timeline-select')!.value).toBe('current');
+  });
+
+  it('focuses a newly confirmed branch when a timeline is explicitly selected', () => {
+    const { fixture, page } = render();
+    const timeline = fixture.debugElement.query(By.directive(SeedTimelineComponent)).componentInstance as SeedTimelineComponent;
+    timeline.focusBranch(seed().id);
+    fixture.detectChanges();
+
+    page.openBranchAt(page.sectionViews()[0], 0);
+    page.onExamConfirmed({ classId: classId('Diviner'), chance: 40, passed: true });
+    fixture.detectChanges();
+
+    expect(timeline.focused()!.section.id).toBe(state.seedMap().sections.at(-1)!.id);
+    expect(timeline.focused()!.section.id).not.toBe(seed().id);
   });
 
   it('shows one timeline with a switcher where exams branch off, locking rows the branch shares', () => {
@@ -364,5 +386,27 @@ describe('SeedTimelineComponent', () => {
     );
     expect(labels.filter((label) => label.startsWith('Growth'))).toEqual(['Growth Noble/Commoner', 'Growth Gladiator']);
     expect(host.querySelectorAll('.tgrid-growth').length).toBe(2 * STAT_KEYS.length);
+  });
+
+  it('marks modified totals gold with an up arrow and a capped breakdown', () => {
+    const { fixture, page, host } = render();
+    STAT_KEYS.forEach((stat) => state.setStartStat(stat, 20));
+    state.addAvailableClass(classId('The Blade'));
+    state.setAbilities(seed().id, ['Divine Insight']);
+    fixture.detectChanges();
+    const totals = page.endStatsOf(page.sectionViews()[0]);
+    const cells = host.querySelectorAll<HTMLElement>('.tgrid-total');
+    const index = STAT_KEYS.indexOf('spd');
+    const speed = cells[index].querySelector<HTMLElement>('span')!;
+    expect(speed.classList.contains('stat-bonus')).toBeTrue();
+    expect(cells[index].title).toContain('Class +0; Modifier +10');
+    expect(getComputedStyle(speed).color).toBe('rgb(240, 192, 74)');
+    expect(getComputedStyle(speed, '::after').content).toContain('↑');
+    expect(getComputedStyle(speed, '::after').position).toBe('absolute');
+    const width = speed.getBoundingClientRect().width;
+    speed.classList.remove('stat-bonus');
+    expect(speed.getBoundingClientRect().width).toBe(width);
+    expect(cells[STAT_KEYS.indexOf('hp')].querySelector('.stat-bonus')).toBeNull();
+    expect(totals[index].value).toBeGreaterThanOrEqual(30);
   });
 });

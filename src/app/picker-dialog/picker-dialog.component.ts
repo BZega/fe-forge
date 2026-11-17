@@ -1,4 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, HostListener, input, OnInit, output, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, HostListener, input, OnInit, output, signal, TemplateRef } from '@angular/core';
+
+let nextPickerId = 0;
 
 export interface PickerItem {
   id: string;
@@ -17,25 +20,30 @@ export interface WeaponOption {
 
 export interface PickerGroup {
   label: string;
+  tab?: string;
   items: readonly PickerItem[];
 }
 
 @Component({
   selector: 'app-picker-dialog',
+  imports: [NgTemplateOutlet],
   templateUrl: './picker-dialog.component.html',
   styleUrls: ['../exam-dialog/exam-dialog.component.scss', './picker-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PickerDialogComponent implements OnInit {
+  readonly disclosureGroup = `picker-details-${nextPickerId++}`;
   readonly title = input.required<string>();
   readonly eyebrow = input('Growth Mapper');
   readonly context = input('');
   readonly groups = input<readonly PickerGroup[]>([]);
+  readonly tabs = input<readonly string[]>([]);
   readonly selected = input<readonly string[]>([]);
   readonly max = input<number | null>(null);
   readonly weaponOptions = input<readonly WeaponOption[] | null>(null);
   readonly weapon = input<string | null>(null);
   readonly weaponNeeded = input(false);
+  readonly itemTemplate = input<TemplateRef<{ $implicit: PickerItem; picker: PickerDialogComponent }> | null>(null);
 
   readonly confirmed = output<string[]>();
   readonly weaponChosen = output<string | null>();
@@ -43,6 +51,7 @@ export class PickerDialogComponent implements OnInit {
 
   readonly picked = signal<string[]>([]);
   readonly query = signal('');
+  readonly activeTab = signal('');
   readonly pickedWeapon = signal<string | null>(null);
 
   private readonly items = computed(() => this.groups().flatMap((group) => group.items));
@@ -57,6 +66,7 @@ export class PickerDialogComponent implements OnInit {
     const needle = this.query().trim().toLowerCase();
 
     return this.groups()
+      .filter((group) => this.tabs().length === 0 || group.tab === this.activeTab())
       .map((group) => ({
         label: group.label,
         items: needle ? group.items.filter((item) => item.name.toLowerCase().includes(needle)) : group.items,
@@ -68,6 +78,27 @@ export class PickerDialogComponent implements OnInit {
     const fixed = this.items().filter((item) => item.fixed).map((item) => item.id);
     this.picked.set([...new Set([...fixed, ...this.selected()])]);
     this.pickedWeapon.set(this.weapon());
+    this.activeTab.set(this.tabs()[0] ?? '');
+  }
+
+  onTabKeydown(event: KeyboardEvent): void {
+    const tabs = this.tabs();
+    const current = tabs.indexOf(this.activeTab());
+    let next: number;
+
+    switch (event.key) {
+      case 'ArrowRight': next = (current + 1) % tabs.length; break;
+      case 'ArrowLeft': next = (current - 1 + tabs.length) % tabs.length; break;
+      case 'Home': next = 0; break;
+      case 'End': next = tabs.length - 1; break;
+      default: return;
+    }
+
+    event.preventDefault();
+    this.activeTab.set(tabs[next]);
+    if (event.currentTarget instanceof HTMLElement) {
+      event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next].focus();
+    }
   }
 
   readonly showWeapon = computed(

@@ -58,6 +58,7 @@ export interface InlineExamDto {
 }
 
 export interface SectionSnapshot {
+  equipment?: string[];
   exam: ExamSnapshot | null;
   classId: number | null;
   mountId: number | null;
@@ -96,6 +97,7 @@ export interface ExamDto {
 }
 
 export interface SectionDto {
+  equipment?: string[];
   exam: ExamDto | null;
   unitClass: string | null;
   mount: string | null;
@@ -234,6 +236,7 @@ function readSeedMap(raw: unknown): SeedMapDto {
       mount: readName(section['mount']),
       mountLevel: readMountLevel(section['mountLevel']),
       abilities: readNames(section['abilities']),
+      equipment: readNames(section['equipment']),
       weapon: WEAPON_KEYS.find((weapon) => weapon === section['weapon']) ?? null,
       rows,
       reclasses: readReclasses(section['reclasses'], rows.length),

@@ -1,0 +1,27 @@
+<app-picker-dialog
+  title="Equipment"
+  [eyebrow]="eyebrow()"
+  context="Equip one weapon and one each of Shield, Mask, Staff, and Accessory. Picking another item in the same slot replaces it. Stat bonuses share the +10 non-class bonus limit."
+  [groups]="groups()"
+  [tabs]="tabs()"
+  [selected]="selection()"
+  [max]="5"
+  [itemTemplate]="card"
+  (confirmed)="confirmed.emit($event)"
+  (closed)="closed.emit()"
+/>
+
+<ng-template #card let-entry let-picker="picker">
+  @if (byName().get(entry.id); as item) {
+    <app-item-card
+      [item]="item"
+      [selectable]="true"
+      [selected]="picker.isPicked(entry)"
+      [disabled]="picker.isDisabled(entry)"
+      [disclosureGroup]="picker.disclosureGroup"
+      [variants]="itemVariants(item, items())"
+      (variantChange)="changeVariant(item, $event, picker)"
+      (selectionChange)="picker.toggle(entry)"
+    />
+  }
+</ng-template>

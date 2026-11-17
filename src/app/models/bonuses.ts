@@ -1,6 +1,7 @@
 import classMountTypes from '../data/class-mount-types.json';
 import { RECRUITMENT_FILES } from '../data/recruitment';
 import statBoostData from '../data/stat-boost-abilities.json';
+import { equippedItems, equipmentWeapon, itemBoosts } from './equipment';
 import {
   abilityBoosts,
   abilityFamily,
@@ -37,16 +38,22 @@ const BLAZE_BONUSES: Readonly<Record<string, StatBoosts>> = {
   Theodora: { str: 6 },
 };
 
-type RecruitmentBlaze = { UnitId: string; BlazeBonuses?: Record<string, number> | null };
+type RecruitmentBlaze = {
+  UnitId: string;
+  BlazeBonuses?: Record<string, number> | null;
+  Blaze?: { Source?: { StatBonus?: { StatType: string; Bonus: number } | null } | null } | null;
+};
 
 export function blazeBonusOf(unitName: string): GrowthRates {
   const key = characterKey(unitName);
-  const listed = (RECRUITMENT_FILES as RecruitmentBlaze[]).find((file) => file.UnitId === key)?.BlazeBonuses;
+  const file = (RECRUITMENT_FILES as RecruitmentBlaze[]).find((file) => file.UnitId === key);
+  const listed = file?.BlazeBonuses;
+  const source = file?.Blaze?.Source?.StatBonus;
 
   return toGrowth(
     listed
       ? Object.fromEntries(Object.entries(listed).map(([stat, value]) => [stat.toLowerCase(), value]))
-      : (BLAZE_BONUSES[key] ?? null),
+      : source ? { [source.StatType.toLowerCase()]: source.Bonus } : (BLAZE_BONUSES[key] ?? null),
   );
 }
 
@@ -69,6 +76,7 @@ export function personalBonusesAt(unitName: string, level: number): PersonalBonu
 }
 
 export interface InGameGear {
+  equipment?: readonly string[];
   abilities: readonly StatBoostAbility[];
   weapon: WeaponKey | null;
   battalion: Battalion | null;
@@ -134,12 +142,14 @@ export function inGameBonus(
   gear: InGameGear,
 ): GrowthRates {
   const mounted = unitClass !== null && isMountedClass(unitClass.name);
+  const weapon = equipmentWeapon(gear.equipment, gear.weapon);
   const extras = sumGrowth(
+    ...equippedItems(gear.equipment).map(itemBoosts),
     toGrowth(mountBonusAt(mount, bondLevel)),
-    abilityBoosts(abilitiesAt(gear.abilities, level), gear.weapon),
+    abilityBoosts(abilitiesAt(gear.abilities, level), weapon),
     toGrowth(mounted ? null : gear.battalion),
     blazeBonusOf(unitName),
-    abilityBoosts(personalBonusesAt(unitName, level), gear.weapon),
+    abilityBoosts(personalBonusesAt(unitName, level), weapon),
   );
   const result = toGrowth(unitClass?.bonusStats ?? null);
 

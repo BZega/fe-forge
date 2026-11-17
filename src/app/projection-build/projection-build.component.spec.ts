@@ -3,6 +3,7 @@ import { PlanStep } from '../class-plan/class-plan.component';
 import unitClassData from '../data/unit-classes.json';
 import { baseStatsOf, GrowthRates, STAT_KEYS, StatKey, Unit, UnitClass } from '../models/growth.models';
 import { blazeBonusOf } from '../models/bonuses';
+import { ITEMS } from '../models/equipment';
 import { levelUpGrowth, projectStats } from '../models/recruitment.models';
 import { ProjectionOptions, ProjectionStart } from '../projection-start-dialog/projection-start-dialog.component';
 import { GrowthDataService } from '../services/growth-data.service';
@@ -78,6 +79,48 @@ describe('ProjectionBuildComponent', () => {
 
     return { fixture, build: fixture.componentInstance, host: fixture.nativeElement as HTMLElement, result: () => result };
   };
+
+  describe('equipment bonuses', () => {
+    const sword = ITEMS.find((item) => item.Name === 'Wooden Sword')!;
+    const original = sword.BonusStats;
+    beforeEach(() => { sword.BonusStats = [{ Spd: 4 }]; });
+    afterEach(() => { sword.BonusStats = original; });
+
+    it('adds and removes equipment in game without changing base stats or growth', () => {
+      const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, 20])) as GrowthRates;
+      const { build, fixture, result } = open(manualStart('Lysander', 10, stats), { level: 10 });
+      const speed = () => build.rows().find((row) => row.stat === 'spd')!;
+      const growth = speed().growthRate;
+      build.onEquipmentConfirmed([sword.Name]);
+      fixture.detectChanges();
+      expect(speed().summary.mean).toBe(24);
+      expect(speed().boosted).toBeTrue();
+      expect(speed().detail).toBe('Base Value 20.00; Class +0; Modifier +4');
+      expect(speed().growthRate).toBe(growth);
+      expect(result()!.totals.spd.min).toBe(24);
+      build.view.set('base');
+      expect(speed().summary.mean).toBe(20);
+      expect(speed().boosted).toBeFalse();
+      expect(speed().detail).toBe('Base Value 20.00; Class +0; Modifier +0');
+      build.view.set('inGame');
+      build.onEquipmentConfirmed([]);
+      expect(speed().summary.mean).toBe(20);
+    });
+
+    it('subtracts starting equipment from entered in-game stats and keeps the original baseline after unequipping', () => {
+      const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, 20])) as GrowthRates;
+      const { build } = open({
+        ...manualStart('Lysander', 10, stats), inGameStats: true, equipment: [sword.Name],
+      }, { level: 10 });
+      const speed = () => build.rows().find((row) => row.stat === 'spd')!.summary.mean;
+      expect(speed()).toBe(20);
+      build.view.set('base');
+      expect(speed()).toBe(16);
+      build.view.set('inGame');
+      build.onEquipmentConfirmed([]);
+      expect(speed()).toBe(16);
+    });
+  });
 
   it("averages what the existing projection does from a chapter, plus the class's bonus and Cai's Blaze", () => {
     const start = chapterStart('Cai');

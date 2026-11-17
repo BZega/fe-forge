@@ -100,6 +100,18 @@ describe('CharacterPageComponent recruitment', () => {
     expect(text('.route-status-requirement')).toEqual(['Give 3,000G · Support Lv 3 · Renown Lv 8']);
   });
 
+  it('marks class-boosted recruitment stats and provides their base/class/modifier breakdown', () => {
+    openRecruitment();
+    const view = fixture.componentInstance.chapterView()!;
+    const mag = view.stats.find((row) => row.label === 'Mag')!;
+    const bonus = classes.find((candidate) => candidate.name === 'Ovate')!.bonusStats.mag;
+    expect(mag.boosted).toBe(bonus > 0);
+    expect(mag.detail).toBe(`Base Value 0; Class +${bonus}; Modifier +0`);
+    const row = Array.from(host.querySelectorAll<HTMLElement>('.stat-row'))
+      .find((row) => row.title === mag.detail && row.querySelector('.stat-row-label')!.textContent === 'Mag')!;
+    expect(row.querySelector('.stat-row-value')!.classList.contains('stat-bonus')).toBe(bonus > 0);
+  });
+
   it('shows Blaze as a separate tab and displays art requirements and Manage Blaze when present', () => {
     recruitment = {
       ...recruitment!,
@@ -338,6 +350,27 @@ describe('CharacterPageComponent recruitment', () => {
     expect(text('.inventory-stat')).toEqual(['Mt 5', 'Cost 2']);
   });
 
+  it('renders recruitment inventory as read-only item cards while retaining combat arts', () => {
+    const actual = new RecruitmentDataService().forUnit('Cai')!;
+    recruitment = { ...recruitment!, routes: actual.routes };
+    fixture = TestBed.createComponent(CharacterPageComponent);
+    host = fixture.nativeElement;
+    fixture.detectChanges();
+    openRecruitment();
+    const card = host.querySelector('app-item-card')!;
+    expect(card).not.toBeNull();
+    expect(card.querySelector('.equipment-name-text')!.textContent).toBe('Wooden Spear');
+    expect(card.querySelector<HTMLInputElement>('input')).toBeNull();
+    expect(card.querySelector<HTMLImageElement>('summary img')!.alt).toBe('Spear');
+    expect(card.querySelector('.equipment-durability')!.textContent).toBe('10/10');
+    expect(card.querySelector('details')!.open).toBeFalse();
+    card.querySelector('summary')!.click();
+    fixture.detectChanges();
+    expect(card.querySelector('details')!.open).toBeTrue();
+    expect(card.textContent).toContain('Cavalry');
+    expect(text('.inventory-item')).toContain('Tempest Spear');
+  });
+
   it('says there is no recruitment data when no route has chapters', () => {
     recruitment = { ...recruitment!, routes: [route('Leda', [])] };
     fixture = TestBed.createComponent(CharacterPageComponent);
@@ -413,5 +446,41 @@ describe("CharacterPageComponent Mu's recruitment", () => {
     const { host } = open('Hong Hua');
 
     expect(host.querySelector('section[aria-labelledby="growth-title"] .stat-row[title]')).toBeNull();
+  });
+});
+
+describe('CharacterPageComponent Blaze stat modifiers', () => {
+  it('includes Cai’s Mag+3 in every recruitment chapter and omits the redundant Blaze stat row', () => {
+    const cai = units.find((unit) => unit.name === 'Cai')!;
+    TestBed.configureTestingModule({
+      imports: [CharacterPageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: String(cai.id) })) } },
+      ],
+    });
+    const fixture = TestBed.createComponent(CharacterPageComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    for (const route of component.routes()) {
+      component.activeRouteKey.set(route.key);
+      for (const chapter of route.chapters) {
+        component.selectedChapter.set(chapter.chapter);
+        const view = component.chapterView()!;
+        const mag = view.stats.find((stat) => stat.label === 'Mag')!;
+        const bonus = view.unitClass?.bonusStats.mag ?? 0;
+        expect(mag.value).toBe(String(chapter.stats.mag + bonus + 3));
+        expect(mag.detail).toBe(`Base Value ${chapter.stats.mag}; Class +${bonus}; Modifier +3`);
+        expect(mag.boosted).toBeTrue();
+      }
+    }
+    const host = fixture.nativeElement as HTMLElement;
+    Array.from(host.querySelectorAll<HTMLButtonElement>('.tabs-tab'))
+      .find((button) => button.textContent!.includes('Blaze'))!.click();
+    fixture.detectChanges();
+    const source = host.querySelector('section[aria-labelledby="blaze-source-title"]')!;
+    expect(source.textContent).toContain('Red Jewel');
+    expect(source.textContent).toContain('Grants Mag+3');
+    expect(source.querySelector('.inventory-stats')).toBeNull();
   });
 });

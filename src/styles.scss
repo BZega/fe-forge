@@ -17,6 +17,20 @@ optgroup {
   color: var(--text);
 }
 
+.stat-bonus {
+  position: relative;
+  color: var(--accent) !important;
+
+  &::after {
+    content: '\2191';
+    position: absolute;
+    left: calc(100% + 0.2em);
+    top: 0.1em;
+    font-size: 0.7em;
+    pointer-events: none;
+  }
+}
+
 * {
   box-sizing: border-box;
 }

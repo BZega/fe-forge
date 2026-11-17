@@ -1,0 +1,80 @@
+@let item = this.item();
+<div class="picker-item" [class.picker-item--disabled]="disabled()" [class.picker-item--on]="selected()">
+  @if (selectable()) {
+    <input type="checkbox" [attr.aria-label]="'Equip ' + item.Name"
+      [checked]="selected()" [disabled]="disabled()" (change)="selectionChange.emit()" />
+  }
+  <details class="picker-item-details" [attr.name]="disclosureGroup()">
+    <summary class="picker-item-name">
+      <span class="equipment-heading">
+        <span class="equipment-name">
+          @if (skillKey(item.WeaponType); as key) {
+            <img class="equipment-icon" [src]="icon(key)" [alt]="item.WeaponType" referrerpolicy="no-referrer"
+              (error)="useFallbackIcon($event, fallbackIcon(key))" />
+          }
+          <span class="equipment-name-text">{{ canUpgrade() ? baseName() : item.Name }}@if (canUpgrade()) {<span class="equipment-upgrade-wrap" [class.equipment-upgrade-wrap--base]="item.Name === baseName()">
+            <select #upgrade class="equipment-upgrade" [attr.aria-label]="'Upgrade ' + baseName()"
+              [value]="item.Name" [disabled]="disabled()"
+              (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()"
+              (change)="variantChange.emit(upgrade.value)">
+              @for (variant of variants(); track variant.Name) {
+                <option [value]="variant.Name" [selected]="variant.Name === item.Name">{{ variant.Name === baseName() ? '' : '+' + variant.Name.slice(-1) }}</option>
+              }
+            </select>
+          </span>}</span>
+        </span>
+        @if (effectiveness().length) {
+          <span class="effectiveness" role="list" aria-label="Effectiveness">
+            @for (effective of effectiveness(); track $index) {
+              <span class="effectiveness-badge" role="listitem"
+                [class.effectiveness-badge--enhanced]="effective.enhanced"
+                [attr.aria-label]="effective.title"
+                [title]="effective.title">{{ effective.target }}</span>
+            }
+          </span>
+        }
+        <span class="equipment-durability" [attr.aria-label]="'Durability ' + item.Durability" title="Durability">{{ item.Durability }}</span>
+      </span>
+      <span class="picker-item-chevron" aria-hidden="true"></span>
+    </summary>
+    <div class="equipment-details">
+      <p class="picker-item-description">{{ item.Description }}</p>
+      @if (hasCombatDetails()) {
+      <div class="equipment-columns">
+        <dl>
+          <div><dt>{{ item.Pwr === undefined ? 'Mt' : 'Pwr' }}</dt><dd>{{ item.Pwr ?? item.Mt }}</dd></div>
+          <div><dt>Hit</dt><dd>{{ item.Hit }}</dd></div>
+          <div><dt>Crit</dt><dd>{{ item.Crit }}</dd></div>
+          <div><dt>Curse</dt><dd>{{ item.Curse }}</dd></div>
+        </dl>
+        <dl>
+          <div><dt>Wt</dt><dd>{{ item.Wt }}</dd></div>
+          <div><dt>Avo</dt><dd>{{ item.Avo }}</dd></div>
+          <div><dt>Rng</dt><dd>{{ item.Range }}</dd></div>
+          <div>
+            <dt>Skill</dt>
+            <dd class="equipment-skills">
+              @for (skill of item.Skills; track $index) {
+                <span class="equipment-skill">
+                  @if (skillKey(skill.SkillType); as key) {
+                    <img class="equipment-icon" [src]="icon(key)" [alt]="skill.SkillType" referrerpolicy="no-referrer"
+                      (error)="useFallbackIcon($event, fallbackIcon(key))" />
+                  } @else {
+                    <span>{{ skill.SkillType }}</span>
+                  }
+                  <span>{{ skill.SkillRank }}</span>
+                </span>
+              } @empty {
+                <span>--</span>
+              }
+            </dd>
+          </div>
+        </dl>
+      </div>
+      }
+      @if (itemBonusDescription(item); as bonuses) {
+        <p class="equipment-extra"><strong>Bonus stats</strong> {{ bonuses }}</p>
+      }
+    </div>
+  </details>
+</div>
