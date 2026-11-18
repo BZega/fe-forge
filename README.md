@@ -60,14 +60,16 @@ items such as Cai's Wooden Spear do not need a catalog entry. Combat arts keep
 their own display. Missing/non-applicable combat stats remain `--`, and white
 magic retains its Pwr value.
 
-Item cards display effectiveness as colored boxes containing only the target type
-(for example, `Cavalry`): orange for Effective and red for Effective+. They are left-aligned
+Item cards display compact effectiveness symbols: orange for Effective and red
+for Effective+. Assets in `public/icons/effective` use `effective_<target>.png`
+and `extra_effective_<target>.png` names. They are left-aligned
 in a consistent column between the item name and durability, including while details
-are collapsed. Multiple tags wrap within that column.
+are collapsed. Up to two symbols stay inline with the upgrade dropdown and
+durability on mobile; long weapon names wrap without pushing the dropdown below.
 Hover text and accessible labels show the full `Effective <type>` or `Effective+ <type>`
 label plus `2x weapon Might` or `3x weapon Might`, respectively. Legacy `Extra`
 prefixes map to `Effective+` without changing saved or source data.
-These are text badges, not verified game icon assets.
+Targets without a matching symbol retain a text badge.
 
 Stat values with a positive non-class modifier are gold with a
 small up arrow in Growth Mapper, projection results, and Character/Class details.

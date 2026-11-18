@@ -6,13 +6,13 @@
   }
   <details class="picker-item-details" [attr.name]="disclosureGroup()">
     <summary class="picker-item-name">
-      <span class="equipment-heading">
+      <span class="equipment-heading" [class.equipment-heading--no-effectiveness]="!effectiveness().length">
         <span class="equipment-name">
           @if (skillKey(item.WeaponType); as key) {
             <img class="equipment-icon" [src]="icon(key)" [alt]="item.WeaponType" referrerpolicy="no-referrer"
               (error)="useFallbackIcon($event, fallbackIcon(key))" />
           }
-          <span class="equipment-name-text">{{ canUpgrade() ? baseName() : item.Name }}@if (canUpgrade()) {<span class="equipment-upgrade-wrap" [class.equipment-upgrade-wrap--base]="item.Name === baseName()">
+          <span class="equipment-name-text"><span class="equipment-base-name">{{ canUpgrade() ? baseName() : item.Name }}</span>@if (canUpgrade()) {<span class="equipment-upgrade-wrap" [class.equipment-upgrade-wrap--base]="item.Name === baseName()">
             <select #upgrade class="equipment-upgrade" [attr.aria-label]="'Upgrade ' + baseName()"
               [style.width]="variantWidth()" [style.margin-left]="namedVariant() ? '0.25em' : null"
               [value]="item.Name" [disabled]="disabled()"
@@ -28,9 +28,14 @@
           <span class="effectiveness" role="list" aria-label="Effectiveness">
             @for (effective of effectiveness(); track $index) {
               <span class="effectiveness-badge" role="listitem"
+                [class.effectiveness-badge--icon]="effective.icon"
                 [class.effectiveness-badge--enhanced]="effective.enhanced"
                 [attr.aria-label]="effective.title"
-                [title]="effective.title">{{ effective.target }}</span>
+                [title]="effective.title">@if (effective.icon) {
+                  <img [src]="effective.icon" alt="" aria-hidden="true" />
+                } @else {
+                  {{ effective.target }}
+                }</span>
             }
           </span>
         }

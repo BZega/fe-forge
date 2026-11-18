@@ -3,6 +3,19 @@ import { skillIconUrl, useFallbackIcon } from '../icon-links';
 import { Item, itemBaseName, itemBonusDescription } from '../models/equipment';
 import { SKILL_KEYS, SKILL_LABELS, SkillKey } from '../models/growth.models';
 
+const EFFECTIVENESS_ICONS: Readonly<Record<string, string>> = {
+  armor: 'effective_armor',
+  beast: 'effective_beast',
+  cavalry: 'effective_cavalry',
+  dragon: 'effective_dragon',
+  flying: 'effective_flying',
+  undead: 'effective_undead',
+  extraarmor: 'extra_effective_armor',
+  extracavalry: 'extra_effective_cavalry',
+  extraflying: 'extra_effective_flying',
+  extraundead: 'extra_effective_undead',
+};
+
 @Component({
   selector: 'app-item-card',
   templateUrl: './item-card.component.html',
@@ -36,7 +49,11 @@ export class ItemCardComponent {
     const target = raw.replace(/^(?:extra|effective\s*\+?)\s*/i, '')
       .replace(/([a-z])([A-Z])/g, '$1 $2').trim();
     const label = `${enhanced ? 'Effective+' : 'Effective'} ${target}`;
-    return { target, label, enhanced, title: `${label}: ${enhanced ? 3 : 2}x weapon Might` };
+    const iconName = EFFECTIVENESS_ICONS[`${enhanced ? 'extra' : ''}${target.toLowerCase()}`];
+    return {
+      target, label, enhanced, title: `${label}: ${enhanced ? 3 : 2}x weapon Might`,
+      icon: iconName ? `icons/effective/${iconName}.png` : null,
+    };
   }));
 
   variantLabel(item: Item): string {

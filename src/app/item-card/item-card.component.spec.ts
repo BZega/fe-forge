@@ -95,6 +95,62 @@ describe('ItemCardComponent', () => {
     }
   });
 
+  it('uses the empty effectiveness column to keep short weapon upgrade menus inline on mobile', () => {
+    const { fixture, host } = open();
+    fixture.componentRef.setInput('selectable', true);
+    fixture.componentRef.setInput('variants', ITEMS);
+    host.style.display = 'block';
+    document.body.appendChild(host);
+    for (const width of [280, 300, 340]) {
+      host.style.width = `${width}px`;
+      for (const name of ['Wooden Sword', 'Wooden Sword+1']) {
+        fixture.componentRef.setInput('item', ITEMS.find((item) => item.Name === name)!);
+        fixture.detectChanges();
+        const text = host.querySelector('.equipment-name-text')!;
+        const range = document.createRange();
+        range.selectNode(text.firstChild!);
+        const textBox = range.getBoundingClientRect();
+        const menu = host.querySelector('.equipment-upgrade')!.getBoundingClientRect();
+        expect(menu.top).withContext(`${name} at ${width}px`).toBeLessThan(textBox.bottom);
+        expect(menu.bottom).toBeGreaterThan(textBox.top);
+        expect(host.scrollWidth).toBeLessThanOrEqual(host.clientWidth);
+      }
+    }
+    fixture.componentRef.setInput('item', {
+      ...ITEMS[0], Name: 'An exceptionally long weapon name that needs multiple lines',
+    });
+    fixture.detectChanges();
+    const name = host.querySelector('.equipment-name-text')!;
+    const range = document.createRange();
+    range.selectNodeContents(name.firstChild!);
+    expect(range.getClientRects().length).toBeGreaterThan(1);
+    expect(host.scrollWidth).toBeLessThanOrEqual(host.clientWidth);
+  });
+
+  it('keeps upgrade controls, effectiveness icons and durability inline while only long names wrap', () => {
+    const { fixture, host } = open();
+    fixture.componentRef.setInput('selectable', true);
+    host.style.display = 'block';
+    document.body.appendChild(host);
+    for (const width of [260, 280, 340]) {
+      host.style.width = `${width}px`;
+      for (const name of ['Wooden Sword', 'An exceptionally long weapon name']) {
+        const item = { ...ITEMS[0], Name: name, EffectiveType: ['Armor', 'Flying'] };
+        fixture.componentRef.setInput('item', item);
+        fixture.componentRef.setInput('variants', [item, { ...item, Name: `${name}+1` }]);
+        fixture.detectChanges();
+        const menu = host.querySelector('.equipment-upgrade')!.getBoundingClientRect();
+        const icons = Array.from(host.querySelectorAll('.effectiveness-badge')).map((el) => el.getBoundingClientRect());
+        const durability = host.querySelector('.equipment-durability')!.getBoundingClientRect();
+        for (const box of [...icons, durability]) {
+          expect(Math.abs((box.top + box.bottom - menu.top - menu.bottom) / 2)).toBeLessThan(2);
+        }
+        expect(icons[0].top).toBe(icons[1].top);
+        expect(host.scrollWidth).toBeLessThanOrEqual(host.clientWidth);
+      }
+    }
+  });
+
   it('only shows the description for items without combat details', () => {
     const { fixture, host } = open();
     fixture.componentRef.setInput('item', vulnerary);
@@ -113,15 +169,17 @@ describe('ItemCardComponent', () => {
     }
   });
 
-  it('labels normal effectiveness orange and Extra types as red Effective+ badges', () => {
+  it('uses normal and extra effectiveness symbols with full accessible labels', () => {
     const { fixture, host } = open();
     fixture.componentRef.setInput('item', {
       ...ITEMS[0], EffectiveType: ['Cavalry', 'extraCavalry', 'ExtraFlying', 'ExtraUndead', 'Undead'],
     });
     fixture.detectChanges();
     const badges = Array.from(host.querySelectorAll<HTMLElement>('.effectiveness-badge'));
-    expect(badges.map((badge) => badge.textContent!.trim())).toEqual([
-      'Cavalry', 'Cavalry', 'Flying', 'Undead', 'Undead',
+    expect(badges.map((badge) => badge.querySelector('img')!.getAttribute('src'))).toEqual([
+      'icons/effective/effective_cavalry.png', 'icons/effective/extra_effective_cavalry.png',
+      'icons/effective/extra_effective_flying.png', 'icons/effective/extra_effective_undead.png',
+      'icons/effective/effective_undead.png',
     ]);
     expect(badges.map((badge) => badge.classList.contains('effectiveness-badge--enhanced')))
       .toEqual([false, true, true, true, false]);
@@ -130,8 +188,27 @@ describe('ItemCardComponent', () => {
       'Effective+ Flying: 3x weapon Might', 'Effective+ Undead: 3x weapon Might', 'Effective Undead: 2x weapon Might',
     ]);
     expect(badges.map((badge) => badge.getAttribute('aria-label'))).toEqual(badges.map((badge) => badge.title));
-    expect(getComputedStyle(badges[0]).backgroundColor).toBe('rgb(255, 186, 115)');
-    expect(getComputedStyle(badges[1]).backgroundColor).toBe('rgb(255, 153, 153)');
+    for (const badge of badges) {
+      expect(badge.querySelector('img')!.alt).toBe('');
+      expect(getComputedStyle(badge).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+      expect(badge.getBoundingClientRect().width).toBeLessThanOrEqual(24);
+    }
+  });
+
+  it('maps all supplied target symbols and keeps unknown targets readable', () => {
+    const { fixture, host } = open();
+    fixture.componentRef.setInput('item', {
+      ...ITEMS[0], EffectiveType: ['Armor', 'Beast', 'Dragon', 'Flying', 'Extra Armor', 'Unknown'],
+    });
+    fixture.detectChanges();
+    const badges = Array.from(host.querySelectorAll('.effectiveness-badge'));
+    expect(badges.slice(0, 5).map((badge) => badge.querySelector('img')!.getAttribute('src'))).toEqual([
+      'icons/effective/effective_armor.png', 'icons/effective/effective_beast.png',
+      'icons/effective/effective_dragon.png', 'icons/effective/effective_flying.png',
+      'icons/effective/extra_effective_armor.png',
+    ]);
+    expect(badges[5].textContent!.trim()).toBe('Unknown');
+    expect(badges[5].querySelector('img')).toBeNull();
   });
 
   it('accepts display-form effectiveness labels without adding a second prefix', () => {
