@@ -14,11 +14,12 @@
           }
           <span class="equipment-name-text">{{ canUpgrade() ? baseName() : item.Name }}@if (canUpgrade()) {<span class="equipment-upgrade-wrap" [class.equipment-upgrade-wrap--base]="item.Name === baseName()">
             <select #upgrade class="equipment-upgrade" [attr.aria-label]="'Upgrade ' + baseName()"
+              [style.width]="variantWidth()" [style.margin-left]="namedVariant() ? '0.25em' : null"
               [value]="item.Name" [disabled]="disabled()"
               (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()"
               (change)="variantChange.emit(upgrade.value)">
               @for (variant of variants(); track variant.Name) {
-                <option [value]="variant.Name" [selected]="variant.Name === item.Name">{{ variant.Name === baseName() ? '' : '+' + variant.Name.slice(-1) }}</option>
+                <option [value]="variant.Name" [selected]="variant.Name === item.Name">{{ variantLabel(variant) }}</option>
               }
             </select>
           </span>}</span>

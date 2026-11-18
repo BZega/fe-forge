@@ -11,14 +11,12 @@ import {
   isLearned,
   Mount,
   mountBonusAt,
-  SKILL_LABELS,
   STAT_KEYS,
   StatBoostAbility,
   StatKey,
   sumGrowth,
   toGrowth,
   UnitClass,
-  WEAPON_KEYS,
   WeaponKey,
 } from './growth.models';
 
@@ -131,8 +129,6 @@ export function usesWeapon(unitName: string, level: number, abilities: readonly 
   );
 }
 
-export const WEAPON_OPTIONS = WEAPON_KEYS.map((key) => ({ key, label: SKILL_LABELS[key] }));
-
 export function inGameBonus(
   unitName: string,
   level: number,
@@ -142,7 +138,7 @@ export function inGameBonus(
   gear: InGameGear,
 ): GrowthRates {
   const mounted = unitClass !== null && isMountedClass(unitClass.name);
-  const weapon = equipmentWeapon(gear.equipment, gear.weapon);
+  const weapon = equipmentWeapon(gear.equipment);
   const extras = sumGrowth(
     ...equippedItems(gear.equipment).map(itemBoosts),
     toGrowth(mountBonusAt(mount, bondLevel)),

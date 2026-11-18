@@ -93,14 +93,6 @@
           <button type="button" class="ghost-button" [title]="chosenEquipment().join(', ') || 'No equipment'" (click)="equipmentPickerOpen.set(true)">
             Inventory ({{ chosenEquipment().length }}/5)
           </button>
-          @if (needsWeapon() && !hasEquipmentWeapon()) {
-            <select class="results-weapon" aria-label="Equipped weapon" (change)="setWeapon($any($event.target).value)">
-              <option value="" [selected]="chosenWeapon() === null">— Weapon —</option>
-              @for (key of weaponKeys; track key) {
-                <option [value]="key" [selected]="chosenWeapon() === key">{{ weaponLabels[key] }}</option>
-              }
-            </select>
-          }
           <select
             class="results-weapon"
             aria-label="Battalion"
@@ -161,10 +153,7 @@
     [selected]="equippedAbilityNames()"
     [max]="maxAbilities"
     (confirmed)="onAbilitiesConfirmed($event)"
-    [weaponOptions]="hasEquipmentWeapon() ? null : weaponOptions"
-    [weapon]="chosenWeapon()"
     [weaponNeeded]="personalWeapon()"
-    (weaponChosen)="setWeapon($event ?? '')"
     (closed)="abilityPickerOpen.set(false)"
   />
 }

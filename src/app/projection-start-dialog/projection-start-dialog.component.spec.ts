@@ -121,6 +121,36 @@ describe('ProjectionStartDialogComponent', () => {
     expect(confirmed()!.abilities!.map((ability) => ability.name)).toEqual(['Divine Insight']);
   });
 
+  it("uses Mu's Inventory weapon for an in-game starting build, with no separate weapon selector", () => {
+    const { dialog, fixture, host, confirmed } = open();
+    dialog.pickManualUnit(unitId('Mu'));
+    fixture.detectChanges();
+    const level = host.querySelector<HTMLInputElement>('input[aria-label="Starting level"]')!;
+    level.value = '35';
+    level.dispatchEvent(new Event('change'));
+    dialog.inGameStats.set(true);
+    dialog.onAbilitiesConfirmed(["Warrior's Blood"]);
+    dialog.onEquipmentConfirmed(['Answerer Huang']);
+    fixture.detectChanges();
+    expect(dialog.weapon()).toBe('sword');
+    expect(host.querySelector('select[aria-label="Equipped weapon"]')).toBeNull();
+    dialog.confirm();
+    expect(confirmed()!.equipment).toEqual(['Answerer Huang']);
+    expect(confirmed()!.weapon).toBe('sword');
+    const initial = confirmed()!;
+    dialog.onEquipmentConfirmed([]);
+    expect(dialog.weapon()).toBeNull();
+    dialog.confirm();
+    expect(confirmed()!.weapon).toBeNull();
+
+    const restored = open({ initial: { ...initial, equipment: [], weapon: 'axe' } });
+    expect(restored.dialog.weapon()).toBeNull();
+    restored.dialog.abilityPickerOpen.set(true);
+    restored.fixture.detectChanges();
+    expect(restored.host.querySelector('app-picker-dialog')!.textContent).toContain('weapon equipped in Inventory');
+    expect(restored.host.querySelector('select[aria-label="Equipped weapon"]')).toBeNull();
+  });
+
   it('offers actual stats to compare for a recruitment start, at the actual level', () => {
     const { dialog, fixture, host, confirmed } = open();
     dialog.setSource('chapter');

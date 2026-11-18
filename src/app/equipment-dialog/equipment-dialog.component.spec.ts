@@ -4,6 +4,7 @@ import { ITEMS } from '../models/equipment';
 import { PickerDialogComponent } from '../picker-dialog/picker-dialog.component';
 import { EquipmentDialogComponent } from './equipment-dialog.component';
 import { ItemCardComponent } from '../item-card/item-card.component';
+import { skillIconUrl } from '../icon-links';
 
 describe('EquipmentDialogComponent', () => {
   const open = (selected: string[] = []) => {
@@ -55,14 +56,24 @@ describe('EquipmentDialogComponent', () => {
   it('separates weapon types into tabs and groups equipment on its own tab', () => {
     const { fixture, picker } = open();
     const host = fixture.nativeElement as HTMLElement;
-    expect(Array.from(host.querySelectorAll('[role="tab"]')).map((tab) => tab.textContent!.trim()))
-      .toEqual(['Sword', 'Spear', 'Axe', 'Bow', 'Gauntlets', 'Equipment']);
+    expect(Array.from(host.querySelectorAll('[role="tab"]')).map((tab) => tab.getAttribute('aria-label')))
+      .toEqual(['ALL', 'Sword', 'Spear', 'Axe', 'Bow', 'Gauntlets', 'Equipment']);
+    expect(picker.activeTab()).toBe('ALL');
+    expect(host.querySelector('.picker-category')).toBeNull();
+    picker.activeTab.set('Sword');
+    fixture.detectChanges();
+    expect(host.querySelector('[role="tab"][aria-label="Sword"] img')!.getAttribute('src')).toBe(skillIconUrl('sword', 'good'));
+    expect(host.querySelector('[role="tab"][aria-label="Equipment"] img')!.getAttribute('src')).toBe(skillIconUrl('heavyArmor'));
+    expect(host.querySelector('[role="tab"][aria-label="Sword"]')!.textContent!.trim()).toBe('');
+    expect(host.querySelector('.picker-category')!.textContent).toBe('Sword');
     const names = () => picker.filtered().flatMap((group) => group.items).map((item) => item.name);
     for (const [tab, expected] of [['Sword', 'Item 0'], ['Spear', 'Item 7'], ['Axe', 'Item 1'], ['Bow', 'Item 8'], ['Gauntlets', 'Item 9']]) {
       picker.activeTab.set(tab);
       expect(names()).toEqual([expected]);
     }
     picker.activeTab.set('Equipment');
+    fixture.detectChanges();
+    expect(host.querySelector('.picker-category')!.textContent).toBe('Equipment');
     expect(picker.filtered().map((group) => group.label)).toEqual(['Shield', 'Mask', 'Staff', 'Accessory']);
     expect(names()).toEqual(['Item 2', 'Item 3', 'Item 4', 'Item 5', 'Item 6']);
   });
@@ -72,7 +83,7 @@ describe('EquipmentDialogComponent', () => {
     const host = fixture.nativeElement as HTMLElement;
     const switchTab = (name: string) => {
       Array.from(host.querySelectorAll<HTMLButtonElement>('[role="tab"]'))
-        .find((tab) => tab.textContent!.trim() === name)!.click();
+        .find((tab) => tab.getAttribute('aria-label') === name)!.click();
       fixture.detectChanges();
     };
     switchTab('Axe');
@@ -95,13 +106,69 @@ describe('EquipmentDialogComponent', () => {
     };
     press('End');
     expect(picker.activeTab()).toBe('Equipment');
-    expect(host.querySelector('[role="tab"][aria-selected="true"]')!.textContent!.trim()).toBe('Equipment');
+    expect(host.querySelector('[role="tab"][aria-selected="true"]')!.getAttribute('aria-label')).toBe('Equipment');
     press('ArrowRight');
-    expect(picker.activeTab()).toBe('Sword');
+    expect(picker.activeTab()).toBe('ALL');
     press('ArrowLeft');
     expect(picker.activeTab()).toBe('Equipment');
     press('Home');
-    expect(picker.activeTab()).toBe('Sword');
+    expect(picker.activeTab()).toBe('ALL');
+  });
+
+  it('fits all nine catalog tabs on one line at narrow mobile dialog widths', () => {
+    const { fixture } = open();
+    fixture.componentRef.setInput('items', ITEMS);
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+    const dialog = host.querySelector<HTMLElement>('.dialog')!;
+    const tablist = host.querySelector<HTMLElement>('[role="tablist"]')!;
+    const tabs = Array.from(tablist.querySelectorAll<HTMLElement>('[role="tab"]'));
+    expect(tabs.length).toBe(9);
+    for (const width of [270, 340, 520]) {
+      dialog.style.width = `${width}px`;
+      dialog.style.boxSizing = 'border-box';
+      const bounds = tabs.map((tab) => tab.getBoundingClientRect());
+      expect(new Set(bounds.map((box) => Math.round(box.top))).size).withContext(`width ${width}`).toBe(1);
+      expect(tablist.scrollWidth).withContext(`width ${width}`).toBeLessThanOrEqual(tablist.clientWidth);
+      for (const img of Array.from(tablist.querySelectorAll('img'))) {
+        expect(img.getBoundingClientRect().width).toBeLessThanOrEqual(20);
+        expect(img.getBoundingClientRect().height).toBe(20);
+      }
+    }
+  });
+
+  it('shows every item exactly once in ALL and searches across categories while preserving selection', () => {
+    const { fixture, picker, item } = open(['Item 0', 'Item 2']);
+    const host = fixture.nativeElement as HTMLElement;
+    host.querySelector<HTMLButtonElement>('[role="tab"][aria-label="ALL"]')!.click();
+    fixture.detectChanges();
+    expect(host.querySelector('.picker-category')).toBeNull();
+    expect(Array.from(host.querySelectorAll('.picker-group')).map((header) => header.textContent!.trim()))
+      .toEqual(['Sword', 'Spear', 'Axe', 'Bow', 'Gauntlets', 'Shield', 'Mask', 'Staff', 'Accessory']);
+    const names = () => picker.filtered().flatMap((group) => group.items.map((entry) => entry.name));
+    expect(names().length).toBe(10);
+    expect(new Set(names()).size).toBe(10);
+    picker.toggle(item('Item 1'));
+    expect(picker.picked()).toEqual(['Item 1', 'Item 2']);
+    picker.query.set('Item 6');
+    expect(names()).toEqual(['Item 6']);
+    picker.query.set('');
+    expect(names().length).toBe(10);
+  });
+
+  it('uses linked icons for both magic types and falls back to local skill icons on image errors', () => {
+    const { fixture, dialog } = open();
+    fixture.componentRef.setInput('items', ['Black Magic', 'White Magic'].map((WeaponType) => ({
+      ...ITEMS[0], WeaponType, Name: WeaponType,
+    })));
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+    for (const [tab, key] of [['Black Magic', 'blackMagic'], ['White Magic', 'whiteMagic']] as const) {
+      expect(host.querySelector(`[role="tab"][aria-label="${tab}"] img`)!.getAttribute('src')).toBe(skillIconUrl(key));
+    }
+    const icon = host.querySelector<HTMLImageElement>('[role="tab"][aria-label="Equipment"] img')!;
+    icon.dispatchEvent(new Event('error'));
+    expect(icon.getAttribute('src')).toBe(dialog.fallbackIcon('heavyArmor'));
   });
 
   it('shows an explicit empty state for categories without items', () => {
@@ -210,6 +277,7 @@ describe('EquipmentDialogComponent', () => {
 
   it('groups upgrades into one card, restores a saved upgrade and confirms the chosen variant', () => {
     const fixture = TestBed.createComponent(EquipmentDialogComponent);
+    fixture.componentRef.setInput('items', ITEMS.filter((item) => item.Name === 'Wooden Sword' || /^Wooden Sword\+[0-9]$/.test(item.Name)));
     fixture.componentRef.setInput('selected', ['Wooden Sword+1']);
     fixture.detectChanges();
     const host = fixture.nativeElement as HTMLElement;
@@ -233,6 +301,36 @@ describe('EquipmentDialogComponent', () => {
     expect(host.querySelector('.equipment-columns dd')!.textContent).toBe('2');
     picker.confirm();
     expect(confirmed).toHaveBeenCalledWith(['Wooden Sword']);
+  });
+
+  it('groups Answerer forms after numeric upgrades and restores and equips named forms', () => {
+    const fixture = TestBed.createComponent(EquipmentDialogComponent);
+    fixture.componentRef.setInput('items', ITEMS.filter((item) => item.Name.startsWith('Answerer')).reverse());
+    fixture.componentRef.setInput('selected', ['Answerer Breaker']);
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+    const picker = fixture.debugElement.query(By.directive(PickerDialogComponent)).componentInstance as PickerDialogComponent;
+    expect(host.querySelectorAll('app-item-card').length).toBe(1);
+    const select = host.querySelector<HTMLSelectElement>('.equipment-upgrade')!;
+    expect(Array.from(select.options).map((option) => option.textContent))
+      .toEqual(['', '+1', '+2', '+3', 'Arisen', 'Breaker', 'Huang']);
+    expect(select.value).toBe('Answerer Breaker');
+    expect(select.getBoundingClientRect().width).toBeGreaterThan(40);
+    expect(host.querySelector('.equipment-columns dd')!.textContent).toBe('18');
+    select.value = 'Answerer+3';
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(picker.picked()).toEqual(['Answerer+3']);
+    const updatedSelect = host.querySelector<HTMLSelectElement>('.equipment-upgrade')!;
+    updatedSelect.value = 'Answerer Huang';
+    updatedSelect.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(picker.picked()).toEqual(['Answerer Huang']);
+    expect(host.querySelector('.equipment-columns dd')!.textContent).toBe('21');
+    const confirmed = jasmine.createSpy('confirmed');
+    fixture.componentInstance.confirmed.subscribe(confirmed);
+    picker.confirm();
+    expect(confirmed).toHaveBeenCalledWith(['Answerer Huang']);
   });
 
   it('can preview an upgrade without equipping it or applying a cancelled draft', () => {

@@ -1,6 +1,8 @@
 import { Item } from './equipment';
 import {
   CLASS_LEVEL_CONFIGS,
+  capBaseStats,
+  MAX_BASE_STATS,
   ClassLevelConfig,
   GrowthRates,
   Mount,
@@ -262,14 +264,14 @@ export function projectStats(
   endLevel: number,
   growthAt: (level: number) => GrowthRates | null,
 ): GrowthRates {
-  const result = { ...start };
+  const result = capBaseStats(start);
 
   for (let level = startLevel; level < endLevel; level++) {
     const growth = growthAt(level);
 
     if (growth) {
       for (const stat of STAT_KEYS) {
-        result[stat] += growth[stat] / 100;
+        result[stat] = Math.min(MAX_BASE_STATS[stat], result[stat] + growth[stat] / 100);
       }
     }
   }

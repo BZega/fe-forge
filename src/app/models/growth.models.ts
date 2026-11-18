@@ -389,6 +389,14 @@ export const ZERO_GROWTH: GrowthRates = {
   cha: 0,
 };
 
+export const MAX_BASE_STATS: Readonly<GrowthRates> = {
+  hp: 120, str: 99, mag: 99, spd: 99, dex: 99, def: 99, res: 99, lck: 99, cha: 99,
+};
+
+export function capBaseStats(stats: GrowthRates): GrowthRates {
+  return Object.fromEntries(STAT_KEYS.map((stat) => [stat, Math.min(MAX_BASE_STATS[stat], stats[stat])])) as GrowthRates;
+}
+
 export function toGrowth(source: Partial<GrowthRates> | null | undefined): GrowthRates {
   if (!source) {
     return { ...ZERO_GROWTH };

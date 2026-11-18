@@ -16,7 +16,7 @@
   }
 
   @if (tabs().length) {
-    <div class="picker-tabs" role="tablist" aria-label="Item categories" (keydown)="onTabKeydown($event)">
+    <div class="picker-tabs" [class.picker-tabs--icons]="tabTemplate() !== null" role="tablist" aria-label="Item categories" (keydown)="onTabKeydown($event)">
       @for (tab of tabs(); track tab; let index = $index) {
         <button
           type="button"
@@ -26,9 +26,17 @@
           aria-controls="picker-panel"
           [class.picker-tab--active]="activeTab() === tab"
           [attr.aria-selected]="activeTab() === tab"
+          [attr.aria-label]="tab"
+          [title]="tab"
           [attr.tabindex]="activeTab() === tab ? 0 : -1"
           (click)="activeTab.set(tab)"
-        >{{ tab }}</button>
+        >
+          @if (tabTemplate(); as template) {
+            <ng-container [ngTemplateOutlet]="template" [ngTemplateOutletContext]="{ $implicit: tab, selected: activeTab() === tab }" />
+          } @else {
+            {{ tab }}
+          }
+        </button>
       }
     </div>
   }
@@ -47,6 +55,10 @@
     </span>
   </div>
 
+  @if (tabs().length && activeTab() !== allTab()) {
+    <h3 class="picker-category">{{ activeTab() }}</h3>
+  }
+
   <div
     class="picker-list"
     id="picker-panel"
@@ -55,7 +67,7 @@
     [attr.tabindex]="tabs().length ? 0 : null"
   >
     @for (group of filtered(); track group.label) {
-      @if (group.label) {
+      @if (group.label && group.label !== activeTab()) {
         <p class="picker-group">{{ group.label }}</p>
       }
       @for (item of group.items; track item.id) {
@@ -90,16 +102,8 @@
     }
   </div>
 
-  @if (showWeapon()) {
-    <label class="picker-weapon">
-      <span>Equipped weapon</span>
-      <select aria-label="Equipped weapon" (change)="pickedWeapon.set($any($event.target).value || null)">
-        <option value="" [selected]="pickedWeapon() === null">— Weapon —</option>
-        @for (option of weaponOptions(); track option.key) {
-          <option [value]="option.key" [selected]="pickedWeapon() === option.key">{{ option.label }}</option>
-        }
-      </select>
-    </label>
+  @if (showWeaponHint()) {
+    <p class="hint">Weapon-dependent bonuses use the weapon equipped in Inventory. Without a weapon, these bonuses do not apply.</p>
   }
 
   <footer class="dialog-footer">

@@ -64,13 +64,14 @@
 .equipment-heading {
   flex: 1;
   min-width: 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) 5ch;
   align-items: center;
-  justify-content: space-between;
   gap: 0.6rem;
 }
 
 .equipment-name {
+  grid-column: 1;
   min-width: 0;
 }
 
@@ -79,8 +80,8 @@
 }
 
 .equipment-durability {
-  margin-left: auto;
-  flex-shrink: 0;
+  grid-column: 3;
+  justify-self: end;
   font-size: 0.8rem;
   font-weight: 400;
   white-space: nowrap;
@@ -214,11 +215,11 @@
 }
 
 .effectiveness {
+  grid-column: 2;
   display: flex;
-  flex: 1;
   min-width: 0;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.35rem;
   list-style: none;
   padding: 0;
@@ -227,6 +228,9 @@
 }
 
 .effectiveness-badge {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
   border: 1px solid currentColor;
   border-radius: 4px;
   padding: 0.2rem 0.4rem;

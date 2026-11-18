@@ -116,27 +116,32 @@ describe('PickerDialogComponent', () => {
     expect(fixture.nativeElement.querySelector('.picker-item-locked').textContent).toContain('Needs Hunter');
   });
 
-  it('asks for the weapon once a weapon-dependent item is ticked, and hands it back on Confirm', () => {
+  it('explains the Inventory association once a weapon-dependent item is ticked, without a weapon selector', () => {
     fixture = TestBed.createComponent(PickerDialogComponent);
     dialog = fixture.componentInstance;
     fixture.componentRef.setInput('title', 'Pick');
     fixture.componentRef.setInput('groups', [{ label: '', items: [{ id: 'a', name: 'Alpha' }, { id: 'wb', name: 'WB', usesWeapon: true }] }]);
-    fixture.componentRef.setInput('weaponOptions', [{ key: 'sword', label: 'Sword' }, { key: 'axe', label: 'Axe' }]);
-    fixture.componentRef.setInput('weapon', 'axe');
-    let weapon: string | null | undefined;
-    dialog.weaponChosen.subscribe((chosen) => (weapon = chosen));
+    let confirmed: string[] = [];
+    dialog.confirmed.subscribe((chosen) => (confirmed = chosen));
     fixture.detectChanges();
-    const select = () => (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>('.picker-weapon select');
 
-    expect(select()).toBeNull();
+    expect(dialog.showWeaponHint()).toBeFalse();
     dialog.toggle({ id: 'wb', name: 'WB', usesWeapon: true });
     fixture.detectChanges();
-    expect(select()!.value).toBe('axe');
-
-    select()!.value = 'sword';
-    select()!.dispatchEvent(new Event('change'));
+    expect(fixture.nativeElement.textContent).toContain('weapon equipped in Inventory');
+    expect(fixture.nativeElement.querySelector('select')).toBeNull();
     dialog.confirm();
-    expect(weapon).toBe('sword');
+    expect(confirmed).toEqual(['wb']);
+    dialog.toggle({ id: 'wb', name: 'WB', usesWeapon: true });
+    expect(dialog.showWeaponHint()).toBeFalse();
+  });
+
+  it('shows the Inventory hint for a weapon-dependent personal bonus without an ability selection', () => {
+    open([], null);
+    fixture.componentRef.setInput('weaponNeeded', true);
+    fixture.detectChanges();
+    expect(dialog.showWeaponHint()).toBeTrue();
+    expect(fixture.nativeElement.textContent).toContain('Without a weapon, these bonuses do not apply.');
   });
 
   it('filters by search text', () => {

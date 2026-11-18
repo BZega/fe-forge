@@ -13,11 +13,6 @@ export interface PickerItem {
   usesWeapon?: boolean;
 }
 
-export interface WeaponOption {
-  key: string;
-  label: string;
-}
-
 export interface PickerGroup {
   label: string;
   tab?: string;
@@ -38,21 +33,19 @@ export class PickerDialogComponent implements OnInit {
   readonly context = input('');
   readonly groups = input<readonly PickerGroup[]>([]);
   readonly tabs = input<readonly string[]>([]);
+  readonly allTab = input<string | null>(null);
+  readonly tabTemplate = input<TemplateRef<{ $implicit: string; selected: boolean }> | null>(null);
   readonly selected = input<readonly string[]>([]);
   readonly max = input<number | null>(null);
-  readonly weaponOptions = input<readonly WeaponOption[] | null>(null);
-  readonly weapon = input<string | null>(null);
   readonly weaponNeeded = input(false);
   readonly itemTemplate = input<TemplateRef<{ $implicit: PickerItem; picker: PickerDialogComponent }> | null>(null);
 
   readonly confirmed = output<string[]>();
-  readonly weaponChosen = output<string | null>();
   readonly closed = output<void>();
 
   readonly picked = signal<string[]>([]);
   readonly query = signal('');
   readonly activeTab = signal('');
-  readonly pickedWeapon = signal<string | null>(null);
 
   private readonly items = computed(() => this.groups().flatMap((group) => group.items));
 
@@ -66,7 +59,7 @@ export class PickerDialogComponent implements OnInit {
     const needle = this.query().trim().toLowerCase();
 
     return this.groups()
-      .filter((group) => this.tabs().length === 0 || group.tab === this.activeTab())
+      .filter((group) => this.tabs().length === 0 || this.activeTab() === this.allTab() || group.tab === this.activeTab())
       .map((group) => ({
         label: group.label,
         items: needle ? group.items.filter((item) => item.name.toLowerCase().includes(needle)) : group.items,
@@ -77,7 +70,6 @@ export class PickerDialogComponent implements OnInit {
   ngOnInit(): void {
     const fixed = this.items().filter((item) => item.fixed).map((item) => item.id);
     this.picked.set([...new Set([...fixed, ...this.selected()])]);
-    this.pickedWeapon.set(this.weapon());
     this.activeTab.set(this.tabs()[0] ?? '');
   }
 
@@ -101,10 +93,8 @@ export class PickerDialogComponent implements OnInit {
     }
   }
 
-  readonly showWeapon = computed(
-    () =>
-      this.weaponOptions() !== null &&
-      (this.weaponNeeded() || this.items().some((item) => item.usesWeapon && this.isPicked(item))),
+  readonly showWeaponHint = computed(
+    () => this.weaponNeeded() || this.items().some((item) => item.usesWeapon && this.isPicked(item)),
   );
 
   isPicked(item: PickerItem): boolean {
@@ -149,10 +139,6 @@ export class PickerDialogComponent implements OnInit {
   }
 
   confirm(): void {
-    if (this.weaponOptions() !== null) {
-      this.weaponChosen.emit(this.pickedWeapon());
-    }
-
     this.confirmed.emit(this.picked());
   }
 

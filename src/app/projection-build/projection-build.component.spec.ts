@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { PlanStep } from '../class-plan/class-plan.component';
 import unitClassData from '../data/unit-classes.json';
-import { baseStatsOf, GrowthRates, STAT_KEYS, StatKey, Unit, UnitClass } from '../models/growth.models';
+import { baseStatsOf, GrowthRates, MAX_BASE_STATS, STAT_KEYS, StatKey, Unit, UnitClass } from '../models/growth.models';
 import { blazeBonusOf } from '../models/bonuses';
 import { ITEMS } from '../models/equipment';
 import { levelUpGrowth, projectStats } from '../models/recruitment.models';
@@ -85,6 +85,26 @@ describe('ProjectionBuildComponent', () => {
     const original = sword.BonusStats;
     beforeEach(() => { sword.BonusStats = [{ Spd: 4 }]; });
     afterEach(() => { sword.BonusStats = original; });
+
+    it('caps the base distribution before applying class and shared non-class bonuses', () => {
+      sword.BonusStats = [{ Str: 20 }];
+      const start = manualStart('Lysander', 10, { ...MAX_BASE_STATS });
+      start.steps = [{ fromLevel: 10, unitClass: byName('Gladiator'), mount: null, bondLevel: null }];
+      const { build, fixture, result } = open(start, { level: 30, minimum: true });
+      build.onEquipmentConfirmed([sword.Name]);
+      fixture.detectChanges();
+      const strength = () => build.rows().find((row) => row.stat === 'str')!;
+      expect(strength().summary.mean).toBe(99 + byName('Gladiator').bonusStats.str + 10);
+      expect(result()!.totals.str.probs).toEqual([1]);
+      build.view.set('base');
+      fixture.detectChanges();
+      expect(strength().summary.mean).toBe(99);
+      expect(build.totals()!.hp.min).toBe(120);
+      for (const stat of STAT_KEYS) {
+        expect(build.totals()![stat].min).toBe(MAX_BASE_STATS[stat]);
+        expect(build.totals()![stat].probs).toEqual([1]);
+      }
+    });
 
     it('adds and removes equipment in game without changing base stats or growth', () => {
       const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, 20])) as GrowthRates;
@@ -287,7 +307,7 @@ describe('ProjectionBuildComponent', () => {
   it("counts Mu's Warrior's Blood picked at Lv 20 as Warrior's Blood+ from Lv 35", () => {
     const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, 20])) as GrowthRates;
     const blood = { name: "Warrior's Blood", description: '', boosts: {}, learnedAt: 20 };
-    const start = { ...manualStart('Mu', 20, stats), steps: stepsFrom(20), abilities: [blood], weapon: 'sword' as const };
+    const start = { ...manualStart('Mu', 20, stats), steps: stepsFrom(20), abilities: [blood], equipment: ['Wooden Sword'] };
     const extra = (level: number, stat: StatKey) => {
       const { build } = open(start, { level });
       const inGame = build.rows().find((row) => row.stat === stat)!.summary.mean;
@@ -300,17 +320,41 @@ describe('ProjectionBuildComponent', () => {
     expect([extra(35, 'spd'), extra(35, 'dex')]).toEqual([2, 2]);
   });
 
-  it("keeps the card's abilities and weapon when only its level changes, but not when the build is edited", () => {
+  it("updates Mu's bonuses when Inventory changes and ignores a legacy weapon selection", () => {
+    const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, 20])) as GrowthRates;
+    const blood = { name: "Warrior's Blood", description: '', boosts: {}, learnedAt: 20 };
+    const start = { ...manualStart('Mu', 35, stats), abilities: [blood], weapon: 'axe' as const };
+    const { build, fixture, host } = open(start, { level: 35 });
+    const extra = (stat: StatKey) => {
+      const row = build.rows().find((row) => row.stat === stat)!;
+      return row.summary.mean - stats[stat];
+    };
+
+    expect(extra('str')).toBe(0);
+    build.onEquipmentConfirmed(['Answerer Huang']);
+    expect([extra('spd'), extra('dex'), extra('str')]).toEqual([2, 2, 0]);
+    build.onEquipmentConfirmed(['Wooden Gauntlets']);
+    expect([extra('spd'), extra('dex'), extra('str')]).toEqual([2, 0, 2]);
+    build.onEquipmentConfirmed([]);
+    expect([extra('spd'), extra('dex'), extra('str')]).toEqual([0, 0, 0]);
+    build.abilityPickerOpen.set(true);
+    fixture.detectChanges();
+    expect(host.querySelector('select[aria-label="Equipped weapon"]')).toBeNull();
+    expect(host.querySelector('app-picker-dialog')!.textContent).toContain('weapon equipped in Inventory');
+  });
+
+  it("keeps the card's abilities and inventory when only its level changes, but not when the build is edited", () => {
     const start = chapterStart('Cai');
     const { build, fixture } = open(start);
     build.onAbilitiesConfirmed(['Divine Insight']);
-    build.setWeapon('axe');
+    build.onEquipmentConfirmed(['Bronze Axe']);
 
     fixture.componentRef.setInput('start', { ...start, options: { ...start.options, level: 40 } });
     expect(build.equippedAbilityNames()).toEqual(['Divine Insight']);
     expect(build.weapon()).toBe('axe');
+    expect(build.equipment()).toEqual(['Bronze Axe']);
 
-    fixture.componentRef.setInput('start', { ...start, abilities: [], weapon: 'sword' });
+    fixture.componentRef.setInput('start', { ...start, abilities: [], equipment: ['Wooden Sword'] });
     expect(build.equippedAbilityNames()).toEqual([]);
     expect(build.weapon()).toBe('sword');
   });

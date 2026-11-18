@@ -3,6 +3,7 @@ import { projectStats } from './recruitment.models';
 import {
   addLevelUp,
   applyFloor,
+  applyCeiling,
   compareDistributions,
   levelUpChances,
   pointDistribution,
@@ -16,6 +17,32 @@ const growthOf = (rates: Partial<GrowthRates>): GrowthRates => ({ ...toGrowth(nu
 const total = (probs: number[]) => probs.reduce((sum, value) => sum + value, 0);
 
 describe('stat distributions', () => {
+  it('caps individual outcomes without losing probability mass', () => {
+    const capped = applyCeiling({ min: 98, probs: [0.25, 0.5, 0.25] }, 99);
+    expect(capped).toEqual({ min: 98, probs: [0.25, 0.75] });
+    expect(summarize(capped).mean).toBe(98.75);
+    expect(applyCeiling(pointDistribution(140), 120)).toEqual(pointDistribution(120));
+  });
+
+  it('caps base projections at 120 HP and 99 for every other stat, including class floors', () => {
+    const start = growthOf({ hp: 119, str: 98, mag: 99, spd: 100 });
+    const growth = growthOf({ hp: 250, str: 250, mag: 100, spd: 100 });
+    const projected = projectDistributions(start, 1, 4, {
+      growthAt: () => growth,
+      floorsAt: () => growthOf({ hp: 150, str: 120 }),
+    });
+    expect(projected.hp).toEqual(pointDistribution(120));
+    for (const stat of ['str', 'mag', 'spd'] as const) {
+      expect(projected[stat]).toEqual(pointDistribution(99));
+    }
+    const average = projectStats(start, 1, 4, () => growth);
+    expect(average.hp).toBe(120);
+    expect(average.str).toBe(99);
+    expect(average.mag).toBe(99);
+    expect(average.spd).toBe(99);
+    expect(projectStats(start, 1, 1, () => growth).spd).toBe(99);
+  });
+
   it('is an exact binomial for independent level ups', () => {
     const { str } = projectDistributions(growthOf({ str: 5 }), 1, 11, { growthAt: () => growthOf({ str: 40 }) });
     const summary = summarize(str);

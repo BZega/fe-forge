@@ -84,6 +84,17 @@ describe('ItemCardComponent', () => {
     expect(host.querySelector('select')).toBeNull();
   });
 
+  it('keeps named Answerer forms unchanged on read-only cards', () => {
+    const { fixture, host } = open();
+    for (const name of ['Answerer Arisen', 'Answerer Breaker', 'Answerer Huang']) {
+      fixture.componentRef.setInput('item', ITEMS.find((item) => item.Name === name)!);
+      fixture.componentRef.setInput('variants', ITEMS);
+      fixture.detectChanges();
+      expect(host.querySelector('.equipment-name-text')!.textContent).toBe(name);
+      expect(host.querySelector('select')).toBeNull();
+    }
+  });
+
   it('only shows the description for items without combat details', () => {
     const { fixture, host } = open();
     fixture.componentRef.setInput('item', vulnerary);
@@ -146,5 +157,49 @@ describe('ItemCardComponent', () => {
     expect(host.querySelector('details')!.open).toBeFalse();
     expect(host.querySelector<HTMLElement>('.effectiveness-badge')!.checkVisibility()).toBeTrue();
     expect(host.querySelector('.equipment-details .effectiveness')).toBeNull();
+  });
+
+  it('aligns effectiveness and durability columns across names, upgrades, and badge counts', () => {
+    const cards = [
+      { ...ITEMS[0], Name: 'Bow', Durability: '5/5', EffectiveType: ['Flying'] },
+      { ...ITEMS[0], Name: 'A much longer weapon name', Durability: '100/100', EffectiveType: ['Cavalry', 'Armor'] },
+      { ...ITEMS[0], Name: 'No effectiveness', EffectiveType: [] },
+    ].map((item) => {
+      const fixture = TestBed.createComponent(ItemCardComponent);
+      fixture.componentRef.setInput('item', item);
+      fixture.componentRef.setInput('variants', [item, { ...item, Name: `${item.Name}+1` }]);
+      fixture.detectChanges();
+      const host = fixture.nativeElement as HTMLElement;
+      host.style.display = 'block';
+      return { fixture, host };
+    });
+    for (const { host } of cards) {
+      document.body.appendChild(host);
+    }
+
+    for (const selectable of [false, true]) {
+      for (const width of [280, 480]) {
+        for (const { fixture, host } of cards) {
+          host.style.width = `${width}px`;
+          fixture.componentRef.setInput('selectable', selectable);
+          fixture.detectChanges();
+        }
+        const left = (host: HTMLElement, selector: string) =>
+          host.querySelector(selector)!.getBoundingClientRect().left - host.getBoundingClientRect().left;
+        const badgePositions = cards.slice(0, 2).map(({ host }) => left(host, '.effectiveness-badge'));
+        expect(Math.abs(badgePositions[0] - badgePositions[1])).toBeLessThan(1);
+        const durabilityEnds = cards.map(({ host }) =>
+          host.querySelector('.equipment-durability')!.getBoundingClientRect().right - host.getBoundingClientRect().left);
+        expect(Math.max(...durabilityEnds) - Math.min(...durabilityEnds)).toBeLessThan(1);
+        for (const { host } of cards) {
+          expect(host.scrollWidth).toBeLessThanOrEqual(host.clientWidth);
+          const badges = host.querySelectorAll('.effectiveness-badge');
+          if (badges.length) {
+            const name = host.querySelector('.equipment-name')!.getBoundingClientRect();
+            expect(name.right).toBeLessThanOrEqual(badges[0].getBoundingClientRect().left);
+          }
+        }
+      }
+    }
   });
 });

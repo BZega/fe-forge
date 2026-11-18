@@ -45,7 +45,7 @@ Only one item's details can be open at a time.
 Weapon names show their skill icon. Expanded details show the description,
 then two columns: Mt/Hit/Crit/Curse and Wt/Avo/Rng/Skill, with skill icons beside
 the required ranks. Durability stays visible beside the dropdown arrow on the
-item's top row; effectiveness and bonus stats appear inside the details.
+item's top row alongside effectiveness; bonus stats appear inside the details.
 
 The standalone `ItemCardComponent` (`app-item-card`) renders this item display
 without a modal. Pass `[item]` to show a read-only card. For equip selection,
@@ -61,8 +61,9 @@ their own display. Missing/non-applicable combat stats remain `--`, and white
 magic retains its Pwr value.
 
 Item cards display effectiveness as colored boxes containing only the target type
-(for example, `Cavalry`): orange for Effective and red for Effective+. They are centered
-between the item name and durability and visible while details are collapsed.
+(for example, `Cavalry`): orange for Effective and red for Effective+. They are left-aligned
+in a consistent column between the item name and durability, including while details
+are collapsed. Multiple tags wrap within that column.
 Hover text and accessible labels show the full `Effective <type>` or `Effective+ <type>`
 label plus `2x weapon Might` or `3x weapon Might`, respectively. Legacy `Extra`
 prefixes map to `Effective+` without changing saved or source data.
@@ -74,6 +75,28 @@ Class-only bonuses, unmodified values and penalties alone use the base text colo
 separate `Base Value`, `Class`, and `Modifier`; modifiers include the applied
 (capped) equipment, mount, ability and other non-class bonuses. Base projection
 views exclude these bonuses. Class floor increases remain part of the base value.
+Growth Mapper and Projected Stats cap the unit's own stats (starting base plus
+level gains and class floor increases) at **120 HP** and **99 for other stats**.
+Class stat bonuses and the shared **+10 non-class bonus** are added afterward,
+so displayed in-game totals can exceed those base caps. Projected probability
+distributions also stop at the base caps before bonuses are added.
+Growth Mapper keeps **Add levels**, **Exam / Reclass**, and **Seed RNG** visible
+while scrolling. The Timeline controls also stick below the main action bar,
+including the timeline selector, Projected Stats, Abilities, Inventory, and Battalion.
+**Add levels** opens a draft for the selected timeline with one level ready to mark.
+Choose a count from 1 to `99 - current level` to enter multiple level-ups together.
+Tap the stats that rose, then confirm the batch; Cancel, closing, or Escape discards
+the draft. Shared-roll observations update together only after confirmation.
+The original **+ Lv** button remains below the timeline for immediate single-level
+additions without opening the modal.
+The modal carries forward the timeline's current class and mount, including
+level-gated growth changes. Use Exam / Reclass between batches to change class.
+
+Growth Mapper's timeline toolbar includes a Battalion selector for the selected
+branch. Its bonuses share the +10 limit with equipment, mounts, abilities and
+Blaze. As in Projected Stats, battalions do not contribute while the class is
+mounted. The selection is inherited by new branches, saved with the map, and
+passed to the Projected Stats dialog.
 Character recruitment stats also include passive Blaze modifiers (for example,
 Cai's Mag+3) in the value and Modifier tooltip. Structured Blaze source bonuses
 take precedence over legacy fallback values and are applied once, not stacked.
@@ -100,12 +123,24 @@ with a gold outline while that level's picker is open.
 Usable skills use a gold border, retaining the normal green panel background and
 the boon/bane icon colors.
 
+Inventory category tabs use linked skill icons (Heavy Armor for Equipment), with
+the selected type named above the list. **ALL** is the first and default tab,
+showing every category together under its own heading without a redundant ALL
+heading; search applies across the full catalog in this tab.
 Selectable equipment cards group catalog entries such as `Wooden Sword` and
 `Wooden Sword+1` into one card with an upgrade dropdown. Blank selects the base
 item; only existing single-digit upgrades (0-9) are offered. Each upgrade uses its
 own catalog stats and name, including in saves. Changing a dropdown does not equip
 an unchecked item; equipped items switch variants in the dialog draft until confirmed.
+Answerer also groups its named Arisen, Breaker, and Huang forms after +1 through +3.
 Read-only cards have no upgrade controls.
+The equipment catalog also includes spears, axes, bows, gauntlets, and black/white
+magic. Standalone Avoid bonuses are stored in `Avo`, effectiveness targets in
+`EffectiveType` (with `Extra` for enhanced effectiveness), and curse amounts in
+`Curse` without a plus sign. Conditional combat effects remain in descriptions;
+combat art access uses "Allows use of the ... combat art." Unconditional
+HP/Str/Mag/Spd/Dex/Def/Res/Lck/Cha bonuses use `BonusStats`, while effects on allies
+or during specific combats do not modify the unit's base stats.
 The upgrade control sits directly after the base name: a down arrow for the base
 item, or a subtly outlined `+X` suffix with a highlighted border on focus.
 
@@ -114,7 +149,11 @@ their description when expanded, instead of an all-placeholder combat table.
 
 Item stat bonuses share the existing +10 per-stat non-class bonus limit with
 abilities, mounts and other bonuses. They do not change level-up growth or class
-floors. An equipped weapon also supplies the type for weapon-dependent abilities.
+floors. Inventory is the only weapon source for weapon-dependent abilities, including
+Mu's Warrior's Blood (learned at Lv 20 and upgraded at Lv 35). Equip the ability in
+Abilities and a weapon in Inventory to activate its bonus; changing or removing the
+weapon updates the bonus automatically. Legacy saved weapon-type selections alone
+no longer activate bonuses. These bonuses also share the +10 per-stat limit.
 Growth Mapper saves and new exam/reclass sections retain equipment by item name.
 
 ## Running it

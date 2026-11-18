@@ -1,23 +1,54 @@
 :host {
   display: block;
+  --timeline-sticky-top: 0px;
 }
 
 .timeline {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
-  padding: 1rem 1.1rem 1.2rem;
+  padding: 0 1.1rem 1.2rem;
   background: var(--panel);
   border: 1px solid var(--panel-border);
   border-radius: 10px;
 }
 
 .timeline-bar {
+  position: sticky;
+  top: var(--timeline-sticky-top);
+  z-index: 6;
+  background: var(--panel);
+  padding: 1rem 1.1rem;
+  margin: -1px calc(-1.1rem - 1px) 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.75rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -1px -2px 0;
+    z-index: -1;
+    background: var(--bg);
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -1px -1px 0;
+    z-index: -1;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-bottom: none;
+    border-radius: inherit;
+    pointer-events: none;
+  }
 }
 
 .timeline-picker {
@@ -80,13 +111,13 @@
 }
 
 .tgrid-band--head {
-  top: 0;
+  top: calc(var(--timeline-sticky-top) + var(--timeline-bar-height, 0px));
   height: var(--head-h);
   z-index: 3;
 }
 
 .tgrid-band--growth {
-  top: calc(var(--head-h) + 0.2rem);
+  top: calc(var(--timeline-sticky-top) + var(--timeline-bar-height, 0px) + var(--head-h) + 0.2rem);
   margin-bottom: 0.2rem;
 }
 
@@ -383,8 +414,16 @@
 }
 
 @media (max-width: 720px) {
+  :host {
+    --timeline-sticky-top: var(--mapper-header-height, 0px);
+  }
   .timeline {
-    padding: 0.75rem 0.6rem 0.9rem;
+    padding: 0 0.6rem 0.9rem;
+  }
+
+  .timeline-bar {
+    padding: 0.75rem 0.6rem;
+    margin-inline: calc(-0.6rem - 1px);
   }
 
   .tgrid {

@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, input, output, signal } f
 import { EQUIPMENT_SLOTS, equippedItems, equipmentSlot, ITEMS, Item, itemBaseName, itemVariants } from '../models/equipment';
 import { PickerDialogComponent, PickerGroup } from '../picker-dialog/picker-dialog.component';
 import { ItemCardComponent } from '../item-card/item-card.component';
+import { skillIconUrl, useFallbackIcon } from '../icon-links';
+import { SKILL_KEYS, SKILL_LABELS, SkillKey } from '../models/growth.models';
 
 const WEAPON_TABS = ['Sword', 'Spear', 'Axe', 'Bow', 'Gauntlets'];
 
@@ -14,6 +16,7 @@ function weaponTab(item: Item): string {
   selector: 'app-equipment-dialog',
   imports: [ItemCardComponent, PickerDialogComponent],
   templateUrl: './equipment-dialog.component.html',
+  styleUrl: './equipment-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EquipmentDialogComponent {
@@ -25,6 +28,21 @@ export class EquipmentDialogComponent {
   readonly byName = computed(() => new Map(this.items().map((item) => [item.Name, item])));
   private readonly chosenVariants = signal<ReadonlyMap<string, string>>(new Map());
   readonly itemVariants = itemVariants;
+  readonly useFallbackIcon = useFallbackIcon;
+
+  tabSkill(tab: string): SkillKey | null {
+    if (tab === 'Equipment') return 'heavyArmor';
+    if (tab === 'Gauntlets') return 'gauntlet';
+    return SKILL_KEYS.find((key) => SKILL_LABELS[key] === tab) ?? null;
+  }
+
+  tabIcon(skill: SkillKey, selected: boolean): string {
+    return skillIconUrl(skill, selected ? 'good' : 'neutral') ?? this.fallbackIcon(skill);
+  }
+
+  fallbackIcon(skill: SkillKey): string {
+    return `icons/skills/black/${skill}.svg`;
+  }
   private readonly displayItems = computed(() => {
     const seen = new Set<string>();
     return this.items().filter((item) => {
@@ -48,11 +66,12 @@ export class EquipmentDialogComponent {
 
   readonly selection = computed(() => equippedItems(this.selected(), this.items()).map((item) => item.Name));
   readonly tabs = computed(() => [
+    'ALL',
     ...new Set([...WEAPON_TABS, ...this.items().filter((item) => equipmentSlot(item) === 'Weapon').map(weaponTab)]),
     'Equipment',
   ]);
   readonly groups = computed<PickerGroup[]>(() => [
-    ...this.tabs().filter((tab) => tab !== 'Equipment').map((tab) => ({
+    ...this.tabs().filter((tab) => tab !== 'Equipment' && tab !== 'ALL').map((tab) => ({
       label: tab,
       tab,
       items: this.displayItems().filter((item) => equipmentSlot(item) === 'Weapon' && weaponTab(item) === tab),

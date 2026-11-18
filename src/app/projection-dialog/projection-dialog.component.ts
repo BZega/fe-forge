@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, HostListener, inject, input, linkedSignal, OnInit, output, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ClassPlanComponent, MAX_PROJECTION_LEVEL, PlanStep } from '../class-plan/class-plan.component';
-import { abilitiesFor, abilityPickerGroups, Battalion, BATTALION_TYPE_ORDER, classLabel, MAX_EQUIPPED_ABILITIES, SKILL_LABELS, StatBoostAbility, STAT_KEYS, STAT_LABELS, Unit, WEAPON_KEYS, WeaponKey } from '../models/growth.models';
-import { abilitiesAt, abilityLock, InGameGear, inGameBonus, isMountedClass, usesWeapon, WEAPON_OPTIONS } from '../models/bonuses';
+import { abilitiesFor, abilityPickerGroups, Battalion, BATTALION_TYPE_ORDER, classLabel, MAX_EQUIPPED_ABILITIES, StatBoostAbility, STAT_KEYS, STAT_LABELS, Unit, WeaponKey } from '../models/growth.models';
+import { abilitiesAt, abilityLock, InGameGear, inGameBonus, isMountedClass, usesWeapon } from '../models/bonuses';
 import { levelUpGrowth, projectStats, RecruitmentChapter, stepAtLevel } from '../models/recruitment.models';
 import { PickerDialogComponent } from '../picker-dialog/picker-dialog.component';
 import { ProjectionActual } from '../projection-start-dialog/projection-start-dialog.component';
 import { GrowthDataService } from '../services/growth-data.service';
 import { EquipmentDialogComponent } from '../equipment-dialog/equipment-dialog.component';
-import { equipmentWeapon, hasEquipmentWeapon } from '../models/equipment';
+import { equipmentWeapon } from '../models/equipment';
 import { hasStatBonus, statBreakdown } from '../models/stat-display';
 
 export type ActualTone = 'higher' | 'even' | 'lower';
@@ -35,11 +35,9 @@ export class ProjectionDialogComponent implements OnInit {
   readonly equipment = input<readonly string[]>([]);
   readonly chosenEquipment = linkedSignal(() => this.equipment());
   readonly equipmentPickerOpen = signal(false);
-  readonly hasEquipmentWeapon = computed(() => hasEquipmentWeapon(this.chosenEquipment()));
 
   onEquipmentConfirmed(names: string[]): void {
     this.chosenEquipment.set(names);
-    this.chosenWeapon.set(equipmentWeapon(names));
     this.equipmentPickerOpen.set(false);
   }
 
@@ -49,12 +47,10 @@ export class ProjectionDialogComponent implements OnInit {
   private readonly statBoostAbilities = toSignal(this.api.getStatBoostAbilities(), { initialValue: [] as StatBoostAbility[] });
 
   readonly maxAbilities = MAX_EQUIPPED_ABILITIES;
-  readonly weaponKeys = WEAPON_KEYS;
-  readonly weaponLabels = SKILL_LABELS;
   readonly abilityOptions = computed(() => abilitiesFor(this.statBoostAbilities(), this.unit().name));
   readonly abilityGroups = computed(() => abilityPickerGroups(this.abilityOptions(), (ability) => abilityLock(ability, this.endLevel())));
   private readonly abilityNames = linkedSignal<readonly string[]>(() => this.abilities().map((ability) => ability.name));
-  readonly chosenWeapon = linkedSignal<WeaponKey | null>(() => this.weapon());
+  readonly chosenWeapon = computed(() => equipmentWeapon(this.chosenEquipment()));
   readonly chosenBattalion = linkedSignal<Battalion | null>(() => this.battalion());
   readonly abilityPickerOpen = signal(false);
 
@@ -67,20 +63,11 @@ export class ProjectionDialogComponent implements OnInit {
     this.abilityOptions().filter((ability) => this.abilityNames().includes(ability.name)),
   );
   readonly equippedAbilityNames = computed(() => abilitiesAt(this.equippedAbilities(), this.endLevel()).map((ability) => ability.name));
-  readonly needsWeapon = computed(() => usesWeapon(this.unit().name, this.endLevel(), this.equippedAbilities()));
   readonly personalWeapon = computed(() => usesWeapon(this.unit().name, this.endLevel(), []));
-  readonly weaponOptions = WEAPON_OPTIONS;
 
   onAbilitiesConfirmed(names: string[]): void {
     this.abilityNames.set(names);
     this.abilityPickerOpen.set(false);
-  }
-
-  setWeapon(value: string): void {
-    if (this.hasEquipmentWeapon()) {
-      return;
-    }
-    this.chosenWeapon.set(WEAPON_KEYS.find((weapon) => weapon === value) ?? null);
   }
 
   setBattalion(value: string): void {

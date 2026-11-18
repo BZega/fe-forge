@@ -20,6 +20,8 @@ export class ItemCardComponent {
   readonly variantChange = output<string>();
   readonly baseName = computed(() => itemBaseName(this.item().Name));
   readonly canUpgrade = computed(() => this.selectable() && this.variants().length > 1);
+  readonly namedVariant = computed(() => this.variantLabel(this.item()).length > 0 && !this.variantLabel(this.item()).startsWith('+'));
+  readonly variantWidth = computed(() => this.namedVariant() ? `${this.variantLabel(this.item()).length + 1}ch` : null);
   readonly itemBonusDescription = itemBonusDescription;
   readonly useFallbackIcon = useFallbackIcon;
   readonly hasCombatDetails = computed(() => {
@@ -36,6 +38,10 @@ export class ItemCardComponent {
     const label = `${enhanced ? 'Effective+' : 'Effective'} ${target}`;
     return { target, label, enhanced, title: `${label}: ${enhanced ? 3 : 2}x weapon Might` };
   }));
+
+  variantLabel(item: Item): string {
+    return item.Name.slice(itemBaseName(item.Name).length).trim();
+  }
 
   skillKey(type: string): SkillKey | null {
     const normalized = type.toLowerCase();

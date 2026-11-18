@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { computed, signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import unitClassData from '../data/unit-classes.json';
@@ -253,6 +254,63 @@ describe('SeedTimelineComponent', () => {
     expect(host.querySelector('.saves')).not.toBeNull();
   });
 
+  it('keeps the original single-level button alongside the header batch modal', () => {
+    const { fixture, page, host } = render();
+    const count = seed().rows.length;
+    const single = host.querySelector<HTMLButtonElement>('.timeline-footer .ghost-button')!;
+    expect(single.textContent).toContain(`+ Lv ${page.endLevelOf(page.sectionViews()[0]) + 1}`);
+    single.click();
+    fixture.detectChanges();
+    expect(seed().rows.length).toBe(count + 1);
+    expect(page.levelEntry()).toBeNull();
+    toggleButton(host, 'Add levels')!.click();
+    fixture.detectChanges();
+    expect(host.querySelector('app-level-entry-dialog')).not.toBeNull();
+    expect(host.querySelectorAll('app-level-entry-dialog .stat-toggle').length).toBe(9);
+    expect(seed().rows.length).toBe(count + 1);
+    host.querySelector<HTMLButtonElement>('app-level-entry-dialog .dialog-footer .button')!.click();
+    fixture.detectChanges();
+    expect(page.levelEntry()).toBeNull();
+    expect(seed().rows.length).toBe(count + 1);
+  });
+
+  it('keeps the page title unboxed and preserves only the timeline panel outline', () => {
+    const { host } = render();
+    const header = getComputedStyle(host.querySelector('.page-header')!);
+    const bar = getComputedStyle(host.querySelector('.timeline-bar')!);
+    const panel = getComputedStyle(host.querySelector('.timeline')!);
+    expect(header.position).toBe('sticky');
+    expect(header.borderTopWidth).toBe('0px');
+    expect(header.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(bar.position).toBe('sticky');
+    expect(bar.borderTopLeftRadius).toBe('10px');
+    expect(bar.borderBottomWidth).toBe('0px');
+    expect(bar.borderBottomLeftRadius).toBe('0px');
+    expect(panel.borderBottomLeftRadius).toBe('10px');
+  });
+
+  it('joins sticky stat headers to the toolbar without a peek-through gap and masks the outer corner seams', () => {
+    const { fixture, host } = render();
+    const timeline = fixture.debugElement.query(By.directive(SeedTimelineComponent)).componentInstance as SeedTimelineComponent;
+    timeline.barHeight.set(100);
+    fixture.detectChanges();
+    const bar = host.querySelector('.timeline-bar')!;
+    const head = getComputedStyle(host.querySelector('.tgrid-band--head')!);
+    const growth = getComputedStyle(host.querySelector('.tgrid-band--growth')!);
+    const base = parseFloat(getComputedStyle(bar).top);
+    expect(head.position).toBe('sticky');
+    expect(growth.position).toBe('sticky');
+    expect(parseFloat(head.top)).toBeCloseTo(base + 100, 1);
+    const headHeight = parseFloat(head.height);
+    const shadow = getComputedStyle(host.querySelector('.tgrid-band')!).boxShadow;
+    expect(parseFloat(growth.top) - parseFloat(head.top) - headHeight).toBeLessThan(4);
+    expect(shadow).not.toBe('none');
+    expect(getComputedStyle(bar, '::before').content).not.toBe('none');
+    expect(getComputedStyle(bar, '::before').pointerEvents).toBe('none');
+    expect(getComputedStyle(bar, '::after').borderTopLeftRadius).toBe('10px');
+    expect(getComputedStyle(bar, '::after').borderBottomWidth).toBe('0px');
+  });
+
   it('only shows class helper text in the growth row, not beneath each level', () => {
     const { host } = render();
 
@@ -265,6 +323,104 @@ describe('SeedTimelineComponent', () => {
     for (const label of classLabels) {
       expect(label.closest('.tgrid-band--growth')).not.toBeNull();
     }
+  });
+
+  it('measures a late timeline and reconnects sticky offsets when its header is recreated without refreshing', async () => {
+    const { page } = render();
+    const views = page.sectionViews();
+    const visible = signal(false);
+    spyOn(page, 'sectionViews').and.callFake(computed(() => visible() ? views : []));
+    let height = 88;
+    spyOn(HTMLElement.prototype, 'getBoundingClientRect').and.callFake(function (this: HTMLElement) {
+      return new DOMRect(0, 0, 500, this.classList.contains('timeline-bar') ? height : 20);
+    });
+    const observe = spyOn(ResizeObserver.prototype, 'observe').and.callThrough();
+    const disconnect = spyOn(ResizeObserver.prototype, 'disconnect').and.callThrough();
+    const fixture = TestBed.createComponent(SeedTimelineComponent);
+    fixture.componentRef.setInput('mapper', page);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('.timeline-bar')).toBeNull();
+
+    visible.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const first = fixture.nativeElement.querySelector('.timeline-bar') as HTMLElement;
+    expect(observe).toHaveBeenCalledWith(first);
+    expect(fixture.componentInstance.barHeight()).toBe(88);
+
+    visible.set(false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(disconnect).toHaveBeenCalled();
+
+    height = 132;
+    visible.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const replacement = fixture.nativeElement.querySelector('.timeline-bar') as HTMLElement;
+    expect(replacement).not.toBe(first);
+    expect(observe).toHaveBeenCalledWith(replacement);
+    expect(fixture.componentInstance.barHeight()).toBe(132);
+    fixture.detectChanges();
+    const head = getComputedStyle(fixture.nativeElement.querySelector('.tgrid-band--head'));
+    const bar = getComputedStyle(replacement);
+    expect(parseFloat(head.top)).toBeCloseTo(parseFloat(bar.top) + 132, 1);
+    fixture.destroy();
+  });
+
+  it('selects and clears a battalion for only the focused branch', () => {
+    const { fixture, page, host } = render();
+    const first = state.addBranch(seed().id, seed().rows[0].id, { classId: classId('Diviner'), chance: 100, passed: true })!;
+    const latest = state.addBranch(seed().id, seed().rows[0].id, { classId: classId('Gladiator'), chance: 100, passed: true })!;
+    fixture.detectChanges();
+    const timeline = host.querySelector<HTMLSelectElement>('.timeline-picker select')!;
+    timeline.value = String(first);
+    timeline.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    const select = host.querySelector<HTMLSelectElement>('select[aria-label="Battalion"]')!;
+    const battalion = page.battalions().find((candidate) => candidate.mag > 0)!;
+    select.value = String(battalion.id);
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    const branch = () => page.sectionViews().find((view) => view.section.id === first)!;
+    expect(page.battalionOf(branch())?.id).toBe(battalion.id);
+    expect(state.seedMap().sections.find((section) => section.id === latest)!.battalionId ?? null).toBeNull();
+    expect(seed().battalionId ?? null).toBeNull();
+    expect(page.statTotalTitle(page.endStatsOf(branch())[STAT_KEYS.indexOf('mag')])).toContain(battalion.name);
+    select.value = '';
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(page.battalionOf(branch())).toBeNull();
+  });
+
+  it('retains a battalion but does not count it while mounted, including after an inline reclass', () => {
+    const { fixture, page, host } = render();
+    const view = () => page.sectionViews()[0];
+    const battalion = page.battalions()[0];
+    state.setBattalion(seed().id, battalion.id);
+    state.addAvailableClass(classId('Ornius Rider'));
+    state.setReclass(seed().id, seed().rows[1].id, classId('Ornius Rider'));
+    fixture.detectChanges();
+    const withBattalion = page.endStatsOf(view());
+    expect(host.querySelector<HTMLSelectElement>('select[aria-label="Battalion"]')!.title).toContain('Not counted');
+    expect(page.battalionOf(view())?.id).toBe(battalion.id);
+    state.setBattalion(seed().id, null);
+    expect(page.endStatsOf(view()).map((stat) => stat.value)).toEqual(withBattalion.map((stat) => stat.value));
+  });
+
+  it('preserves different battalions on end branches when restoring saves', () => {
+    const { page } = render();
+    const first = page.battalions()[0];
+    const second = page.battalions()[1];
+    state.setBattalion(seed().id, first.id);
+    const branch = state.addBranch(seed().id, seed().rows.at(-1)!.id, {
+      classId: classId('Diviner'), chance: 100, passed: true,
+    })!;
+    state.setBattalion(branch, second.id);
+    const snapshot = state.snapshot();
+    state.restore(snapshot, null);
+    expect(state.seedMap().sections.map((section) => section.battalionId)).toEqual([first.id, second.id]);
   });
 
   it('opens equipment for the focused timeline', () => {

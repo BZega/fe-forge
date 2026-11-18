@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, input, model, signal, untracked } from '@angular/core';
+import { afterRenderEffect, ChangeDetectionStrategy, Component, computed, effect, ElementRef, input, model, signal, untracked, viewChild } from '@angular/core';
 import { GrowthRates, Mount, mountBonusAt, mountGrowthAt, STAT_KEYS, STAT_LABELS, StatKey } from '../models/growth.models';
 import type { SectionView, SeedMapperPageComponent, StatTotal } from '../seed-mapper-page/seed-mapper-page.component';
 import { SearchableSelectComponent } from '../searchable-select/searchable-select.component';
@@ -63,11 +63,14 @@ interface TimelineOption {
   templateUrl: './seed-timeline.component.html',
   styleUrl: './seed-timeline.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[style.--timeline-bar-height]': 'barHeight() + "px"' },
 })
 export class SeedTimelineComponent {
   readonly mapper = input.required<SeedMapperPageComponent>();
   readonly mountEditorKey = signal<string | null>(null);
   readonly useFallbackIcon = useFallbackIcon;
+  readonly timelineBar = viewChild<ElementRef<HTMLElement>>('timelineBar');
+  readonly barHeight = signal(0);
 
   readonly statKeys = STAT_KEYS;
   readonly statLabels = STAT_LABELS;
@@ -81,6 +84,14 @@ export class SeedTimelineComponent {
   );
 
   constructor() {
+    afterRenderEffect((onCleanup) => {
+      const bar = this.timelineBar()?.nativeElement;
+      if (!bar) return;
+      const observer = new ResizeObserver(() => this.barHeight.set(bar.getBoundingClientRect().height));
+      observer.observe(bar);
+      this.barHeight.set(bar.getBoundingClientRect().height);
+      onCleanup(() => observer.disconnect());
+    });
     effect(() => {
       this.mapper().timelineResetVersion();
       untracked(() => this.focusId.set(null));
@@ -322,10 +333,6 @@ export class SeedTimelineComponent {
 
   branchFrom(item: TimelineLevel): void {
     this.mapper().openBranchAt(item.view, item.rowIndex);
-  }
-
-  addLevel(view: SectionView): void {
-    this.mapper().addLevel(view);
   }
 
   removeLastLevel(view: SectionView): void {

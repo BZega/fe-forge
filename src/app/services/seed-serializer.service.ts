@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
-import { Mount, Unit, UnitClass } from '../models/growth.models';
+import { Battalion, Mount, Unit, UnitClass } from '../models/growth.models';
 import { SeedMapDto, SeedMapSnapshot } from '../models/seed-save';
 import { GrowthDataService } from './growth-data.service';
 import { ITEMS } from '../models/equipment';
@@ -9,6 +9,7 @@ import { ITEMS } from '../models/equipment';
 @Injectable({ providedIn: 'root' })
 export class SeedSerializerService {
   private readonly api = inject(GrowthDataService);
+  private readonly battalions = toSignal(this.api.getBattalions(), { initialValue: [] as Battalion[] });
 
   private readonly units = toSignal(this.api.getUnits(), {
     initialValue: [] as Unit[],
@@ -44,6 +45,7 @@ export class SeedSerializerService {
         mountLevel: section.mountLevel,
         abilities: [...section.abilities],
         equipment: [...(section.equipment ?? [])],
+        ...(section.battalionId != null ? { battalion: this.nameOf(this.battalions(), section.battalionId) } : {}),
         weapon: section.weapon,
         rows: section.rows,
         ...(section.mountChanges?.length ? {
@@ -98,6 +100,7 @@ export class SeedSerializerService {
         mountLevel: section.mountLevel,
         abilities: [...section.abilities],
         equipment: [...(section.equipment ?? [])],
+        ...(section.battalion ? { battalionId: this.idOf(this.battalions(), section.battalion) } : {}),
         weapon: section.weapon,
         rows: section.rows,
         ...(section.mountChanges?.length ? {
@@ -149,6 +152,7 @@ export class SeedSerializerService {
     for (const section of seed.sections) {
       check(this.classes(), section.unitClass);
       check(this.mounts(), section.mount);
+      check(this.battalions(), section.battalion ?? null);
       for (const change of section.mountChanges ?? []) {
         check(this.mounts(), change.mount);
       }

@@ -70,6 +70,7 @@ export interface InlineExamDto {
 }
 
 export interface SectionSnapshot {
+  battalionId?: number | null;
   mountChanges?: MountChangeSnapshot[];
   equipment?: string[];
   exam: ExamSnapshot | null;
@@ -110,6 +111,7 @@ export interface ExamDto {
 }
 
 export interface SectionDto {
+  battalion?: string | null;
   mountChanges?: MountChangeDto[];
   equipment?: string[];
   exam: ExamDto | null;
@@ -251,6 +253,7 @@ function readSeedMap(raw: unknown): SeedMapDto {
       mountLevel: readMountLevel(section['mountLevel']),
       abilities: readNames(section['abilities']),
       equipment: readNames(section['equipment']),
+      ...(section['battalion'] === undefined ? {} : { battalion: readName(section['battalion']) }),
       weapon: WEAPON_KEYS.find((weapon) => weapon === section['weapon']) ?? null,
       rows,
       ...(section['mountChanges'] === undefined ? {} : {

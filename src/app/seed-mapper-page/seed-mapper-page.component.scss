@@ -10,6 +10,10 @@
 }
 
 .page-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(12px);
   flex: none;
   display: flex;
   align-items: flex-start;
@@ -75,6 +79,10 @@
   flex-direction: column;
   gap: 1.25rem;
   padding-bottom: 1.5rem;
+
+  > * {
+    flex-shrink: 0;
+  }
 
   &::-webkit-scrollbar {
     width: 0;
@@ -876,7 +884,14 @@
   }
 
   .page-header-actions {
-    flex-wrap: wrap;
+    gap: 0.4rem;
+
+    .ghost-button {
+      flex: 1 1 0;
+      padding: 0.5rem 0.35rem;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
   }
 
   .seed {

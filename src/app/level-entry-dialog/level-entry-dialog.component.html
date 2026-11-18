@@ -1,0 +1,49 @@
+<div class="backdrop" (click)="closed.emit()"></div>
+<div #dialog class="dialog dialog--levels" role="dialog" aria-modal="true" aria-labelledby="level-entry-title" aria-describedby="level-entry-help">
+  <header class="dialog-header">
+    <div>
+      <p class="dialog-eyebrow">{{ timeline() }}</p>
+      <h2 id="level-entry-title">Add levels</h2>
+    </div>
+    <button type="button" class="dialog-close" aria-label="Close" (click)="closed.emit()">&times;</button>
+  </header>
+  <p id="level-entry-help" class="dialog-context">Tap the stats that rose at each level, then add the batch. Nothing changes until you confirm.</p>
+  <div class="level-controls">
+    <label for="level-entry-count">Levels to add</label>
+    <input #levelCount id="level-entry-count" type="number" min="1" [max]="rows().length" step="1"
+      [value]="countText()" [attr.aria-invalid]="count() === null" aria-describedby="level-entry-limit"
+      (input)="updateCount(levelCount)" />
+    <span class="level-range" aria-live="polite">{{ range() }}</span>
+  </div>
+  <p id="level-entry-limit" class="hint" [class.count-error]="count() === null">
+    Choose 1–{{ rows().length }} levels. Higher counts are capped at Lv 99.
+  </p>
+  <div class="level-list">
+    <div class="level-grid level-grid--head">
+      <span>Level</span>
+      @for (stat of statKeys; track stat) { <span>{{ statLabels[stat] }}</span> }
+    </div>
+    @if (error()) { <p class="count-error" role="alert">{{ error() }}</p> }
+    @for (row of visibleRows(); track row.level; let index = $index) {
+      <div class="level-grid" [attr.aria-label]="'Lv ' + row.level" role="group">
+        <span class="level-label" [title]="row.className">Lv {{ row.level }}</span>
+        @for (stat of statKeys; track stat) {
+          @let marked = marks()[index][stat] > 0;
+          @let automatic = !marked && row.auto[stat];
+          <button type="button" class="stat-toggle" [class.stat-toggle--on]="marked || automatic"
+            [class.stat-toggle--auto]="automatic" [attr.aria-pressed]="marked || automatic"
+            [attr.aria-label]="statLabels[stat] + ' at Lv ' + row.level"
+            [title]="statLabels[stat] + (row.growth ? ': ' + row.growth[stat] + '% growth' : '') + (automatic ? ' · Inferred from a shared roll' : '')"
+            (click)="toggle(index, stat)">{{ marked || automatic ? 1 : 0 }}</button>
+        }
+      </div>
+      @if (row.sharedWith) { <p class="shared-note">Shared roll: {{ row.sharedWith }}. Confirming updates both.</p> }
+    }
+  </div>
+  <footer class="dialog-footer">
+    <button type="button" class="button" (click)="closed.emit()">Cancel</button>
+    <button type="button" class="button button--primary" [disabled]="count() === null" (click)="confirm()">
+      Add {{ count() ?? '' }} {{ count() === 1 ? 'level' : 'levels' }}
+    </button>
+  </footer>
+</div>

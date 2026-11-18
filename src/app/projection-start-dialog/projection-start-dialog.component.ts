@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, HostListener, inject, input, linkedSignal, OnInit, output, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ClassPlanComponent, MAX_PROJECTION_LEVEL, PlanEntry, PlanStep } from '../class-plan/class-plan.component';
-import { abilitiesFor, abilityPickerGroups, baseStatsOf, Battalion, BATTALION_TYPE_ORDER, classLabel, GrowthRates, MAX_EQUIPPED_ABILITIES, SKILL_LABELS, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, Unit, WEAPON_KEYS, WeaponKey } from '../models/growth.models';
-import { abilitiesAt, abilityLock, inGameBonus, MAX_EXTRA_BONUS, usesWeapon, WEAPON_OPTIONS } from '../models/bonuses';
+import { abilitiesFor, abilityPickerGroups, baseStatsOf, Battalion, BATTALION_TYPE_ORDER, classLabel, GrowthRates, MAX_EQUIPPED_ABILITIES, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, Unit, WeaponKey } from '../models/growth.models';
+import { abilitiesAt, abilityLock, inGameBonus, MAX_EXTRA_BONUS, usesWeapon } from '../models/bonuses';
 import { PickerDialogComponent } from '../picker-dialog/picker-dialog.component';
 import { levelUpGrowth, RecruitmentChapter, stepAtLevel } from '../models/recruitment.models';
 import { SearchableSelectComponent } from '../searchable-select/searchable-select.component';
@@ -10,7 +10,7 @@ import { GrowthDataService } from '../services/growth-data.service';
 import { RecruitmentDataService } from '../services/recruitment-data.service';
 import { SpoilerService } from '../services/spoiler.service';
 import { EquipmentDialogComponent } from '../equipment-dialog/equipment-dialog.component';
-import { equipmentWeapon, hasEquipmentWeapon } from '../models/equipment';
+import { equipmentWeapon } from '../models/equipment';
 
 export type StartSource = 'chapter' | 'manual';
 export interface ProjectionStart {
@@ -135,10 +135,8 @@ export class ProjectionStartDialogComponent implements OnInit {
 
   readonly inGameStats = signal(false);
   readonly maxAbilities = MAX_EQUIPPED_ABILITIES;
-  readonly weaponKeys = WEAPON_KEYS;
-  readonly weaponLabels = SKILL_LABELS;
   private readonly abilityNames = signal<readonly string[]>([]);
-  readonly weapon = signal<WeaponKey | null>(null);
+  readonly weapon = computed(() => equipmentWeapon(this.equipment()));
 
   private readonly statBoostAbilities = toSignal(this.api.getStatBoostAbilities(), { initialValue: [] as StatBoostAbility[] });
 
@@ -156,13 +154,9 @@ export class ProjectionStartDialogComponent implements OnInit {
     abilitiesAt(this.equippedAbilities(), this.enteredLevel()).map((ability) => ability.name),
   );
 
-  readonly needsWeapon = computed(() => usesWeapon(this.enteredName(), this.enteredLevel(), this.equippedAbilities()));
-
   readonly personalWeapon = computed(() => usesWeapon(this.enteredName(), this.enteredLevel(), []));
 
   private readonly enteredName = computed(() => (this.source() === 'chapter' ? this.unit() : this.manualUnit())?.name ?? '');
-
-  readonly weaponOptions = WEAPON_OPTIONS;
 
   readonly battalion = signal<Battalion | null>(null);
   private readonly battalions = toSignal(this.api.getBattalions(), { initialValue: [] as Battalion[] });
@@ -177,24 +171,15 @@ export class ProjectionStartDialogComponent implements OnInit {
   readonly abilityPickerOpen = signal(false);
   readonly equipmentPickerOpen = signal(false);
   readonly equipment = signal<readonly string[]>([]);
-  readonly hasEquipmentWeapon = computed(() => hasEquipmentWeapon(this.equipment()));
 
   onEquipmentConfirmed(names: string[]): void {
     this.equipment.set(names);
-    this.weapon.set(equipmentWeapon(names));
     this.equipmentPickerOpen.set(false);
   }
 
   onAbilitiesConfirmed(names: string[]): void {
     this.abilityNames.set(names);
     this.abilityPickerOpen.set(false);
-  }
-
-  setWeapon(value: string): void {
-    if (this.hasEquipmentWeapon()) {
-      return;
-    }
-    this.weapon.set(WEAPON_KEYS.find((weapon) => weapon === value) ?? null);
   }
 
   // --- actual stats ----------------------------------------------------------------
@@ -342,7 +327,6 @@ export class ProjectionStartDialogComponent implements OnInit {
     if (initial) {
       this.options.set({ ...initial.options });
       this.abilityNames.set((initial.abilities ?? []).map((ability) => ability.name));
-      this.weapon.set(initial.weapon ?? null);
       this.equipment.set(initial.equipment ?? []);
       this.battalion.set(initial.battalion ?? null);
       this.inGameStats.set(initial.inGameStats ?? initial.actual?.inGame ?? false);

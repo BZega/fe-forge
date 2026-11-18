@@ -23,9 +23,11 @@ export interface Item {
 export const EQUIPMENT_SLOTS = ['Weapon', 'Shield', 'Mask', 'Staff', 'Accessory'] as const;
 export type EquipmentSlot = (typeof EQUIPMENT_SLOTS)[number];
 export const ITEMS: readonly Item[] = itemData;
+const ANSWERER_FORMS = ['Answerer Arisen', 'Answerer Breaker', 'Answerer Huang'];
+const PrototypeI_FORMS = ['Prototype I', 'Prototype I: |', 'Prototype I: ||', 'Prototype I: |||'];
 
 export function itemBaseName(name: string): string {
-  return name.replace(/\+[0-9]$/, '');
+  return ANSWERER_FORMS.includes(name) ? 'Answerer' : PrototypeI_FORMS.includes(name) ? 'Prototype I' : name.replace(/\+[0-9]$/, '');
 }
 
 export function itemVariants(item: Item, catalog: readonly Item[]): Item[] {
@@ -33,7 +35,8 @@ export function itemVariants(item: Item, catalog: readonly Item[]): Item[] {
   return catalog.filter((candidate) =>
     itemBaseName(candidate.Name) === base && candidate.WeaponType === item.WeaponType,
   ).sort((a, b) => {
-    const level = (name: string) => name === base ? -1 : Number(name.slice(-1));
+    const level = (name: string) => name === base ? -1
+      : ANSWERER_FORMS.includes(name) ? 10 + ANSWERER_FORMS.indexOf(name) : Number(name.slice(-1));
     return level(a.Name) - level(b.Name);
   });
 }
@@ -70,20 +73,16 @@ export function itemBoosts(item: Item): GrowthRates {
   return boosts;
 }
 
-export function equipmentWeapon(names: readonly string[] = [], fallback: WeaponKey | null = null): WeaponKey | null {
+export function equipmentWeapon(names: readonly string[] = []): WeaponKey | null {
   const weapon = equippedItems(names).find((item) => equipmentSlot(item) === 'Weapon');
   if (!weapon) {
-    return fallback;
+    return null;
   }
 
   const type = weapon.WeaponType.toLowerCase();
   return WEAPON_KEYS.find((key) =>
     key.toLowerCase() === type || SKILL_LABELS[key].toLowerCase() === type || (key === 'gauntlet' && type === 'gauntlets'),
   ) ?? null;
-}
-
-export function hasEquipmentWeapon(names: readonly string[] = []): boolean {
-  return equippedItems(names).some((item) => equipmentSlot(item) === 'Weapon');
 }
 
 export function itemBonusDescription(item: Item): string {

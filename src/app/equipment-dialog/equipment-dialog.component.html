@@ -4,12 +4,28 @@
   context="Equip one weapon and one each of Shield, Mask, Staff, and Accessory. Picking another item in the same slot replaces it. Stat bonuses share the +10 non-class bonus limit."
   [groups]="groups()"
   [tabs]="tabs()"
+  allTab="ALL"
+  [tabTemplate]="tabIconTemplate"
   [selected]="selection()"
   [max]="5"
   [itemTemplate]="card"
   (confirmed)="confirmed.emit($event)"
   (closed)="closed.emit()"
 />
+
+<ng-template #tabIconTemplate let-tab let-selected="selected">
+  @if (tabSkill(tab); as skill) {
+    <img
+      class="equipment-tab-icon"
+      [src]="tabIcon(skill, selected)"
+      alt=""
+      referrerpolicy="no-referrer"
+      (error)="useFallbackIcon($event, fallbackIcon(skill))"
+    />
+  } @else {
+    {{ tab }}
+  }
+</ng-template>
 
 <ng-template #card let-entry let-picker="picker">
   @if (byName().get(entry.id); as item) {

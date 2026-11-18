@@ -1,4 +1,5 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ITEMS } from '../models/equipment';
 import unitClassData from '../data/unit-classes.json';
 import unitData from '../data/units.json';
 import { CLASS_LEVEL_CONFIGS, Mount, mountBonusAt, mountGrowthAt, scaleGrowth, STAT_KEYS, sumGrowth, toGrowth, Unit, UnitClass } from '../models/growth.models';
@@ -108,6 +109,28 @@ describe('ProjectionDialogComponent', () => {
       .filter((group) => group.rank !== 'Divine' && group.classes.some((unitClass) => unitClass.name !== 'Dancer'))
       .map((group) => group.rank);
 
+  it('caps base stats before adding class and equipment bonuses', () => {
+    const sword = ITEMS.find((item) => item.Name === 'Wooden Sword')!;
+    const original = sword.BonusStats;
+    try {
+      sword.BonusStats = [{ Str: 20 }];
+      const stats = { hp: 120, str: 99, mag: 99, spd: 99, dex: 99, def: 99, res: 99, lck: 99, cha: 99 };
+      const { fixture, dialog } = open('Lysander', { ...chapter, stats });
+      dialog.submit();
+      dialog.setEndLevel('30');
+      dialog.chosenEquipment.set([sword.Name]);
+      fixture.detectChanges();
+      const strength = () => dialog.projection().find((row) => row.stat === 'str')!;
+      expect(strength().base).toBe(99);
+      expect(strength().total).toBe(99 + strength().bonus + 10);
+      dialog.view.set('base');
+      expect(strength().total).toBe(99);
+      expect(dialog.projection().find((row) => row.stat === 'hp')!.base).toBe(120);
+    } finally {
+      sword.BonusStats = original;
+    }
+  });
+
   it('shows actuals beside the projection at their level, in base and in-game views', () => {
     const { fixture, dialog, host } = open('Cai');
     const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, stat === 'hp' ? 40 : null])) as Record<(typeof STAT_KEYS)[number], number | null>;
@@ -148,6 +171,31 @@ describe('ProjectionDialogComponent', () => {
     expect(speed().detail).toContain('Class +0; Modifier +0');
     dialog.onAbilitiesConfirmed([]);
     expect(spd()).toBeCloseTo(base, 10);
+  });
+
+  it("updates Mu's learned weapon bonuses from Inventory rather than the legacy weapon input", () => {
+    const { fixture, dialog, host } = open('Mu');
+    fixture.componentRef.setInput('weapon', 'axe');
+    dialog.onAbilitiesConfirmed(["Warrior's Blood"]);
+    dialog.submit();
+    dialog.onEquipmentConfirmed(['Wooden Sword']);
+    const modifier = (stat: (typeof STAT_KEYS)[number]) =>
+      dialog.projection().find((row) => row.stat === stat)!.extraBonus;
+    dialog.setEndLevel('19');
+    expect(modifier('spd')).toBe(0);
+    dialog.setEndLevel('20');
+    expect([modifier('spd'), modifier('dex')]).toEqual([2, 0]);
+    dialog.setEndLevel('35');
+    expect([modifier('spd'), modifier('dex')]).toEqual([2, 2]);
+    dialog.onEquipmentConfirmed(['Bronze Axe']);
+    expect([modifier('spd'), modifier('dex'), modifier('str'), modifier('def')]).toEqual([0, 0, 2, 2]);
+    dialog.onEquipmentConfirmed([]);
+    expect([modifier('str'), modifier('def')]).toEqual([0, 0]);
+
+    dialog.abilityPickerOpen.set(true);
+    fixture.detectChanges();
+    expect(host.querySelector('select[aria-label="Equipped weapon"]')).toBeNull();
+    expect(host.querySelector('app-picker-dialog')!.textContent).toContain('weapon equipped in Inventory');
   });
 
   it('unlocks each rank 5 levels before its old gate', () => {

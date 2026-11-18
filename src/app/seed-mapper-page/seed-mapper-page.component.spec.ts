@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import unitClassData from '../data/unit-classes.json';
 import unitData from '../data/units.json';
-import { STAT_KEYS, Unit, UnitClass } from '../models/growth.models';
+import { MAX_BASE_STATS, STAT_KEYS, toGrowth, Unit, UnitClass } from '../models/growth.models';
 import { migrateSave } from '../models/seed-save';
 import { ITEMS } from '../models/equipment';
 import { SeedMapperStateService } from '../services/seed-mapper-state.service';
@@ -34,6 +34,173 @@ describe('SeedMapperPageComponent starting stats', () => {
   const baseStats = () => component.endStatsOf(component.sectionViews()[0]).map((total) => total.value);
   const allow = (...names: string[]) =>
     names.forEach((name) => state.addAvailableClass(classes.find((unitClass) => unitClass.name === name)!.id));
+
+  describe('draft level entry', () => {
+    const seed = () => component.sectionViews()[0];
+
+    it('does not change the map or dirty count when opened or cancelled', () => {
+      const before = state.snapshot();
+      const changes = state.changeCount();
+      component.openLevelEntry(seed());
+      expect(component.levelEntry()!.rows[0].level).toBe(3);
+      component.levelEntry.set(null);
+      expect(state.snapshot()).toEqual(before);
+      expect(state.changeCount()).toBe(changes);
+    });
+
+    it('adds a batch atomically, matches comparator row IDs, and round-trips its marks', () => {
+      state.addComparator(seed().section.id);
+      const before = state.changeCount();
+      component.openLevelEntry(seed());
+      component.onLevelsConfirmed([{ ...toGrowth(null), str: 1 }, { ...toGrowth(null), hp: 1 }]);
+      expect(seed().section.rows.length).toBe(3);
+      expect(state.changeCount()).toBe(before + 1);
+      expect(seed().section.rows.slice(1).map((row) => row.marks)).toEqual([
+        { ...toGrowth(null), str: 1 }, { ...toGrowth(null), hp: 1 },
+      ]);
+      expect(seed().section.comparators[0].rows.map((row) => row.id)).toEqual(seed().section.rows.map((row) => row.id));
+      expect(seed().section.comparators[0].rows.every((row) => row.marks.str === 0)).toBeTrue();
+      const serializer = TestBed.inject(SeedSerializerService);
+      const saved = serializer.toDto(state.snapshot());
+      state.reset();
+      state.restore(serializer.fromDto(saved), null);
+      expect(seed().section.rows[1].marks.str).toBe(1);
+      expect(seed().section.rows[2].marks.hp).toBe(1);
+    });
+
+    it('only appends to the explicitly selected branch, not the latest branch', () => {
+      state.setUnit(unitId('Cai'));
+      state.addLevel(seed().section.id);
+      const anchor = seed().section.rows[0].id;
+      const first = state.addBranch(seed().section.id, anchor, { classId: gladiator.id, chance: 100, passed: true })!;
+      const latest = state.addBranch(seed().section.id, anchor, { classId: noble.id, chance: 0, passed: false })!;
+      component.timelineFocusId.set(first);
+      component.openLevelEntry(component.focusedTimeline());
+      component.onLevelsConfirmed([{ ...toGrowth(null), str: 1 }]);
+      const byId = (id: number) => state.seedMap().sections.find((section) => section.id === id)!;
+      expect(byId(first).rows.length).toBe(2);
+      expect(byId(latest).rows.length).toBe(1);
+      expect(seed().section.rows.length).toBe(2);
+    });
+
+    it('previews shared observations and updates identical roll/growth rows on confirmation', () => {
+      state.setUnit(unitId('Cai'));
+      const anchor = seed().section.rows[0].id;
+      state.addLevel(seed().section.id);
+      state.addLevel(seed().section.id);
+      state.toggleStat(seed().section.id, seed().section.rows[2].id, 'str');
+      const branchId = state.addBranch(seed().section.id, anchor, { classId: noble.id, chance: 0, passed: true, reclass: true })!;
+      const branch = () => component.sectionViews().find((view) => view.section.id === branchId)!;
+      component.openLevelEntry(branch());
+      expect(component.levelEntry()!.rows[0].sharedWith).toBe('Seed Lv 4');
+      expect(component.levelEntry()!.rows[0].marks.str).toBe(1);
+      component.onLevelsConfirmed([{ ...toGrowth(null), hp: 1 }]);
+      expect(seed().section.rows[2].marks).toEqual({ ...toGrowth(null), hp: 1 });
+      expect(branch().section.rows[1].marks).toEqual(seed().section.rows[2].marks);
+    });
+
+    it('bounds batches at Lv 99, disables reopening there, and rejects oversized batches', () => {
+      state.setStatsLevel(96);
+      component.openLevelEntry(seed());
+      expect(component.levelEntry()!.rows.map((row) => row.level)).toEqual([98, 99]);
+      component.onLevelsConfirmed([toGrowth(null), toGrowth(null), toGrowth(null)]);
+      expect(component.levelEntryError()).toContain('valid number');
+      expect(seed().section.rows.length).toBe(1);
+      component.onLevelsConfirmed([toGrowth(null), toGrowth(null)]);
+      expect(component.endLevelOf(seed())).toBe(99);
+      expect(component.canAddLevel(seed())).toBeFalse();
+      component.openLevelEntry(seed());
+      expect(component.levelEntry()).toBeNull();
+    });
+
+    it('reports a stale draft without appending to a changed timeline', () => {
+      component.openLevelEntry(seed());
+      state.addLevel(seed().section.id);
+      component.onLevelsConfirmed([toGrowth(null)]);
+      expect(component.levelEntryError()).toContain('timeline changed');
+      expect(seed().section.rows.length).toBe(2);
+    });
+
+    it('carries forward the last inline class and mount and previews class growth gates correctly', () => {
+      state.setUnit(unitId('Cai'));
+      state.setStatsLevel(33);
+      allow('Charioteer');
+      state.setReclass(seed().section.id, seed().section.rows[0].id, classes.find((unitClass) => unitClass.name === 'Charioteer')!.id);
+      component.openLevelEntry(seed());
+      const preview = component.levelEntry()!.rows.slice(0, 2);
+      expect(preview.map((row) => row.level)).toEqual([35, 36]);
+      expect(preview.map((row) => row.className)).toEqual(['Charioteer', 'Charioteer']);
+      component.onLevelsConfirmed([toGrowth(null), toGrowth(null)]);
+      expect(preview.map((row) => row.growth)).toEqual([component.rowGrowth(seed(), 1), component.rowGrowth(seed(), 2)]);
+    });
+  });
+
+  it('adds battalions to the shared +10 bonus cap and names the source', () => {
+    const section = () => component.sectionViews()[0];
+    const battalion = component.battalions().find((candidate) => candidate.spd > 0)!;
+    const spd = STAT_KEYS.indexOf('spd');
+    component.onBattalionChange(section(), String(battalion.id));
+    let total = component.endStatsOf(section())[spd];
+    expect(total.value).toBe(13 + battalion.spd);
+    expect(component.statTotalTitle(total)).toContain(battalion.name);
+    allow('The Blade');
+    state.setAbilities(section().section.id, ['Divine Insight']);
+    total = component.endStatsOf(section())[spd];
+    expect(total.value).toBe(23);
+    expect(total.capped).toBe(battalion.spd);
+    expect(component.statHasBonus(total)).toBeTrue();
+    component.onBattalionChange(section(), '');
+    expect(component.battalionOf(section())).toBeNull();
+  });
+
+  it('inherits and saves battalions, warns about missing names, and accepts older saves', () => {
+    state.setUnit(unitId('Cai'));
+    const section = state.seedMap().sections[0];
+    const battalion = component.battalions()[0];
+    state.setBattalion(section.id, battalion.id);
+    state.addLevel(section.id);
+    state.addBranch(section.id, section.rows[0].id, { classId: gladiator.id, chance: 100, passed: true });
+    const serializer = TestBed.inject(SeedSerializerService);
+    const dto = serializer.toDto(state.snapshot());
+    expect(dto.sections.map((entry) => entry.battalion)).toEqual([battalion.name, battalion.name]);
+    state.restore(serializer.fromDto(migrateSave({ version: 2, seed: dto }).seed), null);
+    expect(state.seedMap().sections.map((entry) => entry.battalionId)).toEqual([battalion.id, battalion.id]);
+    component.openProjection(component.sectionViews().at(-1)!);
+    expect(component.projection()!.battalion?.id).toBe(battalion.id);
+    dto.sections[0].battalion = 'Missing battalion';
+    expect(serializer.missingNames(dto)).toContain('Missing battalion');
+    dto.sections.forEach((entry) => delete entry.battalion);
+    state.restore(serializer.fromDto(migrateSave({ version: 2, seed: dto }).seed), null);
+    expect(component.sectionViews().every((view) => component.battalionOf(view) === null)).toBeTrue();
+  });
+
+  it('caps base and level gains before adding class and non-class bonuses', () => {
+    state.setUnit(unitId('Lysander'));
+    allow('Gladiator');
+    const section = () => component.sectionViews()[0];
+    state.setClass(section().section.id, gladiator.id);
+    for (const stat of STAT_KEYS) {
+      state.setStartStat(stat, MAX_BASE_STATS[stat] - 1 + noble.bonusStats[stat]);
+    }
+    const battalion = component.battalions().find((candidate) => candidate.str > 0)!;
+    state.setBattalion(section().section.id, battalion.id);
+    allow('The Blade');
+    state.setAbilities(section().section.id, ['Divine Insight']);
+    state.addLevel(section().section.id);
+    for (const row of section().section.rows) {
+      for (const stat of STAT_KEYS) {
+        state.toggleStat(section().section.id, row.id, stat);
+      }
+    }
+    const totals = component.endStatsOf(section());
+    for (const [index, stat] of STAT_KEYS.entries()) {
+      expect(totals[index].value).toBe(MAX_BASE_STATS[stat] + gladiator.bonusStats[stat] + Math.min(10, battalion[stat] + (stat === 'spd' ? 10 : 0)));
+      expect(totals[index].gained).toBe(1);
+    }
+    component.openProjection(section());
+    expect(component.projection()!.start.stats).toEqual(MAX_BASE_STATS);
+    expect(component.projection()!.actuals.at(-1)!.stats).toEqual(MAX_BASE_STATS);
+  });
 
   describe('equipment', () => {
     const sword = ITEMS.find((item) => item.Name === 'Wooden Sword')!;
@@ -107,7 +274,7 @@ describe('SeedMapperPageComponent starting stats', () => {
       const id = state.seedMap().sections[0].id;
       state.setEquipment(id, [sword.Name]);
       component.openAbilityPicker(component.sectionViews()[0]);
-      expect(component.pickerConfig()!.weapon).toBeUndefined();
+      expect(component.pickerConfig()!.weaponNeeded).toBeFalse();
       state.addLevel(id);
       component.openProjection(component.sectionViews()[0]);
       expect(component.projection()!.equipment).toEqual([sword.Name]);
@@ -282,16 +449,15 @@ describe('SeedMapperPageComponent starting stats', () => {
       expect(names).not.toContain('Mu*');
     });
 
-    it('counts only once learned, and asks for the weapon only then', () => {
+    it('uses the Inventory weapon only once learned and upgrades the bonus at Lv 35', () => {
       state.setUnit(unitId('Mu'));
       state.setAbilities(sectionId(), ["Warrior's Blood"]);
-      component.onWeaponChange(view(), 'sword');
+      component.equipmentSectionId.set(sectionId());
+      component.onEquipmentConfirmed(['Wooden Sword']);
       reach(19);
-      expect(component.usesWeapon(view())).toBeFalse();
       expect(stat('spd')).toBe(base('spd'));
 
       reach(20);
-      expect(component.usesWeapon(view())).toBeTrue();
       expect(stat('spd')).toBe(base('spd') + 2);
       expect(stat('dex')).toBe(base('dex'));
 
@@ -299,6 +465,42 @@ describe('SeedMapperPageComponent starting stats', () => {
       expect(component.equippedAbilities(view()).map((ability) => ability.name)).toEqual(["Warrior's Blood+"]);
       expect(stat('spd')).toBe(base('spd') + 2);
       expect(stat('dex')).toBe(base('dex') + 2);
+
+      state.setEquipment(sectionId(), ['Wooden Gauntlets']);
+      expect(stat('str')).toBe(base('str') + 2);
+      expect(stat('spd')).toBe(base('spd') + 2);
+      expect(stat('dex')).toBe(base('dex'));
+
+      state.setEquipment(sectionId(), []);
+      expect(stat('str')).toBe(base('str'));
+      expect(stat('spd')).toBe(base('spd'));
+      expect(stat('dex')).toBe(base('dex'));
+    });
+
+    it("does not activate Warrior's Blood without the ability equipped", () => {
+      state.setUnit(unitId('Mu'));
+      reach(35);
+      state.setEquipment(sectionId(), ['Answerer Huang']);
+      expect(stat('spd')).toBe(base('spd'));
+      expect(stat('dex')).toBe(base('dex'));
+    });
+
+    it('ignores a saved weapon type without Inventory and retains the association after loading', () => {
+      state.setUnit(unitId('Mu'));
+      reach(35);
+      state.setAbilities(sectionId(), ["Warrior's Blood"]);
+      state.setEquipment(sectionId(), ['Answerer Huang']);
+      const serializer = TestBed.inject(SeedSerializerService);
+      const seed = serializer.toDto(state.snapshot());
+      state.reset();
+      state.restore(serializer.fromDto(seed), null);
+      expect(stat('spd')).toBe(base('spd') + 2);
+      expect(stat('dex')).toBe(base('dex') + 2);
+
+      delete seed.sections[0].equipment;
+      state.restore(serializer.fromDto(seed), null);
+      expect(stat('spd')).toBe(base('spd'));
+      expect(stat('dex')).toBe(base('dex'));
     });
   });
 

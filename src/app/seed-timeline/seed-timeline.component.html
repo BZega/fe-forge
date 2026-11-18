@@ -4,7 +4,7 @@
   @let mapperRef = mapper();
 
   <section class="timeline" aria-label="Timeline">
-    <header class="timeline-bar">
+    <header #timelineBar class="timeline-bar">
       <label class="timeline-picker">
         <span class="timeline-picker-label">Timeline</span>
         <select class="timeline-select" (change)="onTimelineChange($any($event.target).value)">
@@ -36,6 +36,19 @@
         >
           Inventory ({{ focus.section.equipment?.length ?? 0 }}/5)
         </button>
+
+        <select class="timeline-select" aria-label="Battalion"
+          [title]="mapperRef.battalionHint(focus)"
+          (change)="mapperRef.onBattalionChange(focus, $any($event.target).value)">
+          <option value="" [selected]="mapperRef.battalionOf(focus) === null">— No battalion —</option>
+          @for (group of mapperRef.battalionGroups(); track group.type) {
+            <optgroup [label]="group.type">
+              @for (battalion of group.battalions; track battalion.id) {
+                <option [value]="battalion.id" [selected]="focus.section.battalionId === battalion.id">{{ battalion.name }}</option>
+              }
+            </optgroup>
+          }
+        </select>
 
         @if (focus.section.exam) {
           <button
@@ -195,12 +208,8 @@
     </div>
 
     <footer class="timeline-footer">
-      <button
-        type="button"
-        class="ghost-button"
-        [disabled]="!mapperRef.canAddLevel(focus)"
-        (click)="addLevel(focus)"
-      >
+      <button type="button" class="ghost-button" [disabled]="!mapperRef.canAddLevel(focus)"
+        (click)="mapperRef.addLevel(focus)">
         + Lv {{ mapperRef.endLevelOf(focus) + 1 }}
       </button>
       <button

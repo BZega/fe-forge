@@ -1,4 +1,4 @@
-<header class="page-header">
+<header #pageHeader class="page-header">
   <div>
     <div class="page-header-title">
       <h1>Growth Mapper</h1>
@@ -7,6 +7,12 @@
   </div>
 
   <div class="page-header-actions">
+    <button type="button" class="ghost-button"
+      [disabled]="!focusedTimeline() || !canAddLevel(focusedTimeline()!)"
+      [title]="focusedTimeline() ? 'Add levels to ' + focusedTimeline()!.title : 'Add levels'"
+      (click)="openLevelEntry(focusedTimeline())">
+      Add levels
+    </button>
     <button
       type="button"
       class="ghost-button"
@@ -354,10 +360,7 @@
     [groups]="picker.groups"
     [selected]="picker.selected"
     [max]="picker.max"
-    [weaponOptions]="picker.weapon ? weaponOptions : null"
-    [weapon]="picker.weapon?.current ?? null"
-    [weaponNeeded]="picker.weapon?.needed ?? false"
-    (weaponChosen)="onPickerWeapon($event)"
+    [weaponNeeded]="picker.weaponNeeded ?? false"
     (confirmed)="onPickerConfirmed($event)"
     (closed)="closePicker()"
   />
@@ -366,6 +369,7 @@
 @if (projection(); as projected) {
   <app-projection-dialog
     [unit]="projected.unit"
+    [battalion]="projected.battalion"
     [chapters]="[projected.start]"
     [chapterPicker]="false"
     [history]="projected.history"
@@ -383,4 +387,9 @@
     (confirmed)="onEquipmentConfirmed($event)"
     (closed)="equipmentSectionId.set(null)"
   />
+}
+
+@if (levelEntry(); as entry) {
+  <app-level-entry-dialog [timeline]="entry.title" [rows]="entry.rows" [error]="levelEntryError()"
+    (confirmed)="onLevelsConfirmed($event)" (closed)="levelEntry.set(null)" />
 }

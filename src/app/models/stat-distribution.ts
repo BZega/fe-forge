@@ -1,4 +1,4 @@
-import { GrowthRates, STAT_KEYS, StatKey } from './growth.models';
+import { GrowthRates, MAX_BASE_STATS, STAT_KEYS, StatKey } from './growth.models';
 
 export interface StatDistribution {
   min: number;
@@ -88,6 +88,19 @@ export function shift(distribution: StatDistribution, by: number): StatDistribut
   return { min: distribution.min + by, probs: distribution.probs };
 }
 
+export function applyCeiling(distribution: StatDistribution, ceiling: number): StatDistribution {
+  const last = ceiling - distribution.min;
+  if (last < 0) {
+    return pointDistribution(ceiling);
+  }
+  if (last >= distribution.probs.length - 1) {
+    return distribution;
+  }
+  const probs = distribution.probs.slice(0, last + 1);
+  probs[last] += distribution.probs.slice(last + 1).reduce((sum, value) => sum + value, 0);
+  return trim({ min: distribution.min, probs });
+}
+
 function trim(distribution: StatDistribution): StatDistribution {
   let start = 0;
   let end = distribution.probs.length;
@@ -118,7 +131,7 @@ export function projectDistributions(
   const result = {} as Record<StatKey, StatDistribution>;
 
   for (const stat of STAT_KEYS) {
-    result[stat] = pointDistribution(start[stat]);
+    result[stat] = pointDistribution(Math.min(MAX_BASE_STATS[stat], start[stat]));
   }
 
   for (let level = startLevel; level <= endLevel; level++) {
@@ -126,7 +139,7 @@ export function projectDistributions(
 
     if (floors) {
       for (const stat of STAT_KEYS) {
-        result[stat] = applyFloor(result[stat], floors[stat]);
+        result[stat] = applyCeiling(applyFloor(result[stat], floors[stat]), MAX_BASE_STATS[stat]);
       }
     }
 
@@ -136,7 +149,7 @@ export function projectDistributions(
       const chances = levelUpChances(growth, rules.minimumAt?.(level) ?? 0);
 
       for (const stat of STAT_KEYS) {
-        result[stat] = addLevelUp(result[stat], chances[stat]);
+        result[stat] = applyCeiling(addLevelUp(result[stat], chances[stat]), MAX_BASE_STATS[stat]);
       }
     }
   }
