@@ -263,6 +263,7 @@ export function projectStats(
   startLevel: number,
   endLevel: number,
   growthAt: (level: number) => GrowthRates | null,
+  gainsAt?: (level: number) => GrowthRates | null,
 ): GrowthRates {
   const result = capBaseStats(start);
 
@@ -273,6 +274,10 @@ export function projectStats(
       for (const stat of STAT_KEYS) {
         result[stat] = Math.min(MAX_BASE_STATS[stat], result[stat] + growth[stat] / 100);
       }
+    }
+    const gains = gainsAt?.(level + 1);
+    if (gains) {
+      for (const stat of STAT_KEYS) result[stat] = Math.min(MAX_BASE_STATS[stat], result[stat] + gains[stat]);
     }
   }
 

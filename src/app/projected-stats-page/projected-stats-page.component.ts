@@ -3,6 +3,7 @@ import { HelpDialogComponent } from '../help-dialog/help-dialog.component';
 import { BuildResult, ProjectionBuildComponent } from '../projection-build/projection-build.component';
 import { ProjectionComparisonDialogComponent } from '../projection-comparison-dialog/projection-comparison-dialog.component';
 import { ProjectionStart, ProjectionStartDialogComponent } from '../projection-start-dialog/projection-start-dialog.component';
+import { BoosterCounts } from '../models/stat-boosters';
 
 interface Build {
   id: number;
@@ -29,6 +30,7 @@ export class ProjectedStatsPageComponent {
     'Rolls are fixed per save (see the Growth Mapper), but until you know them each is treated as an even 0–99 roll.',
     'Compare Builds (with two or more builds) shows two of them side by side, with the chance each ends higher.',
     'Equipment equips one weapon and one each of Shield, Mask, Staff, and Accessory. Item stat bonuses share the +10 non-class bonus limit with other bonuses in the in-game view; they do not change base growth.',
+    'Stat boosters are permanent base-stat gains, not part of the +10 bonus pool. For entered base/in-game stats or actual comparisons, record boosters already included in those stats so they are not added twice. With untouched app-provided base stats, boosters are added automatically. Each item has a total use limit.',
   ];
 
   private nextId = 1;
@@ -92,6 +94,11 @@ export class ProjectedStatsPageComponent {
         build.id === id ? { ...build, start: { ...build.start, options: { ...build.start.options, level } } } : build,
       ),
     );
+  }
+
+  setBoosters(id: number, boosters: BoosterCounts): void {
+    this.builds.update((builds) => builds.map((build) => build.id === id
+      ? { ...build, start: { ...build.start, boosters: { ...boosters } } } : build));
   }
 
   removeBuild(id: number): void {

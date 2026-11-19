@@ -12,6 +12,8 @@ import { StatHistogramComponent } from '../stat-histogram/stat-histogram.compone
 import { EquipmentDialogComponent } from '../equipment-dialog/equipment-dialog.component';
 import { equipmentWeapon } from '../models/equipment';
 import { hasStatBonus, statBreakdown } from '../models/stat-display';
+import { BoosterCounts, BoosterEntry, boosterStats } from '../models/stat-boosters';
+import { StatBoosterDialogComponent } from '../stat-booster-dialog/stat-booster-dialog.component';
 
 export interface BuildResult {
   label: string;
@@ -43,7 +45,7 @@ const NO_EQUIPMENT: readonly string[] = [];
 
 @Component({
   selector: 'app-projection-build',
-  imports: [EquipmentDialogComponent, PickerDialogComponent, StatHistogramComponent],
+  imports: [EquipmentDialogComponent, PickerDialogComponent, StatHistogramComponent, StatBoosterDialogComponent],
   templateUrl: './projection-build.component.html',
   styleUrl: './projection-build.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,6 +60,19 @@ export class ProjectionBuildComponent {
   readonly removeRequested = output<void>();
   readonly resultChange = output<BuildResult | null>();
   readonly levelChange = output<number>();
+  readonly boostersChange = output<BoosterCounts>();
+  readonly boosterPickerOpen = signal(false);
+  readonly boosterEntries = computed<BoosterEntry[]>(() => [{
+    key: null, label: this.start()?.actual ? `Used by Lv ${this.start()!.actual!.level}` : `Used by Lv ${this.start()?.level ?? 1}`,
+    counts: this.start()?.boosters ?? {},
+  }]);
+  readonly boosterContext = computed(() => this.start()?.actual || (this.start()?.source === 'manual' && !this.start()?.baseStats)
+    ? 'Record boosters already included in your entered stats. They are not added to those stats again.'
+    : 'Boosters are added to the app-provided base stats before projecting level ups.');
+  onBoostersConfirmed(entries: BoosterEntry[]): void {
+    this.boostersChange.emit(entries[0].counts);
+    this.boosterPickerOpen.set(false);
+  }
 
   readonly maxLevel = MAX_PROJECTION_LEVEL;
 
@@ -234,6 +249,11 @@ export class ProjectionBuildComponent {
       },
       floorsAt: (at) => reclassFloors.get(at) ?? null,
       minimumAt: (at) => (options.minimum ? (at < options.partOneEndLevel ? 2 : 1) : 0),
+      gainsAt: (at) => {
+        const included = start.source === 'manual' && !start.baseStats && !start.actual;
+        const boosterLevel = start.actual?.level ?? start.level;
+        return !included && at === boosterLevel ? boosterStats(start.boosters ?? {}) : null;
+      },
     });
   });
 

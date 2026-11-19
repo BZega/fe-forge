@@ -95,6 +95,21 @@ describe('ProjectionDialogComponent', () => {
       host: fixture.nativeElement as HTMLElement,
       unit,
     };
+
+    it('includes mapped booster history at its level and adds only additional planned boosters', () => {
+      const { fixture, dialog } = open('Cai');
+      fixture.componentRef.setInput('boosterHistory', [{ level: 5, counts: { str: 3 } }]);
+      fixture.componentRef.setInput('usedBoosters', { str: 3 });
+      dialog.endLevel.set(5);
+      dialog.view.set('base');
+      fixture.detectChanges();
+      const before = dialog.projection().find((row) => row.stat === 'str')!.total;
+      dialog.onBoostersConfirmed([{ key: null, label: '', counts: { str: 1 } }]);
+      expect(dialog.projection().find((row) => row.stat === 'str')!.total).toBe(before + 2);
+      dialog.endLevel.set(4);
+      dialog.boosters.set({});
+      expect(dialog.projection().find((row) => row.stat === 'str')!.total).toBe(chapter.stats.str);
+    });
   };
   const reclass = (plan: ClassPlanComponent, level: number, className: string) => {
     plan.addClass();

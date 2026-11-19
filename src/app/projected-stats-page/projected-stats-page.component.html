@@ -26,6 +26,7 @@
           [start]="build.start"
           (editRequested)="editStart(build.id)"
           (levelChange)="setBuildLevel(build.id, $event)"
+          (boostersChange)="setBoosters(build.id, $event)"
           (removeRequested)="removeBuild(build.id)"
           (resultChange)="onResult(build.id, $event)"
         />

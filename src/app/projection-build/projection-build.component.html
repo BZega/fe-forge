@@ -79,6 +79,7 @@
       </header>
 
       <div class="view-bar">
+        <button type="button" class="ghost-button" (click)="boosterPickerOpen.set(true)">Stat boosters</button>
         <div class="view-toggle" role="group" aria-label="Projected stats view">
           <button
             type="button"
@@ -196,6 +197,11 @@
     </section>
   }
 </article>
+
+@if (boosterPickerOpen()) {
+  <app-stat-booster-dialog [entries]="boosterEntries()" [context]="boosterContext()"
+    (confirmed)="onBoostersConfirmed($event)" (closed)="boosterPickerOpen.set(false)" />
+}
 
 @if (abilityPickerOpen()) {
   <app-picker-dialog

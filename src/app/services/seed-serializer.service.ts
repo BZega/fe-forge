@@ -48,6 +48,7 @@ export class SeedSerializerService {
         ...(section.battalionId != null ? { battalion: this.nameOf(this.battalions(), section.battalionId) } : {}),
         weapon: section.weapon,
         rows: section.rows,
+        ...(section.boosters?.length ? { boosters: section.boosters.map((use) => ({ ...use, counts: { ...use.counts } })) } : {}),
         ...(section.mountChanges?.length ? {
           mountChanges: section.mountChanges.map((change) => ({
             row: change.rowIndex,
@@ -103,6 +104,7 @@ export class SeedSerializerService {
         ...(section.battalion ? { battalionId: this.idOf(this.battalions(), section.battalion) } : {}),
         weapon: section.weapon,
         rows: section.rows,
+        ...(section.boosters?.length ? { boosters: section.boosters.map((use) => ({ ...use, counts: { ...use.counts } })) } : {}),
         ...(section.mountChanges?.length ? {
           mountChanges: section.mountChanges.map((change) => ({
             rowIndex: change.row,

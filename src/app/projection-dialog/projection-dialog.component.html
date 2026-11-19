@@ -61,6 +61,7 @@
       </label>
 
       <div class="results-bar">
+        <button type="button" class="ghost-button" (click)="boosterPickerOpen.set(true)">Stat boosters</button>
         <div class="view-toggle" role="group" aria-label="Projected stats view">
           <button
             type="button"
@@ -81,6 +82,12 @@
             In-game
           </button>
         </div>
+
+        @if (boosterPickerOpen()) {
+          <app-stat-booster-dialog [entries]="boosterEntries()" [inherited]="usedBoosters()"
+            context="Additional permanent base-stat gains at the selected projected level. Uses inherited from the Growth Mapper reduce the remaining allowance."
+            (confirmed)="onBoostersConfirmed($event)" (closed)="boosterPickerOpen.set(false)" />
+        }
         @if (view() === 'inGame') {
           <button
             type="button"

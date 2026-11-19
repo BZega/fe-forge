@@ -170,6 +170,7 @@
   }
 }
 
+.start-kind-actions,
 .start-kind-abilities {
   display: flex;
   flex-wrap: wrap;
@@ -193,6 +194,8 @@
   gap: 0.4rem;
   margin-top: 0.85rem;
   font-size: 0.85rem;
+  justify-content: space-between;
+  padding-bottom: 4px;
 
   input {
     accent-color: var(--accent);

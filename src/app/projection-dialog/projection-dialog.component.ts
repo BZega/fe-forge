@@ -10,12 +10,15 @@ import { GrowthDataService } from '../services/growth-data.service';
 import { EquipmentDialogComponent } from '../equipment-dialog/equipment-dialog.component';
 import { equipmentWeapon } from '../models/equipment';
 import { hasStatBonus, statBreakdown } from '../models/stat-display';
+import { BoosterCounts, BoosterEntry, boosterStats } from '../models/stat-boosters';
+import { StatBoosterDialogComponent } from '../stat-booster-dialog/stat-booster-dialog.component';
+import { MAX_BASE_STATS } from '../models/growth.models';
 
 export type ActualTone = 'higher' | 'even' | 'lower';
 
 @Component({
   selector: 'app-projection-dialog',
-  imports: [ClassPlanComponent, EquipmentDialogComponent, PickerDialogComponent],
+  imports: [ClassPlanComponent, EquipmentDialogComponent, PickerDialogComponent, StatBoosterDialogComponent],
   templateUrl: './projection-dialog.component.html',
   styleUrls: ['../exam-dialog/exam-dialog.component.scss', './projection-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +36,17 @@ export class ProjectionDialogComponent implements OnInit {
   readonly weapon = input<WeaponKey | null>(null);
   readonly battalion = input<Battalion | null>(null);
   readonly equipment = input<readonly string[]>([]);
+  readonly usedBoosters = input<BoosterCounts>({});
+  readonly boosterHistory = input<readonly { level: number; counts: BoosterCounts }[]>([]);
+  readonly boosterPickerOpen = signal(false);
+  readonly boosters = signal<BoosterCounts>({});
+  readonly boosterEntries = computed<BoosterEntry[]>(() => [{
+    key: null, label: `Additional boosters at Lv ${this.endLevel()}`, counts: this.boosters(),
+  }]);
+  onBoostersConfirmed(entries: BoosterEntry[]): void {
+    this.boosters.set(entries[0].counts);
+    this.boosterPickerOpen.set(false);
+  }
   readonly chosenEquipment = linkedSignal(() => this.equipment());
   readonly equipmentPickerOpen = signal(false);
 
@@ -153,7 +167,16 @@ export class ProjectionDialogComponent implements OnInit {
       const step = stepAtLevel(steps, level);
 
       return step ? levelUpGrowth(unit, step.unitClass, level, step.mount, step.bondLevel) : null;
+    }, (level) => {
+      const entries = this.boosterHistory().filter((entry) => entry.level === level);
+      return entries.reduce((stats, entry) => {
+        const gains = boosterStats(entry.counts);
+        this.statKeys.forEach((stat) => stats[stat] += gains[stat]);
+        return stats;
+      }, boosterStats({}));
     });
+    const additional = boosterStats(this.boosters());
+    this.statKeys.forEach((stat) => projected[stat] = Math.min(MAX_BASE_STATS[stat], projected[stat] + additional[stat]));
     const step = this.endStep();
     const bonusWith = (gear: InGameGear) =>
       inGameBonus(unit.name, end, step?.unitClass ?? null, step?.mount ?? null, step?.bondLevel ?? null, gear);
@@ -218,7 +241,7 @@ export class ProjectionDialogComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   close(): void {
-    if (this.abilityPickerOpen() || this.equipmentPickerOpen()) {
+    if (this.abilityPickerOpen() || this.equipmentPickerOpen() || this.boosterPickerOpen()) {
       return;
     }
 

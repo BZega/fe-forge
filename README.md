@@ -71,6 +71,34 @@ label plus `2x weapon Might` or `3x weapon Might`, respectively. Legacy `Extra`
 prefixes map to `Effective+` without changing saved or source data.
 Targets without a matching symbol retain a text badge.
 
+### Stat boosters
+
+Growth Mapper and Projected Stats share a Stat boosters modal. Its help button
+explains permanent gains, stat caps, and input interpretation without crowding
+the editor. Confirm saves all draft counts; Cancel discards them.
+
+Boosters increase the unit's own stats, capped at 120 HP and 99 for other stats,
+before class bonuses and the separate +10 non-class bonus pool. Shoes of the Wind
+uses are tracked but do not change the displayed stats.
+
+In Growth Mapper, enter the starting level or a specific mapped level in
+**Use at level**. Values are capped at the last mapped level. A booster
+on a mapped level is applied after that level up, and carries into subsequent
+levels and exams. Counts are limited across the whole timeline. Branches inherit
+uses through their fork, then have independent remaining allowances. Editing an
+ancestor cannot exceed any descendant's allowance. Removing a level removes its
+booster uses. Uses are included in browser saves and JSON exports; older saves
+start with no uses.
+
+In Projected Stats, counts describe boosters already included in manually entered
+base/in-game stats or actual comparison stats; those observations are never
+boosted twice. Counts extend the legal actual-stat range so valid boosted stats
+are not clamped away. With untouched app-provided Lv 1/recruitment stats and no
+actual comparison, boosters are added to the starting base stats automatically.
+When comparing actuals, booster gains enter the projected distribution at the
+actual level. The mapper's Projected Stats dialog inherits consumed uses and
+allows additional boosters within the remaining allowance.
+
 Stat values with a positive non-class modifier are gold with a
 small up arrow in Growth Mapper, projection results, and Character/Class details.
 Class-only bonuses, unmodified values and penalties alone use the base text color. Hover breakdowns

@@ -106,6 +106,29 @@ describe('ProjectionBuildComponent', () => {
       }
     });
 
+    it('adds boosters to provided base stats, but not again to manually entered stats', () => {
+      const stats = { ...baseStatsOf('Cai')!, str: 10 };
+      const start = { ...manualStart('Cai', 1, stats), baseStats: true, boosters: { str: 3 } };
+      const { fixture, build } = open(start, { level: 1 });
+      build.view.set('base');
+      expect(build.totals()!.str.min).toBe(16);
+      fixture.componentRef.setInput('start', { ...start, baseStats: false, stats: { ...stats, str: 16 }, options: { ...options, level: 1 } });
+      fixture.detectChanges();
+      expect(build.totals()!.str.min).toBe(16);
+    });
+
+    it('includes booster gains in actual-stat distributions at the actual level without altering the observed value', () => {
+      const start = chapterStart('Cai');
+      start.boosters = { str: 3 };
+      start.actual = { level: start.level, stats: { ...start.stats, str: start.stats.str + 6 }, inGame: false };
+      const { build } = open(start, { level: start.level });
+      build.view.set('base');
+      const strength = build.rows().find((row) => row.stat === 'str')!;
+      expect(strength.summary.mean).toBe(start.stats.str + 6);
+      expect(strength.actual).toBe(start.stats.str + 6);
+      expect(strength.tone).not.toBe('impossible');
+    });
+
     it('adds and removes equipment in game without changing base stats or growth', () => {
       const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, 20])) as GrowthRates;
       const { build, fixture, result } = open(manualStart('Lysander', 10, stats), { level: 10 });

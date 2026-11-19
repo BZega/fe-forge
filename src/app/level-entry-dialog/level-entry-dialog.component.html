@@ -7,7 +7,6 @@
     </div>
     <button type="button" class="dialog-close" aria-label="Close" (click)="closed.emit()">&times;</button>
   </header>
-  <p id="level-entry-help" class="dialog-context">Tap the stats that rose at each level, then add the batch. Nothing changes until you confirm.</p>
   <div class="level-controls">
     <label for="level-entry-count">Levels to add</label>
     <input #levelCount id="level-entry-count" type="number" min="1" [max]="rows().length" step="1"
@@ -15,9 +14,6 @@
       (input)="updateCount(levelCount)" />
     <span class="level-range" aria-live="polite">{{ range() }}</span>
   </div>
-  <p id="level-entry-limit" class="hint" [class.count-error]="count() === null">
-    Choose 1–{{ rows().length }} levels. Higher counts are capped at Lv 99.
-  </p>
   <div class="level-list">
     <div class="level-grid level-grid--head">
       <span>Level</span>

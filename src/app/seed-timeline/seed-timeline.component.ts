@@ -3,6 +3,7 @@ import { GrowthRates, Mount, mountBonusAt, mountGrowthAt, STAT_KEYS, STAT_LABELS
 import type { SectionView, SeedMapperPageComponent, StatTotal } from '../seed-mapper-page/seed-mapper-page.component';
 import { SearchableSelectComponent } from '../searchable-select/searchable-select.component';
 import { skillIconUrl, useFallbackIcon } from '../icon-links';
+import { boosterDescription } from '../models/stat-boosters';
 
 interface TimelineLevel {
   kind: 'level';
@@ -193,6 +194,8 @@ export class SeedTimelineComponent {
     } else if (row.reclassTo !== undefined) {
       note = `Reclass: ${mapper.className(row.reclassTo)}`;
     }
+    const boosters = boosterDescription(view.section.boosters?.find((use) => use.rowId === row.id)?.counts ?? {});
+    if (boosters) note = [note, boosters].filter(Boolean).join(' · ');
 
     const { mount, level: bondLevel } = mapper.rowMount(view, rowIndex);
     const mountGrowth = mountGrowthAt(mount, bondLevel);

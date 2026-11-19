@@ -4,6 +4,23 @@ import { DEFAULT_MOUNT_BOND_LEVEL, GrowthRates, MAX_EQUIPPED_ABILITIES, STAT_KEY
 import { EMPTY_STATS, SeedMapSnapshot, StatValues } from '../models/seed-save';
 import { GrowthDataService } from './growth-data.service';
 import { equippedItems, equipmentWeapon } from '../models/equipment';
+import { BoosterCounts, boosterError, sumBoosters } from '../models/stat-boosters';
+
+export interface SeedBoosterUse {
+  rowId: number | null;
+  counts: BoosterCounts;
+}
+
+export function boosterUsage(
+  sections: readonly SeedSection[], section: SeedSection, untilRowId: number | null = section.rows.at(-1)?.id ?? null,
+): BoosterCounts {
+  const parent = section.exam && sections.find((entry) => entry.id === section.exam!.parentId);
+  const inherited = parent ? boosterUsage(sections, parent, section.exam!.afterRowId) : {};
+  const until = untilRowId === null ? -1 : section.rows.findIndex((row) => row.id === untilRowId);
+  return sumBoosters(inherited, ...(section.boosters ?? [])
+    .filter((entry) => entry.rowId === null || section.rows.some((row, index) => row.id === entry.rowId && index <= until))
+    .map((entry) => entry.counts));
+}
 
 export interface SeedRow {
   id: number;
@@ -45,6 +62,7 @@ export interface SeedExam {
 }
 
 export interface SeedSection {
+  boosters?: SeedBoosterUse[];
   battalionId?: number | null;
   equipment?: string[];
   id: number;
@@ -253,6 +271,10 @@ export class SeedMapperStateService {
           ...(section.battalionId != null ? { battalionId: section.battalionId } : {}),
           weapon: section.weapon,
           rows: section.rows.map((row) => ({ ...row.marks })),
+          ...(section.boosters?.length ? { boosters: section.boosters.map((entry) => ({
+            row: entry.rowId === null ? null : section.rows.findIndex((row) => row.id === entry.rowId),
+            counts: { ...entry.counts },
+          })) } : {}),
           ...(section.rows.some((row) => row.mount) ? {
             mountChanges: section.rows.flatMap((row, rowIndex) => row.mount ? [{ rowIndex, ...row.mount }] : []),
           } : {}),
@@ -324,6 +346,9 @@ export class SeedMapperStateService {
         ...(entry.battalionId != null ? { battalionId: entry.battalionId } : {}),
         weapon: entry.weapon,
         rows,
+        ...(entry.boosters?.length ? { boosters: entry.boosters.map((use) => ({
+          rowId: use.row === null ? null : rows[use.row].id, counts: { ...use.counts },
+        })) } : {}),
         comparators: entry.comparators.map((comparator) => ({
           id: this.nextComparatorId++,
           classId: comparator.classId,
@@ -536,6 +561,7 @@ export class SeedMapperStateService {
         : {
             ...section,
             rows: section.rows.filter((row) => row.id !== rowId),
+            boosters: section.boosters?.filter((entry) => entry.rowId !== rowId),
             comparators: section.comparators.map((comparator) => ({
               ...comparator,
               rows: comparator.rows.filter((row) => row.id !== rowId),
@@ -549,6 +575,27 @@ export class SeedMapperStateService {
       ...section,
       rows: toggle(section.rows, rowId, stat),
     }));
+  }
+
+  setBoosters(sectionId: number, boosters: readonly SeedBoosterUse[]): string | null {
+    const section = this.mapState().sections.find((entry) => entry.id === sectionId);
+    if (!section) return 'This timeline no longer exists. Reopen stat boosters.';
+    const rowIds = new Set<number | null>();
+    for (const use of boosters) {
+      if (rowIds.has(use.rowId) || (use.rowId !== null && !section.rows.some((row) => row.id === use.rowId))) {
+        return 'The booster level no longer exists. Reopen stat boosters.';
+      }
+      rowIds.add(use.rowId);
+      const error = boosterError(use.counts);
+      if (error) return error;
+    }
+    const sections = this.mapState().sections.map((entry) => entry.id === sectionId ? { ...entry, boosters: [...boosters] } : entry);
+    for (const entry of sections) {
+      const error = boosterError(boosterUsage(sections, entry));
+      if (error) return `${error} Check uses inherited by other branches.`;
+    }
+    this.patch(sectionId, (entry) => ({ ...entry, boosters: boosters.map((use) => ({ ...use, counts: { ...use.counts } })) }));
+    return null;
   }
 
   setMarks(targets: readonly { sectionId: number; rowId: number }[], stat: StatKey, value: number): void {
@@ -1062,6 +1109,7 @@ function canFold(section: SeedSection, parent: SeedSection, exam: SeedExam): boo
   const first = section.rows[0];
 
   return (
+    !section.boosters?.length &&
     atEnd &&
     sameMount &&
     sameClass &&

@@ -1,0 +1,34 @@
+<div class="backdrop" (click)="closed.emit()"></div>
+<div #dialog class="dialog dialog--boosters" role="dialog" aria-modal="true" aria-labelledby="booster-title">
+  <header class="dialog-header">
+    <div class="booster-title">
+      <h2 id="booster-title">Stat boosters</h2>
+      <app-help-dialog heading="Stat boosters" [paragraphs]="helpText()" />
+    </div>
+    <button type="button" class="dialog-close" aria-label="Close stat boosters" (click)="closed.emit()">&times;</button>
+  </header>
+  @if (current()?.level !== undefined) {
+    <label class="booster-level">Use at level:
+      <input #level type="number" inputmode="numeric" step="1" [min]="minLevel()" [max]="maxLevel()"
+        aria-label="Booster level" [value]="current()?.level" (change)="setLevel(level)" />
+    </label>
+  } @else {
+    <p>{{ current()?.label }}</p>
+  }
+  <div class="booster-list">
+    @for (booster of boosters; track booster.key) {
+      <label class="booster-row">
+        <span>{{ booster.name }} <small>+{{ booster.amount }} {{ booster.stat }}</small></span>
+        <input #count type="number" min="0" step="1" [max]="maximum(booster.key, booster.max)"
+          [attr.aria-label]="booster.name + ' uses'" [value]="currentCounts()[booster.key] ?? 0"
+          (input)="setCount(count, booster.key, booster.max)" />
+        <small>{{ booster.max - (total()[booster.key] ?? 0) }} / {{ booster.max }} left</small>
+      </label>
+    }
+  </div>
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  <footer class="dialog-footer">
+    <button type="button" class="button" (click)="closed.emit()">Cancel</button>
+    <button type="button" class="button button--primary" (click)="confirmed.emit(draft())">Confirm boosters</button>
+  </footer>
+</div>

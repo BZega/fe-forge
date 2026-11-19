@@ -221,4 +221,90 @@ describe('ProjectionStartDialogComponent', () => {
     expect(dialog.unit()!.name).toBe('Cai');
     expect(dialog.chapterNumber()).toBe(chapters.at(-1)!.chapter);
   });
+
+  it('accounts for used boosters when validating actual stats, without changing the observation', () => {
+    const { dialog, fixture, host, confirmed } = open();
+    dialog.setSource('chapter');
+    dialog.unitId.set(unitId('Cai'));
+    dialog.compareActuals.set(true);
+    fixture.detectChanges();
+    const chapter = dialog.chapter()!;
+    dialog.actualLevel.set(chapter.level);
+    dialog.onBoostersConfirmed([{ key: null, label: '', counts: { str: 3 } }]);
+    fixture.detectChanges();
+    const field = host.querySelector<HTMLInputElement>('[aria-label="Actual Str"]')!;
+    field.value = String(chapter.stats.str + 6);
+    field.dispatchEvent(new Event('change'));
+    dialog.confirm();
+    expect(confirmed()!.actual!.stats.str).toBe(chapter.stats.str + 6);
+    expect(confirmed()!.stats.str).toBe(chapter.stats.str);
+    expect(confirmed()!.boosters).toEqual({ str: 3 });
+    expect(confirmed()!.baseStats).toBeFalse();
+    const edited = open({ initial: confirmed() });
+    expect(edited.dialog.boosters()).toEqual({ str: 3 });
+  });
+
+  it('keeps manually entered boosted base stats intact instead of adding boosters twice', () => {
+    const { dialog, fixture, host, confirmed } = open();
+    dialog.pickManualUnit(unitId('Cai'));
+    fixture.detectChanges();
+    const field = host.querySelector<HTMLInputElement>('[aria-label="Starting Str"]')!;
+    field.value = '16';
+    field.dispatchEvent(new Event('change'));
+    dialog.onBoostersConfirmed([{ key: null, label: '', counts: { str: 3 } }]);
+    dialog.confirm();
+    expect(confirmed()!.stats.str).toBe(16);
+    expect(confirmed()!.baseStats).toBeFalse();
+    expect(confirmed()!.boosters).toEqual({ str: 3 });
+  });
+
+  it('opens the booster modal for untouched app-provided base stats without requiring actual-stat entry', () => {
+    const { dialog, fixture, host } = open();
+    dialog.pickManualUnit(unitId('Cai'));
+    fixture.detectChanges();
+    const button = Array.from(host.querySelectorAll<HTMLButtonElement>('button'))
+      .find((entry) => entry.textContent?.trim() === 'Add stat boosters')!;
+    button.click();
+    fixture.detectChanges();
+    expect(dialog.entered()).toBeNull();
+    expect(host.querySelector('app-stat-booster-dialog')).not.toBeNull();
+  });
+
+  it('places the booster button inside Actual stats are for both base and in-game stats', () => {
+    const { dialog, fixture, host } = open();
+    dialog.setSource('chapter');
+    dialog.unitId.set(unitId('Cai'));
+    dialog.compareActuals.set(true);
+    fixture.detectChanges();
+    const buttons = () => Array.from(host.querySelectorAll<HTMLButtonElement>('button'))
+      .filter((button) => button.textContent?.trim() === 'Add stat boosters');
+    expect(buttons().length).toBe(1);
+    expect(buttons()[0].closest('.start-kind')).not.toBeNull();
+    expect(host.querySelector('.start-kind legend')!.textContent).toContain('Actual stats are');
+    dialog.setInGame(true);
+    fixture.detectChanges();
+    expect(buttons().length).toBe(1);
+    expect(buttons()[0].closest('.start-kind')).not.toBeNull();
+    buttons()[0].click();
+    fixture.detectChanges();
+    expect(host.querySelector('app-stat-booster-dialog')).not.toBeNull();
+  });
+
+  it('places a single booster button inside These stats are for manually entered stats', () => {
+    const { dialog, fixture, host } = open();
+    dialog.pickManualUnit(unitId('Cai'));
+    fixture.detectChanges();
+    const level = host.querySelector<HTMLInputElement>('input[aria-label="Starting level"]')!;
+    level.value = '20';
+    level.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    const buttons = Array.from(host.querySelectorAll<HTMLButtonElement>('button'))
+      .filter((button) => button.textContent?.trim() === 'Add stat boosters');
+    expect(buttons.length).toBe(1);
+    expect(buttons[0].closest('.start-kind')).not.toBeNull();
+    expect(host.querySelector('.start-kind legend')!.textContent).toContain('These stats are');
+    buttons[0].click();
+    fixture.detectChanges();
+    expect(host.querySelector('app-stat-booster-dialog')).not.toBeNull();
+  });
 });

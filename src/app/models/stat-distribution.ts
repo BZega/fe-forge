@@ -120,6 +120,7 @@ export interface ProjectionRules {
   growthAt: (level: number) => GrowthRates | null;
   floorsAt?: (level: number) => GrowthRates | null;
   minimumAt?: (level: number) => number;
+  gainsAt?: (level: number) => GrowthRates | null;
 }
 
 export function projectDistributions(
@@ -140,6 +141,13 @@ export function projectDistributions(
     if (floors) {
       for (const stat of STAT_KEYS) {
         result[stat] = applyCeiling(applyFloor(result[stat], floors[stat]), MAX_BASE_STATS[stat]);
+      }
+    }
+
+    const gains = rules.gainsAt?.(level);
+    if (gains) {
+      for (const stat of STAT_KEYS) {
+        result[stat] = applyCeiling(shift(result[stat], gains[stat]), MAX_BASE_STATS[stat]);
       }
     }
 

@@ -11,9 +11,13 @@ import { RecruitmentDataService } from '../services/recruitment-data.service';
 import { SpoilerService } from '../services/spoiler.service';
 import { EquipmentDialogComponent } from '../equipment-dialog/equipment-dialog.component';
 import { equipmentWeapon } from '../models/equipment';
+import { BoosterCounts, BoosterEntry, boosterStats } from '../models/stat-boosters';
+import { StatBoosterDialogComponent } from '../stat-booster-dialog/stat-booster-dialog.component';
+import { MAX_BASE_STATS } from '../models/growth.models';
 
 export type StartSource = 'chapter' | 'manual';
 export interface ProjectionStart {
+  boosters?: BoosterCounts;
   equipment?: readonly string[];
   source: StartSource;
   unit: Unit;
@@ -61,7 +65,7 @@ const emptyStats = (): StatInputs => Object.fromEntries(STAT_KEYS.map((stat) => 
 
 @Component({
   selector: 'app-projection-start-dialog',
-  imports: [ClassPlanComponent, EquipmentDialogComponent, PickerDialogComponent, SearchableSelectComponent],
+  imports: [ClassPlanComponent, EquipmentDialogComponent, PickerDialogComponent, SearchableSelectComponent, StatBoosterDialogComponent],
   templateUrl: './projection-start-dialog.component.html',
   styleUrls: ['../exam-dialog/exam-dialog.component.scss', './projection-start-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -171,6 +175,20 @@ export class ProjectionStartDialogComponent implements OnInit {
   readonly abilityPickerOpen = signal(false);
   readonly equipmentPickerOpen = signal(false);
   readonly equipment = signal<readonly string[]>([]);
+  readonly boosters = signal<BoosterCounts>({});
+  readonly boosterPickerOpen = signal(false);
+  readonly boosterEntries = computed<BoosterEntry[]>(() => [{
+    key: null, label: this.entered() === 'actual' ? `Used by Lv ${this.actualLevel() ?? '…'}` : `Used by Lv ${this.manualLevel()}`,
+    counts: this.boosters(),
+  }]);
+  readonly boosterContext = computed(() => this.entered()
+    ? 'Record boosters already included in your entered stats. They increase the legal base-stat range without being added twice.'
+    : 'Boosters are added to the app-provided base stats before projecting level ups.');
+
+  onBoostersConfirmed(entries: BoosterEntry[]): void {
+    this.boosters.set(entries[0].counts);
+    this.boosterPickerOpen.set(false);
+  }
 
   onEquipmentConfirmed(names: string[]): void {
     this.equipment.set(names);
@@ -251,6 +269,8 @@ export class ProjectionStartDialogComponent implements OnInit {
       }
     }
 
+    const boosters = boosterStats(this.boosters());
+    this.statKeys.forEach((stat) => stats[stat] = Math.min(MAX_BASE_STATS[stat], stats[stat] + boosters[stat]));
     return stats;
   });
 
@@ -326,6 +346,7 @@ export class ProjectionStartDialogComponent implements OnInit {
 
     if (initial) {
       this.options.set({ ...initial.options });
+      this.boosters.set({ ...initial.boosters });
       this.abilityNames.set((initial.abilities ?? []).map((ability) => ability.name));
       this.equipment.set(initial.equipment ?? []);
       this.battalion.set(initial.battalion ?? null);
@@ -426,6 +447,7 @@ export class ProjectionStartDialogComponent implements OnInit {
       ? { level: actualLevel, stats: { ...this.actualInputs() }, inGame }
       : null;
     const shared = {
+      boosters: { ...this.boosters() },
       equipment: inGame ? this.equipment() : [],
       inGameStats: entered === 'start' && inGame,
       actual,
@@ -507,7 +529,7 @@ export class ProjectionStartDialogComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   close(): void {
-    if (this.abilityPickerOpen() || this.equipmentPickerOpen()) {
+    if (this.abilityPickerOpen() || this.equipmentPickerOpen() || this.boosterPickerOpen()) {
       return;
     }
 

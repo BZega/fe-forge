@@ -1,4 +1,10 @@
 import { DEFAULT_MOUNT_BOND_LEVEL, GrowthRates, STAT_KEYS, StatKey, WEAPON_KEYS, WeaponKey, ZERO_GROWTH } from './growth.models';
+import { BoosterCounts, boosterError, STAT_BOOSTERS, sumBoosters } from './stat-boosters';
+
+export interface BoosterUseDto {
+  row: number | null;
+  counts: BoosterCounts;
+}
 
 export type StatValues = Record<StatKey, number | null>;
 
@@ -70,6 +76,7 @@ export interface InlineExamDto {
 }
 
 export interface SectionSnapshot {
+  boosters?: BoosterUseDto[];
   battalionId?: number | null;
   mountChanges?: MountChangeSnapshot[];
   equipment?: string[];
@@ -111,6 +118,7 @@ export interface ExamDto {
 }
 
 export interface SectionDto {
+  boosters?: BoosterUseDto[];
   battalion?: string | null;
   mountChanges?: MountChangeDto[];
   equipment?: string[];
@@ -256,6 +264,7 @@ function readSeedMap(raw: unknown): SeedMapDto {
       ...(section['battalion'] === undefined ? {} : { battalion: readName(section['battalion']) }),
       weapon: WEAPON_KEYS.find((weapon) => weapon === section['weapon']) ?? null,
       rows,
+      ...(section['boosters'] === undefined ? {} : { boosters: readBoosters(section['boosters'], rows.length) }),
       ...(section['mountChanges'] === undefined ? {} : {
         mountChanges: readMountChanges(section['mountChanges'], rows.length),
       }),
@@ -263,6 +272,18 @@ function readSeedMap(raw: unknown): SeedMapDto {
       exams: readInlineExams(section['exams'], rows.length),
       comparators: readComparators(section['comparators']),
     });
+  });
+
+  const usage = (index: number, until: number | null): BoosterCounts => {
+    const section = sections[index];
+    return sumBoosters(
+      section.exam ? usage(section.exam.parent, section.exam.afterRow) : {},
+      ...(section.boosters ?? []).filter((entry) => entry.row === null || (until !== null && entry.row <= until)).map((entry) => entry.counts),
+    );
+  };
+  sections.forEach((section, index) => {
+    const error = boosterError(usage(index, section.rows.length - 1));
+    if (error) fail(error);
   });
 
   return {
@@ -275,6 +296,31 @@ function readSeedMap(raw: unknown): SeedMapDto {
     availableClasses: readNames(raw['availableClasses']),
     sections,
   };
+}
+
+function readBoosters(raw: unknown, rowCount: number): BoosterUseDto[] {
+  if (!Array.isArray(raw)) return fail('invalid stat booster uses');
+  const seen = new Set<number | null>();
+  return raw.map((entry) => {
+    if (!isRecord(entry) || !isRecord(entry['counts'])) return fail('invalid stat booster counts');
+    const row = entry['row'];
+    if (row !== null && (typeof row !== 'number' || !Number.isInteger(row) || row < 0 || row >= rowCount)) {
+      return fail('stat boosters refer to a missing level');
+    }
+    if (seen.has(row)) return fail('duplicate stat booster level');
+    seen.add(row);
+    const counts: BoosterCounts = {};
+    for (const { key } of STAT_BOOSTERS) {
+      const value = entry['counts'][key];
+      if (value !== undefined) {
+        if (typeof value !== 'number') return fail('invalid stat booster count');
+        counts[key] = value;
+      }
+    }
+    const error = boosterError(counts);
+    if (error) return fail(error);
+    return { row, counts };
+  });
 }
 
 function readNames(raw: unknown): string[] {

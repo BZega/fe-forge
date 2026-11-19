@@ -27,6 +27,9 @@ import { EquipmentDialogComponent } from '../equipment-dialog/equipment-dialog.c
 import { equippedItems, equipmentWeapon, itemBoosts } from '../models/equipment';
 import { hasStatBonus, statBreakdown } from '../models/stat-display';
 import { LevelEntryDialogComponent, LevelEntryRow } from '../level-entry-dialog/level-entry-dialog.component';
+import { StatBoosterDialogComponent } from '../stat-booster-dialog/stat-booster-dialog.component';
+import { BoosterCounts, BoosterEntry, boosterStats } from '../models/stat-boosters';
+import { boosterUsage } from '../services/seed-mapper-state.service';
 
 interface PendingAction {
   kind: 'load' | 'upload' | 'overwrite' | 'delete' | 'reset';
@@ -74,6 +77,7 @@ export interface StatTotal {
   abilitySources: string[];
   capped: number;
   floorBoost: number;
+  includesBoosters?: boolean;
 }
 
 interface SectionStart {
@@ -146,6 +150,7 @@ const NO_ROLLS: RollEstimate[] = STAT_KEYS.map(() => estimateRoll([]));
     SearchableSelectComponent,
     SeedRngDialogComponent,
     SeedTimelineComponent,
+    StatBoosterDialogComponent,
   ],
   templateUrl: './seed-mapper-page.component.html',
   styleUrl: './seed-mapper-page.component.scss',
@@ -170,11 +175,41 @@ export class SeedMapperPageComponent {
   readonly maxLevel = MAX_LEVEL;
   readonly header = viewChild.required<ElementRef<HTMLElement>>('pageHeader');
   readonly headerHeight = signal(0);
+  readonly boosterEditor = signal<{ sectionId: number; entries: BoosterEntry[]; inherited: BoosterCounts } | null>(null);
+  readonly boosterEditorError = signal<string | null>(null);
+
+  openBoosters(view: SectionView): void {
+    const section = view.section;
+    const parent = section.exam && this.seedMap().sections.find((entry) => entry.id === section.exam!.parentId);
+    this.boosterEditorError.set(null);
+    this.boosterEditor.set({
+      sectionId: section.id,
+      inherited: parent ? boosterUsage(this.seedMap().sections, parent, section.exam!.afterRowId) : {},
+      entries: [
+        { key: null, level: this.startLevelOf(view), label: `Lv ${this.startLevelOf(view)} · before this timeline's level ups`, counts: section.boosters?.find((use) => use.rowId === null)?.counts ?? {} },
+        ...section.rows.map((row, index) => ({
+          key: row.id, level: this.levelOf(view, index), label: `Lv ${this.levelOf(view, index)} · after level up`,
+          counts: section.boosters?.find((use) => use.rowId === row.id)?.counts ?? {},
+        })),
+      ],
+    });
+  }
+
+  onBoostersConfirmed(entries: BoosterEntry[]): void {
+    const editor = this.boosterEditor();
+    if (!editor) return;
+    const error = this.state.setBoosters(editor.sectionId, entries
+      .filter((entry) => Object.values(entry.counts).some((count) => count > 0))
+      .map((entry) => ({ rowId: entry.key, counts: entry.counts })));
+    this.boosterEditorError.set(error);
+    if (!error) this.boosterEditor.set(null);
+  }
   readonly helpText = [
     'Enter the unit’s stats and change the starting level if it is not 1. Mark which stats rose on each level up.',
     'Add levels opens a draft for the selected timeline, with one level ready to mark. Choose a count to enter a batch up to Lv 99, then confirm. Cancel leaves the timeline unchanged.',
     'The main actions and Timeline controls stay visible while scrolling. Add levels and Exam / Reclass apply to the selected timeline; Current follows the latest branch.',
     'Starting stats exclude mount bonuses. Each timeline adds its mount’s bonus at the selected bond level.',
+    'Stat boosters adds permanent base stats at the selected mapped level, after its level up, or before the timeline starts. Enter starting stats before these recorded boosters. Each item has a timeline-wide use limit; branches inherit uses before the fork and track the remaining allowance independently.',
     'Use Classes to choose classes the unit already has available; Noble/Commoner is always available. Use Abilities to equip up to five stat-boosting abilities for each section.',
     'Use the Inventory button for each item the unit has equipped to equip one weapon and one each of Shield, Mask, Staff, and Accessory. Item stat bonuses share the +10 non-class bonus limit with mounts and abilities; they do not change level-up growth.',
     'Use the Timeline selector to focus a branch, or Current to follow the latest branch. A marked stat may fill automatically when the same roll raised another stat with an equal or lower growth rate, once a level up on that roll raised 3 or more stats.',
@@ -960,7 +995,7 @@ export class SeedMapperPageComponent {
       for (const stat of this.statKeys) {
         gains[stat] += marks[stat];
       }
-      gains = this.capGains(gains);
+      gains = this.capGains(sumGrowth(gains, boosterStats(view.section.boosters?.find((use) => use.rowId === rows[index].id)?.counts ?? {})));
     }
 
     return gains;
@@ -988,6 +1023,11 @@ export class SeedMapperPageComponent {
         };
       }
 
+      start = {
+        ...start,
+        gains: this.capGains(sumGrowth(start.gains, boosterStats(view.section.boosters?.find((use) => use.rowId === null)?.counts ?? {}))),
+      };
+
       let gains = start.gains;
       let floorBoosts = start.floorBoosts;
       const after: Progress[] = [];
@@ -997,7 +1037,8 @@ export class SeedMapperPageComponent {
         const boost = row.exam && switchesClass(row.exam) ? this.floorBoost(row.exam.classId, gains) : ZERO_GROWTH;
         const { marks } = this.effectiveRow(this.rowGrowth(view, rowIndex), row, this.slotOf(view, rowIndex));
 
-        gains = this.capGains(sumGrowth(gains, boost, toGrowth(marks)));
+        gains = this.capGains(sumGrowth(gains, boost, toGrowth(marks),
+          boosterStats(view.section.boosters?.find((use) => use.rowId === row.id)?.counts ?? {})));
         floorBoosts = sumGrowth(floorBoosts, boost);
         boosts.push(boost);
         after.push({ gains, floorBoosts });
@@ -1181,6 +1222,7 @@ export class SeedMapperPageComponent {
           : Math.min(MAX_BASE_STATS[stat], start - (startingClass?.bonusStats[stat] ?? 0) + gains[stat])
             + (shownClass?.bonusStats[stat] ?? 0) + extra,
         gained: gains[stat] - floorBoosts[stat],
+        includesBoosters: (boosterUsage(this.seedMap().sections, section)[stat] ?? 0) > 0,
         classBonus,
         versus: classBonus === 0 ? null : (startingClass?.name ?? null),
         mountBonus,
@@ -1197,7 +1239,7 @@ export class SeedMapperPageComponent {
     const modifier = total.mountBonus + total.abilityBonus - total.capped;
     const base = total.value === null ? 'unknown' : total.value - total.classBonus - modifier;
     const parts = [statBreakdown(base, total.classBonus, modifier),
-      total.gained === 0 ? 'No gains yet' : `+${total.gained} from level ups`];
+      total.gained === 0 ? 'No gains yet' : `+${total.gained} from ${total.includesBoosters ? 'level ups and stat boosters' : 'level ups'}`];
 
     if (total.floorBoost > 0) {
       parts.push(`+${total.floorBoost} from class base stats`);
@@ -1753,6 +1795,8 @@ export class SeedMapperPageComponent {
   // --- projection ---------------------------------------------------------
 
   readonly projection = signal<{
+    usedBoosters: BoosterCounts;
+    boosterHistory: { level: number; counts: BoosterCounts }[];
     unit: Unit;
     start: RecruitmentChapter;
     history: { start: RecruitmentChapter; steps: PlanStep[] };
@@ -1815,8 +1859,18 @@ export class SeedMapperPageComponent {
     const firstClass = this.classes().find((c) => c.id === this.sectionViews()[0]?.classId);
     const steps: PlanStep[] = [];
     const actuals: ProjectionActual[] = [];
+    const boosterHistory: { level: number; counts: BoosterCounts }[] = [];
 
     for (const { part, until } of this.pathTo(view)) {
+      for (const use of part.section.boosters ?? []) {
+        const index = use.rowId === null ? -1 : part.section.rows.findIndex((row) => row.id === use.rowId);
+        if (index <= until && (part.section.exam !== null || use.rowId !== null)) {
+          boosterHistory.push({
+            level: index < 0 ? this.startLevelOf(part) : this.levelOf(part, index),
+            counts: use.counts,
+          });
+        }
+      }
       const after = this.progress().get(part.section.id)?.after ?? [];
 
       for (let index = 0; index <= until; index++) {
@@ -1835,9 +1889,15 @@ export class SeedMapperPageComponent {
     }
 
     this.projection.set({
+      usedBoosters: boosterUsage(this.seedMap().sections, view.section),
+      boosterHistory: boosterHistory.filter((entry) => entry.level > startLevel),
       unit,
       start: chapterAt(this.endLevelOf(view), unitClass.name, own(gains)),
-      history: { start: chapterAt(startLevel, firstClass?.name ?? unitClass.name, own(ZERO_GROWTH)), steps },
+      history: { start: chapterAt(startLevel, firstClass?.name ?? unitClass.name,
+        own(sumGrowth(
+          boosterStats(this.sectionViews()[0]?.section.boosters?.find((use) => use.rowId === null)?.counts ?? {}),
+          ...boosterHistory.filter((entry) => entry.level <= startLevel).map((entry) => boosterStats(entry.counts)),
+        ))), steps },
       actuals,
       abilities: this.equippedAbilities(view),
       equipment: view.section.equipment ?? [],

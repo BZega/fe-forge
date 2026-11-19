@@ -369,6 +369,8 @@
 @if (projection(); as projected) {
   <app-projection-dialog
     [unit]="projected.unit"
+    [usedBoosters]="projected.usedBoosters"
+    [boosterHistory]="projected.boosterHistory"
     [battalion]="projected.battalion"
     [chapters]="[projected.start]"
     [chapterPicker]="false"
@@ -386,6 +388,17 @@
     [selected]="section.equipment ?? []"
     (confirmed)="onEquipmentConfirmed($event)"
     (closed)="equipmentSectionId.set(null)"
+  />
+}
+
+@if (boosterEditor(); as editor) {
+  <app-stat-booster-dialog
+    [entries]="editor.entries"
+    [inherited]="editor.inherited"
+    [error]="boosterEditorError()"
+    context="Choose when each booster is used. Gains are added on top of the starting stats you entered. Earlier uses are inherited by branches."
+    (confirmed)="onBoostersConfirmed($event)"
+    (closed)="boosterEditor.set(null)"
   />
 }
 

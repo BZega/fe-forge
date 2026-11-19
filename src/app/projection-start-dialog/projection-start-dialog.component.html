@@ -134,15 +134,23 @@
 
   @if (canCompare() && planStart()) {
     <label class="start-compare">
-      <input type="checkbox" [checked]="compareActuals()" (change)="compareActuals.set($any($event.target).checked)" />
-      I have actual stats to compare
+      <div style="display: flex; align-items: center; gap: 0.4rem;">
+        <input type="checkbox" [checked]="compareActuals()" (change)="compareActuals.set($any($event.target).checked)" />
+        I have actual stats to compare
+      </div>
+      <div>
+        <button type="button" class="ghost-button" (click)="boosterPickerOpen.set(true)">Add stat boosters</button>
+      </div>
     </label>
 
     @if (compareActuals()) {
       <div class="start-stats start-actuals" [style.--stat-count]="statKeys.length">
-        <label class="start-stats-caption">
-          Actual stats at Lv
+        <div class="start-stats-caption">
+          <label for="projection-actual-level">
+            Actual stats at Lv
+          </label>
           <input
+            id="projection-actual-level"
             class="start-select start-actual-level"
             type="number"
             inputmode="numeric"
@@ -154,7 +162,7 @@
             (focus)="selectValue($event)"
             (change)="setActualLevel($event)"
           />
-        </label>
+        </div>
         @for (stat of statKeys; track stat) {
           <label class="start-stat">
             <span>{{ statLabels[stat] }}</span>
@@ -313,4 +321,9 @@
     (confirmed)="onEquipmentConfirmed($event)"
     (closed)="equipmentPickerOpen.set(false)"
   />
+}
+
+@if (boosterPickerOpen()) {
+  <app-stat-booster-dialog [entries]="boosterEntries()" [context]="boosterContext()"
+    (confirmed)="onBoostersConfirmed($event)" (closed)="boosterPickerOpen.set(false)" />
 }

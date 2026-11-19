@@ -5,7 +5,7 @@ import unitData from '../data/units.json';
 import { MAX_BASE_STATS, STAT_KEYS, toGrowth, Unit, UnitClass } from '../models/growth.models';
 import { migrateSave } from '../models/seed-save';
 import { ITEMS } from '../models/equipment';
-import { SeedMapperStateService } from '../services/seed-mapper-state.service';
+import { boosterUsage, SeedMapperStateService } from '../services/seed-mapper-state.service';
 import { SeedSerializerService } from '../services/seed-serializer.service';
 import { SeedMapperPageComponent } from './seed-mapper-page.component';
 
@@ -34,6 +34,106 @@ describe('SeedMapperPageComponent starting stats', () => {
   const baseStats = () => component.endStatsOf(component.sectionViews()[0]).map((total) => total.value);
   const allow = (...names: string[]) =>
     names.forEach((name) => state.addAvailableClass(classes.find((unitClass) => unitClass.name === name)!.id));
+
+  describe('stat boosters', () => {
+    const seed = () => component.sectionViews()[0];
+
+    it('adds permanent gains at their selected level without changing growth observations or the +10 bonus pool', () => {
+      state.setUnit(unitId('Cai'));
+      state.setStartStat('str', 10);
+      state.addLevel(seed().section.id);
+      const last = seed().section.rows.at(-1)!;
+      const before = component.endStatsOf(seed())[STAT_KEYS.indexOf('str')].value!;
+      const marks = { ...last.marks };
+      expect(state.setBoosters(seed().section.id, [{ rowId: last.id, counts: { str: 3, mov: 3 } }])).toBeNull();
+      expect(component.startStatsOf(seed())[STAT_KEYS.indexOf('str')].value).toBe(10);
+      expect(component.endStatsOf(seed())[STAT_KEYS.indexOf('str')].value).toBe(before + 6);
+      expect(seed().section.rows.at(-1)!.marks).toEqual(marks);
+      expect(component.statTotalTitle(component.endStatsOf(seed())[STAT_KEYS.indexOf('str')])).toContain('stat boosters');
+      component.openProjection(seed());
+      expect(component.projection()!.start.stats.str).toBe(before + 6);
+      expect(component.projection()!.usedBoosters.str).toBe(3);
+      expect(component.projection()!.boosterHistory.at(-1)!.counts.str).toBe(3);
+    });
+
+    it('caps boosted own stats at 120 HP / 99 others and consumes boosters even at the cap', () => {
+      state.setStartStat('hp', 119);
+      state.setStartStat('str', 98);
+      expect(state.setBoosters(seed().section.id, [{ rowId: null, counts: { hp: 5, str: 4 } }])).toBeNull();
+      expect(component.endStatsOf(seed())[0].value).toBe(120);
+      expect(component.endStatsOf(seed())[STAT_KEYS.indexOf('str')].value).toBe(99);
+      component.openBoosters(seed());
+      expect(component.boosterEditor()!.entries[0].counts).toEqual({ hp: 5, str: 4 });
+    });
+
+    it('inherits only uses before a fork, with independent remaining allowances and descendant-safe edits', () => {
+      state.setUnit(unitId('Cai'));
+      state.addLevel(seed().section.id);
+      const anchor = seed().section.rows[0].id;
+      const later = seed().section.rows[1].id;
+      expect(state.setBoosters(seed().section.id, [
+        { rowId: anchor, counts: { str: 1 } }, { rowId: later, counts: { str: 3 } },
+      ])).toBeNull();
+      const first = state.addBranch(seed().section.id, anchor, { classId: noble.id, chance: 0, passed: true, reclass: true })!;
+      const second = state.addBranch(seed().section.id, anchor, { classId: noble.id, chance: 0, passed: true, reclass: true })!;
+      const byId = (id: number) => state.seedMap().sections.find((section) => section.id === id)!;
+      expect(state.setBoosters(first, [{ rowId: null, counts: { str: 3 } }])).toBeNull();
+      expect(state.setBoosters(second, [{ rowId: null, counts: { str: 2 } }])).toBeNull();
+      expect(boosterUsage(state.seedMap().sections, byId(first)).str).toBe(4);
+      expect(boosterUsage(state.seedMap().sections, byId(second)).str).toBe(3);
+      const changes = state.changeCount();
+      expect(state.setBoosters(first, [{ rowId: null, counts: { str: 4 } }])).toContain('Energy Drop');
+      expect(state.changeCount()).toBe(changes);
+      expect(state.setBoosters(seed().section.id, [{ rowId: anchor, counts: { str: 2 } }])).toContain('inherited');
+      expect(boosterUsage(state.seedMap().sections, byId(first)).str).toBe(4);
+      component.openBoosters(component.sectionViews().find((view) => view.section.id === first)!);
+      expect(component.boosterEditor()!.inherited.str).toBe(1);
+    });
+
+    it('accounts for boosters before exam floors so permanent gains are not added twice', () => {
+      state.setUnit(unitId('Cai'));
+      state.setStartStat('str', 0);
+      allow('Gladiator');
+      const floor = gladiator.classFloorStats.str;
+      expect(state.setBoosters(seed().section.id, [{ rowId: null, counts: { str: 3 } }])).toBeNull();
+      state.addLevel(seed().section.id);
+      const branchId = state.addBranch(seed().section.id, seed().section.rows[0].id, {
+        classId: gladiator.id, chance: 100, passed: true,
+      })!;
+      const branch = component.sectionViews().find((view) => view.section.id === branchId)!;
+      expect(component.examBoostOf(branch).str).toBe(Math.max(0, floor - 6));
+    });
+
+    it('round-trips booster levels and rejects malformed or over-limit imported counts', () => {
+      state.setBoosters(seed().section.id, [
+        { rowId: null, counts: { str: 1 } }, { rowId: seed().section.rows[0].id, counts: { str: 2, mov: 3 } },
+      ]);
+      const serializer = TestBed.inject(SeedSerializerService);
+      const dto = serializer.toDto(state.snapshot());
+      const wrap = () => ({ version: 2, seed: dto });
+      const loaded = migrateSave(wrap());
+      state.reset();
+      state.restore(serializer.fromDto(loaded.seed), null);
+      expect(boosterUsage(state.seedMap().sections, seed().section).str).toBe(3);
+      expect(seed().section.boosters![1].rowId).toBe(seed().section.rows[0].id);
+      dto.sections[0].boosters![1].counts.str = 4;
+      expect(() => migrateSave(wrap())).toThrowError(/Energy Drop/);
+      dto.sections[0].boosters![1].counts.str = -1;
+      expect(() => migrateSave(wrap())).toThrowError(/Energy Drop/);
+      dto.sections[0].boosters![1].counts.str = 2;
+      dto.sections[0].boosters![1].row = 999;
+      expect(() => migrateSave(wrap())).toThrowError(/missing level/);
+    });
+
+    it('removes uses attached to a removed row and refunds its allowance', () => {
+      state.addLevel(seed().section.id);
+      const row = seed().section.rows.at(-1)!;
+      state.setBoosters(seed().section.id, [{ rowId: row.id, counts: { str: 4 } }]);
+      state.removeLevel(seed().section.id, row.id);
+      expect(seed().section.boosters).toEqual([]);
+      expect(boosterUsage(state.seedMap().sections, seed().section).str).toBe(0);
+    });
+  });
 
   describe('draft level entry', () => {
     const seed = () => component.sectionViews()[0];
