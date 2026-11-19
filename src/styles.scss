@@ -2,6 +2,7 @@
 
 :root {
   --bg: #0b1a1c;
+  --page-gradient: radial-gradient(120% 80% at 50% 0%, #133034 0%, transparent 70%);
   --panel: #11262a;
   --panel-border: #2a4a4c;
   --text: #ece4cc;
@@ -54,7 +55,7 @@ body {
   overflow: hidden;
   overscroll-behavior: none;
   background:
-    radial-gradient(120% 80% at 50% 0%, #133034 0%, transparent 70%),
+    var(--page-gradient),
     var(--bg);
   color: var(--text);
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;

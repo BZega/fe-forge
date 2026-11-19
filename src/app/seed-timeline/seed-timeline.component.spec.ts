@@ -274,14 +274,19 @@ describe('SeedTimelineComponent', () => {
     expect(seed().rows.length).toBe(count + 1);
   });
 
-  it('keeps the page title unboxed and preserves only the timeline panel outline', () => {
+  it('masks scrolling borders behind the unboxed page header and preserves the timeline outline', () => {
     const { host } = render();
+    host.style.setProperty('--bg', '#0b1a1c');
+    host.style.setProperty('--page-gradient', 'radial-gradient(120% 80% at 50% 0%, #133034 0%, transparent 70%)');
     const header = getComputedStyle(host.querySelector('.page-header')!);
     const bar = getComputedStyle(host.querySelector('.timeline-bar')!);
     const panel = getComputedStyle(host.querySelector('.timeline')!);
     expect(header.position).toBe('sticky');
     expect(header.borderTopWidth).toBe('0px');
-    expect(header.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(header.backgroundColor).toBe('rgb(11, 26, 28)');
+    expect(header.backgroundImage).toContain('radial-gradient');
+    expect(header.backgroundAttachment.split(',').every((layer) => layer.trim() === 'fixed')).toBeTrue();
+    expect(header.backdropFilter).toBe('none');
     expect(bar.position).toBe('sticky');
     expect(bar.borderTopLeftRadius).toBe('10px');
     expect(bar.borderBottomWidth).toBe('0px');
