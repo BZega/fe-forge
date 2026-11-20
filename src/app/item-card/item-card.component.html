@@ -1,11 +1,10 @@
 @let item = this.item();
-<div class="picker-item" [class.picker-item--disabled]="disabled()" [class.picker-item--on]="selected()">
+<div class="picker-item" [class.picker-item--static]="alwaysExpanded()" [class.picker-item--disabled]="disabled()" [class.picker-item--on]="selected()">
   @if (selectable()) {
     <input type="checkbox" [attr.aria-label]="'Equip ' + item.Name"
       [checked]="selected()" [disabled]="disabled()" (change)="selectionChange.emit()" />
   }
-  <details class="picker-item-details" [attr.name]="disclosureGroup()">
-    <summary class="picker-item-name">
+  <ng-template #heading>
       <span class="equipment-heading" [class.equipment-heading--no-effectiveness]="!effectiveness().length">
         <span class="equipment-name">
           @if (skillKey(item.WeaponType); as key) {
@@ -41,10 +40,10 @@
         }
         <span class="equipment-durability" [attr.aria-label]="'Durability ' + item.Durability" title="Durability">{{ item.Durability }}</span>
       </span>
-      <span class="picker-item-chevron" aria-hidden="true"></span>
-    </summary>
+  </ng-template>
+  <ng-template #body>
     <div class="equipment-details">
-      <p class="picker-item-description">{{ item.Description }}</p>
+      <div class="equipment-description"><p class="picker-item-description">{{ item.Description }}</p></div>
       @if (hasCombatDetails()) {
       <div class="equipment-columns">
         <dl>
@@ -78,9 +77,23 @@
         </dl>
       </div>
       }
-      @if (itemBonusDescription(item); as bonuses) {
+      @if (showBonusStats() && itemBonusDescription(item); as bonuses) {
         <p class="equipment-extra"><strong>Bonus stats</strong> {{ bonuses }}</p>
       }
     </div>
-  </details>
+  </ng-template>
+  @if (alwaysExpanded()) {
+    <div class="picker-item-details picker-item-details--static">
+      <div class="picker-item-name"><ng-container *ngTemplateOutlet="heading" /></div>
+      <ng-container *ngTemplateOutlet="body" />
+    </div>
+  } @else {
+    <details class="picker-item-details" [attr.name]="disclosureGroup()">
+      <summary class="picker-item-name">
+        <ng-container *ngTemplateOutlet="heading" />
+        <span class="picker-item-chevron" aria-hidden="true"></span>
+      </summary>
+      <ng-container *ngTemplateOutlet="body" />
+    </details>
+  }
 </div>

@@ -45,6 +45,12 @@ export const RESOURCE_LINKS: readonly NavLink[] = [
     description: 'Class growth modifiers, abilities and requirements, grouped by rank.',
   },
   {
+    path: '/weapons',
+    label: 'Weapons',
+    icon: 'axe',
+    description: 'Weapons, magic and equipment with combat values, requirements, effectiveness and stat bonuses.',
+  },
+  {
     path: '/mounts',
     label: 'Mounts',
     icon: 'riding',

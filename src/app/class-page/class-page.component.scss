@@ -145,17 +145,28 @@
   }
 }
 
+.class-portraits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.class-icon {
+  margin: 0;
+  text-align: center;
+
+  figcaption {
+    margin-top: 0.35rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+  }
+}
+
 .portrait {
   display: grid;
   place-items: center;
   width: 6.5rem;
   aspect-ratio: 1;
-  border-radius: 14px;
-  border: 1px solid var(--gold-line);
-  background:
-    radial-gradient(circle at 50% 35%, rgb(240 192 74 / 18%), transparent 70%),
-    #0c1d20;
-  box-shadow: inset 0 0 0 4px rgb(0 0 0 / 25%);
   overflow: hidden;
 
   img {
@@ -172,6 +183,14 @@
   max-height: 100%;
   object-fit: contain;
   image-rendering: pixelated;
+}
+
+.class-icon .portrait-sprite {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  image-rendering: auto;
 }
 
 .portrait-glyph {

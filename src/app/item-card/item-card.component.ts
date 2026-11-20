@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { skillIconUrl, useFallbackIcon } from '../icon-links';
 import { Item, itemBaseName, itemBonusDescription } from '../models/equipment';
@@ -18,6 +19,7 @@ const EFFECTIVENESS_ICONS: Readonly<Record<string, string>> = {
 
 @Component({
   selector: 'app-item-card',
+  imports: [NgTemplateOutlet],
   templateUrl: './item-card.component.html',
   styleUrl: './item-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,9 +32,12 @@ export class ItemCardComponent {
   readonly disclosureGroup = input<string | null>(null);
   readonly selectionChange = output<void>();
   readonly variants = input<readonly Item[]>([]);
+  readonly showVariants = input(false);
+  readonly alwaysExpanded = input(false);
+  readonly showBonusStats = input(true);
   readonly variantChange = output<string>();
   readonly baseName = computed(() => itemBaseName(this.item().Name));
-  readonly canUpgrade = computed(() => this.selectable() && this.variants().length > 1);
+  readonly canUpgrade = computed(() => (this.selectable() || this.showVariants()) && this.variants().length > 1);
   readonly namedVariant = computed(() => this.variantLabel(this.item()).length > 0 && !this.variantLabel(this.item()).startsWith('+'));
   readonly variantWidth = computed(() => this.namedVariant() ? `${this.variantLabel(this.item()).length + 1}ch` : null);
   readonly itemBonusDescription = itemBonusDescription;

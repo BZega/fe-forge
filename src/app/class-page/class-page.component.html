@@ -6,11 +6,22 @@
   <article class="profile">
     <!-- Profile header -->
     <header class="hero">
-      <div class="portrait" [attr.data-class-id]="current.id">
-        @if (sprite(); as src) {
-          <img class="portrait-sprite" [src]="src" [alt]="headerName()" referrerpolicy="no-referrer" (error)="spriteFailed.set(true)" />
-        } @else {
-          <span class="portrait-glyph" aria-hidden="true">{{ initials(headerName()!) }}</span>
+      <div class="class-portraits">
+        @for (icon of icons(); track icon.src) {
+          <figure class="class-icon">
+            <div class="portrait" [attr.data-class-id]="current.id">
+              <img class="portrait-sprite" [src]="icon.src" [alt]="headerName() + ' (' + icon.label + ')'" />
+            </div>
+            <figcaption>{{ icon.label }}</figcaption>
+          </figure>
+        } @empty {
+          <div class="portrait" [attr.data-class-id]="current.id">
+            @if (sprite(); as src) {
+              <img class="portrait-sprite" [src]="src" [alt]="headerName()" referrerpolicy="no-referrer" (error)="spriteFailed.set(true)" />
+            } @else {
+              <span class="portrait-glyph" aria-hidden="true">{{ initials(headerName()!) }}</span>
+            }
+          </div>
         }
       </div>
 

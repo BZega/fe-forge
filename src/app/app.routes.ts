@@ -75,5 +75,11 @@ export const routes: Routes = [
         (m) => m.BattalionsPageComponent,
       ),
   },
+  {
+    path: 'weapons',
+    title: 'Weapons',
+    loadComponent: () =>
+      import('./weapons-page/weapons-page.component').then((m) => m.WeaponsPageComponent),
+  },
   { path: '**', redirectTo: '' },
 ];

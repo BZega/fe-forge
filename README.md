@@ -24,7 +24,8 @@ with the reference pages.
 | Page | What it does |
 | --- | --- |
 | Characters | Every unit's personal growths with a quality heatmap, plus recruitment details |
-| Classes | Class growth modifiers and abilities, grouped by rank |
+| Classes | Class growth modifiers and abilities, grouped by rank; details show available male/female class icons side by side |
+| Weapons & Equipment | Searchable item catalog grouped by type, with upgrades and named forms in one card's version dropdown and permanently visible details; equal-height cards use three responsive columns with incomplete rows centered. New equipment types appear automatically from `src/app/data/item.json` |
 | Mounts | Mount growth bonuses, grouped by mount type |
 | Battalions | Each battalion's rank, flat stat bonuses and skill, grouped by battalion type |
 

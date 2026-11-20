@@ -131,11 +131,12 @@ describe('ClassPageComponent class switcher keyboard', () => {
 
     expect(tabs().map((tab) => tab.textContent!.trim())).toEqual(['Noble', 'Commoner', 'God']);
     expect(text()).toEqual([origin.description.split('/')[0]]);
-    expect(page.host.querySelector('.portrait-glyph')!.textContent!.trim()).toBe('NO');
+    expect(page.host.querySelector<HTMLImageElement>('.portrait-sprite')!.getAttribute('src')).toBe('icons/classes/noble__male.png');
 
     tabs()[1].click();
     page.fixture.detectChanges();
     expect(text()).toEqual([origin.description.split('/')[1]]);
+    expect(page.host.querySelector<HTMLImageElement>('.portrait-sprite')!.getAttribute('src')).toBe('icons/classes/commoner__male.png');
 
     tabs()[2].click();
     page.fixture.detectChanges();
@@ -147,6 +148,48 @@ describe('ClassPageComponent class switcher keyboard', () => {
     const page = open(second.id);
 
     expect(page.host.querySelector('.hero-variants')).toBeNull();
+  });
+
+  for (const [name, files] of [
+    ['Gladiator', ['gladiator__male.png', 'gladiator__female.png']],
+    ['The Avatar', ['the_avatar__variant_1.png', 'the_avatar__variant_2.png']],
+    ['Winged Soldier', ['wing_soldier__female.png']],
+    ['Celestial Trooper', ['celestial_trooper__female.png']],
+  ] as const) {
+    it(`shows the available local class icons for ${name}`, () => {
+      const unitClass = (unitClassData as UnitClass[]).find((candidate) => candidate.name === name)!;
+      const page = open(unitClass.id);
+      const icons = Array.from(page.host.querySelectorAll<HTMLImageElement>('.class-icon img'));
+      expect(icons.map((icon) => icon.getAttribute('src'))).toEqual(files.map((file) => `icons/classes/${file}`));
+      const labels = files.length === 1 ? ['Female'] : ['Male', 'Female'];
+      expect(icons.map((icon) => icon.alt)).toEqual(labels.map((label) => `${name} (${label})`));
+      expect(Array.from(page.host.querySelectorAll('.class-icon figcaption')).map((caption) => caption.textContent!.trim())).toEqual(labels);
+    });
+  }
+
+  it('keeps the existing portrait fallback for classes without local artwork', () => {
+    const unitClass = (unitClassData as UnitClass[]).find((candidate) => candidate.name === 'Trickster')!;
+    const page = open(unitClass.id);
+    expect(page.host.querySelector('.class-icon')).toBeNull();
+    expect(page.host.querySelector('.portrait')).not.toBeNull();
+  });
+
+  it('fills local class portrait boxes with centered proportional scaling', () => {
+    const page = open(second.id);
+    document.body.appendChild(page.host);
+    try {
+      for (const image of Array.from(page.host.querySelectorAll<HTMLImageElement>('.class-icon img'))) {
+        const portrait = image.parentElement!;
+        const bounds = image.getBoundingClientRect();
+        expect(Math.abs(bounds.width - portrait.clientWidth)).toBeLessThanOrEqual(1);
+        expect(Math.abs(bounds.height - portrait.clientHeight)).toBeLessThanOrEqual(1);
+        expect(getComputedStyle(image).objectFit).toBe('cover');
+        expect(getComputedStyle(image).objectPosition).toBe('50% 50%');
+        expect(getComputedStyle(image).imageRendering).toBe('auto');
+      }
+    } finally {
+      page.host.remove();
+    }
   });
 
   it('starts on the current class and moves the highlight with the up and down arrows', () => {

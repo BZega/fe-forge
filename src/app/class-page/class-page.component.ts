@@ -3,7 +3,7 @@ import { afterNextRender, ChangeDetectionStrategy, Component, computed, ElementR
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
-import { abilityIconUrl, classSpriteUrl } from '../icon-links';
+import { abilityIconUrl, classIcons, classSpriteUrl } from '../icon-links';
 import { BONUS_STAT_KEYS, BONUS_STAT_LABELS, CLASS_LEVEL_CONFIGS, CLASS_RANK_ORDER, ClassAbility, growthTotal, ORIGIN_CLASS, SKILL_KEYS, SKILL_LABELS, SkillKey, STAT_KEYS, STAT_LABELS, sumGrowth, toGrowth, UnitClass } from '../models/growth.models';
 import { GrowthDataService } from '../services/growth-data.service';
 import { SpoilerService } from '../services/spoiler.service';
@@ -119,6 +119,8 @@ export class ClassPageComponent {
   });
 
   readonly spriteFailed = linkedSignal({ source: () => this.headerName(), computation: () => false });
+
+  readonly icons = computed(() => classIcons(this.headerName() ?? ''));
 
   readonly sprite = computed(() => {
     const name = this.headerName();

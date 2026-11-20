@@ -1,0 +1,37 @@
+<header class="browse-header">
+  <div class="browse-header-title">
+    <h1>Weapons &amp; Equipment</h1>
+    <app-help-dialog heading="Weapons & Equipment" [paragraphs]="helpText" />
+  </div>
+</header>
+
+<div class="catalog-filters">
+  <label for="item-search">
+    <span>Search items</span>
+    <input id="item-search" #query type="search" placeholder="Name, type or description" [value]="search()" (input)="search.set(query.value)" />
+  </label>
+  <label for="item-type-filter">
+    <span>Item type</span>
+    <select id="item-type-filter" #type aria-label="Item type" [value]="selectedType()" (change)="selectedType.set(type.value)">
+      <option value="">All types</option>
+      @for (type of types(); track type) {
+        <option [value]="type">{{ type }}</option>
+      }
+    </select>
+  </label>
+</div>
+<p class="catalog-count" role="status">{{ resultCount() }} {{ resultCount() === 1 ? 'item' : 'items' }}</p>
+
+@for (group of groups(); track group.type; let index = $index) {
+  <section class="catalog-group" [attr.aria-labelledby]="'item-type-' + index">
+    <h2 [id]="'item-type-' + index">{{ group.type }} <span>({{ group.items.length }})</span></h2>
+    <div class="catalog-items">
+      @for (family of group.items; track family.key) {
+        <app-item-card [item]="family.item" [variants]="family.variants" [showVariants]="true" [alwaysExpanded]="true"
+          (variantChange)="changeVariant(family.item, $event)" />
+      }
+    </div>
+  </section>
+} @empty {
+  <p class="catalog-empty">No items match your search and type filter.</p>
+}
