@@ -25,9 +25,16 @@ export type EquipmentSlot = (typeof EQUIPMENT_SLOTS)[number];
 export const ITEMS: readonly Item[] = itemData;
 const ANSWERER_FORMS = ['Answerer Arisen', 'Answerer Breaker', 'Answerer Huang'];
 const PrototypeI_FORMS = ['Prototype I', 'Prototype I: |', 'Prototype I: ||', 'Prototype I: |||'];
+const PrototypeVII_FORMS = ['Prototype VII', 'Prototype VII: |', 'Prototype VII: ||', 'Prototype VII: |||'];
+const PrototypeV_FORMS = ['Prototype V', 'Prototype V: |', 'Prototype V: ||', 'Prototype V: |||'];
+const PrototypeXI_FORMS = ['Prototype XI', 'Prototype XI: |', 'Prototype XI: ||', 'Prototype XI: |||'];
 
 export function itemBaseName(name: string): string {
-  return ANSWERER_FORMS.includes(name) ? 'Answerer' : PrototypeI_FORMS.includes(name) ? 'Prototype I' : name.replace(/\+[0-9]$/, '');
+  return ANSWERER_FORMS.includes(name) ? 'Answerer' : 
+         PrototypeI_FORMS.includes(name) ? 'Prototype I' : 
+         PrototypeVII_FORMS.includes(name) ? 'Prototype VII' : 
+         PrototypeV_FORMS.includes(name) ? 'Prototype V' : 
+         PrototypeXI_FORMS.includes(name) ? 'Prototype XI' : name.replace(/\+[0-9]$/, '');
 }
 
 export function itemVariants(item: Item, catalog: readonly Item[]): Item[] {

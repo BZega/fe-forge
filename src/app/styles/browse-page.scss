@@ -6,7 +6,7 @@
   width: 100%;
   max-width: 1080px;
   margin: 0 auto;
-  padding: 1.5rem 1.25rem 0;
+  padding: 1.5rem 1.25rem 20px;
 }
 
 .browse-header {
@@ -52,7 +52,7 @@ app-growth-list {
 
 @media (max-width: 720px) {
   :host {
-    padding: 1rem 0.75rem 0;
+    padding: 1rem 0.75rem 20px;
   }
 
   .browse-header {

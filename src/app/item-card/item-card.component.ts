@@ -1,6 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { skillIconUrl, useFallbackIcon } from '../icon-links';
+import { equipmentIconUrl, skillIconUrl, useFallbackIcon } from '../icon-links';
 import { Item, itemBaseName, itemBonusDescription } from '../models/equipment';
 import { SKILL_KEYS, SKILL_LABELS, SkillKey } from '../models/growth.models';
 
@@ -35,6 +35,7 @@ export class ItemCardComponent {
   readonly showVariants = input(false);
   readonly alwaysExpanded = input(false);
   readonly showBonusStats = input(true);
+  readonly highlightUpgrades = input(false);
   readonly variantChange = output<string>();
   readonly baseName = computed(() => itemBaseName(this.item().Name));
   readonly canUpgrade = computed(() => (this.selectable() || this.showVariants()) && this.variants().length > 1);
@@ -42,6 +43,32 @@ export class ItemCardComponent {
   readonly variantWidth = computed(() => this.namedVariant() ? `${this.variantLabel(this.item()).length + 1}ch` : null);
   readonly itemBonusDescription = itemBonusDescription;
   readonly useFallbackIcon = useFallbackIcon;
+  readonly equipmentIcon = computed(() => equipmentIconUrl(this.item(), !this.selectable() || this.selected()));
+  readonly improvedFields = computed(() => {
+    const improved = new Set<string>();
+    const item = this.item();
+    const base = this.variants().find((variant) => variant.Name === itemBaseName(item.Name));
+    if (!this.highlightUpgrades() || !base || base.Name === item.Name) return improved;
+    const durability = (value: string): number | null => {
+      const match = /^\s*\d+\s*\/\s*(\d+)\s*$/.exec(value);
+      return match ? Number(match[1]) : null;
+    };
+    const currentDurability = durability(item.Durability);
+    const baseDurability = durability(base.Durability);
+    if (currentDurability !== null && baseDurability !== null && currentDurability > baseDurability) {
+      improved.add('Durability');
+    }
+    for (const field of ['Mt', 'Hit', 'Crit', 'Wt', 'Avo', 'Range'] as const) {
+      const current = field === 'Mt' ? item.Pwr ?? item.Mt : item[field];
+      const original = field === 'Mt' ? base.Pwr ?? base.Mt : base[field];
+      const numeric = (value: string | number) => typeof value === 'number' || /^\d+(?:\.\d+)?$/.test(value.trim());
+      if (numeric(current) && numeric(original) &&
+          (field === 'Wt' ? Number(current) < Number(original) : Number(current) > Number(original))) {
+        improved.add(field);
+      }
+    }
+    return improved;
+  });
   readonly hasCombatDetails = computed(() => {
     const item = this.item();
     return item.Skills.length > 0 ||

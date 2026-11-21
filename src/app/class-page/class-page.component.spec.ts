@@ -131,12 +131,12 @@ describe('ClassPageComponent class switcher keyboard', () => {
 
     expect(tabs().map((tab) => tab.textContent!.trim())).toEqual(['Noble', 'Commoner', 'God']);
     expect(text()).toEqual([origin.description.split('/')[0]]);
-    expect(page.host.querySelector<HTMLImageElement>('.portrait-sprite')!.getAttribute('src')).toBe('icons/classes/noble__male.png');
+    expect(page.host.querySelector<HTMLImageElement>('.portrait-sprite')!.getAttribute('src')).toBe('icons/classes/noble_male.png');
 
     tabs()[1].click();
     page.fixture.detectChanges();
     expect(text()).toEqual([origin.description.split('/')[1]]);
-    expect(page.host.querySelector<HTMLImageElement>('.portrait-sprite')!.getAttribute('src')).toBe('icons/classes/commoner__male.png');
+    expect(page.host.querySelector<HTMLImageElement>('.portrait-sprite')!.getAttribute('src')).toBe('icons/classes/commoner_male.png');
 
     tabs()[2].click();
     page.fixture.detectChanges();
@@ -151,10 +151,10 @@ describe('ClassPageComponent class switcher keyboard', () => {
   });
 
   for (const [name, files] of [
-    ['Gladiator', ['gladiator__male.png', 'gladiator__female.png']],
-    ['The Avatar', ['the_avatar__variant_1.png', 'the_avatar__variant_2.png']],
-    ['Winged Soldier', ['wing_soldier__female.png']],
-    ['Celestial Trooper', ['celestial_trooper__female.png']],
+    ['Gladiator', ['gladiator_male.png', 'gladiator_female.png']],
+    ['The Avatar', ['the_avatar_male.png', 'the_avatar_female.png']],
+    ['Winged Soldier', ['winged_soldier_female.png']],
+    ['Celestial Trooper', ['celestial_trooper_female.png']],
   ] as const) {
     it(`shows the available local class icons for ${name}`, () => {
       const unitClass = (unitClassData as UnitClass[]).find((candidate) => candidate.name === name)!;
@@ -174,16 +174,18 @@ describe('ClassPageComponent class switcher keyboard', () => {
     expect(page.host.querySelector('.portrait')).not.toBeNull();
   });
 
-  it('fills local class portrait boxes with centered proportional scaling', () => {
-    const page = open(second.id);
+  it('stretches both Forest Knight images to fill identical fixed-size frames', () => {
+    const unitClass = (unitClassData as UnitClass[]).find((candidate) => candidate.name === 'Forest Knight')!;
+    const page = open(unitClass.id);
     document.body.appendChild(page.host);
     try {
       for (const image of Array.from(page.host.querySelectorAll<HTMLImageElement>('.class-icon img'))) {
         const portrait = image.parentElement!;
         const bounds = image.getBoundingClientRect();
+        expect(Math.abs(portrait.clientWidth - portrait.clientHeight)).toBeLessThanOrEqual(1);
         expect(Math.abs(bounds.width - portrait.clientWidth)).toBeLessThanOrEqual(1);
         expect(Math.abs(bounds.height - portrait.clientHeight)).toBeLessThanOrEqual(1);
-        expect(getComputedStyle(image).objectFit).toBe('cover');
+        expect(getComputedStyle(image).objectFit).toBe('fill');
         expect(getComputedStyle(image).objectPosition).toBe('50% 50%');
         expect(getComputedStyle(image).imageRendering).toBe('auto');
       }

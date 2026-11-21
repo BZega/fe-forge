@@ -25,9 +25,7 @@ describe('WeaponsPageComponent', () => {
 
   it('filters by type and a case-insensitive search through the visible controls', () => {
     const { fixture, page, host } = open();
-    const type = host.querySelector<HTMLSelectElement>('select')!;
-    type.value = 'Sword';
-    type.dispatchEvent(new Event('change'));
+    host.querySelector<HTMLButtonElement>('.catalog-tab[aria-label="Sword"]')!.click();
     const search = host.querySelector<HTMLInputElement>('input')!;
     search.value = '  WOODEN  ';
     search.dispatchEvent(new Event('input'));
@@ -56,10 +54,12 @@ describe('WeaponsPageComponent', () => {
   it('switches versions without equipping and keeps details open', () => {
     const { fixture, host } = open(ITEMS.filter((item) => itemBaseName(item.Name) === 'Wooden Sword'));
     const select = host.querySelector<HTMLSelectElement>('.equipment-upgrade')!;
-    select.value = 'Wooden Sword+3';
+    select.value = 'Wooden Sword+9';
     select.dispatchEvent(new Event('change'));
     fixture.detectChanges();
-    expect(select.value).toBe('Wooden Sword+3');
+    expect(select.value).toBe('Wooden Sword+9');
+    expect(host.querySelector('.equipment-extra')).toBeNull();
+    expect(host.querySelector('.equipment-columns dd.stat-bonus')!.textContent).toBe('20');
     expect(host.querySelectorAll('app-item-card').length).toBe(1);
     expect(host.querySelector('.equipment-details')).not.toBeNull();
     expect(host.querySelector('input[type="checkbox"]')).toBeNull();
@@ -81,6 +81,24 @@ describe('WeaponsPageComponent', () => {
     const { page } = open([{ ...ITEMS[0], Description: 'Unique description phrase' }]);
     page.search.set('description phrase');
     expect(page.resultCount()).toBe(1);
+  });
+
+  it('uses icon tabs and groups equipment slots under Equipment', () => {
+    const items = ['Sword', 'Shield', 'Mask', 'Staff', 'Accessory', 'New type'].map((type): Item => ({
+      ...ITEMS[0], Name: `${type} example`, WeaponType: type,
+    }));
+    const { fixture, host, page } = open(items);
+    expect(page.tabs()).toEqual(['', 'Sword', 'New type', 'Equipment']);
+    expect(host.querySelector('#item-type-filter')).toBeNull();
+    expect(host.querySelector('.catalog-tab[aria-label="Sword"] img')).not.toBeNull();
+    expect(host.querySelector('.catalog-tab[aria-label="Equipment"] img')!.getAttribute('src')).toBe('icons/equipment/shield.png');
+    host.querySelector<HTMLButtonElement>('.catalog-tab[aria-label="Equipment"]')!.click();
+    fixture.detectChanges();
+    expect(page.groups().map((group) => group.type)).toEqual(['Shield', 'Mask', 'Staff', 'Accessory']);
+    expect(host.querySelector('.catalog-tab[aria-label="Equipment"]')!.getAttribute('aria-pressed')).toBe('true');
+    host.querySelector<HTMLButtonElement>('.catalog-tab[aria-label="All types"]')!.click();
+    fixture.detectChanges();
+    expect(page.resultCount()).toBe(6);
   });
 
   it('keeps cards equal height across types and centers incomplete rows', async () => {
@@ -108,6 +126,8 @@ describe('WeaponsPageComponent', () => {
         expect(Math.abs((area.top + area.bottom - description.top - description.bottom) / 2)).toBeLessThanOrEqual(3);
       }
       const single = cards[4].getBoundingClientRect();
+      expect(Math.abs(host.getBoundingClientRect().bottom - single.bottom - 20)).toBeLessThanOrEqual(1);
+      expect(getComputedStyle(host).flexShrink).toBe('0');
       const row = cards[4].parentElement!.getBoundingClientRect();
       expect(Math.abs((single.left + single.right) / 2 - (row.left + row.right) / 2)).toBeLessThanOrEqual(1);
     } finally {

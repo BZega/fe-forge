@@ -1,23 +1,59 @@
-import { afterNextRender, Component, DestroyRef, ElementRef, HostListener, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { afterNextRender, Component, computed, DestroyRef, ElementRef, HostListener, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { filter, map } from 'rxjs/operators';
 import { SPOILER_TIERS, SpoilerService, SpoilerTier } from './services/spoiler.service';
 import { RESOURCE_LINKS, TOOL_LINKS } from './nav-links';
 import { SuggestionDialogComponent } from './suggestion-dialog/suggestion-dialog.component';
+import { SpoilerNoticeComponent } from './spoiler-notice/spoiler-notice.component';
+import { GrowthDataService } from './services/growth-data.service';
 
 const TEXT_FIELD = 'input:not([type=checkbox]):not([type=radio]):not([type=button]), textarea, select';
 const KEYBOARD_KEY = 'fe-forge:keyboard-inset';
 const MARGIN = 8;
+const SPOILER_NOTICE_KEY = 'fe-forge.spoiler-notice-dismissed';
 
 const isEditing = () => document.activeElement?.matches(TEXT_FIELD) ?? false;
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, SuggestionDialogComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, SuggestionDialogComponent, SpoilerNoticeComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
   private readonly spoilers = inject(SpoilerService);
+  private readonly router = inject(Router);
+  private readonly data = inject(GrowthDataService);
+  private readonly noticeUnits = toSignal(this.data.getUnits(), { initialValue: [] });
+  private readonly noticeClasses = toSignal(this.data.getClasses(), { initialValue: [] });
+  private readonly noticeMounts = toSignal(this.data.getMounts(), { initialValue: [] });
+  private readonly noticeSuppressed = signal(readSpoilerNoticePreference());
+  private readonly dismissedVisit = signal<number | null>(null);
+  private readonly visit = toSignal(this.router.events.pipe(
+    filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+    map((event) => ({ id: event.id, data: this.spoilerRouteData() })),
+  ), { initialValue: { id: 0, data: this.spoilerRouteData() } });
+  private readonly hasMissingSpoilerData = computed(() => {
+    const source = this.visit().data;
+    const hidden = (items: readonly { name: string; rank?: string }[]) =>
+      items.some((item) => this.spoilers.isSpoiler(item));
+
+    switch (source) {
+      case 'units': return hidden(this.noticeUnits());
+      case 'classes': return hidden(this.noticeClasses());
+      case 'mounts': return hidden(this.noticeMounts());
+      case 'builds':
+        return hidden(this.data.pickableUnits(this.noticeUnits()))
+          || hidden(this.noticeClasses()) || hidden(this.noticeMounts());
+      default: return false;
+    }
+  });
+  readonly spoilerNoticeError = signal('');
+  readonly spoilerNoticeVisible = computed(() =>
+    this.hasMissingSpoilerData() && !this.noticeSuppressed()
+    && this.dismissedVisit() !== this.visit().id,
+  );
 
   title = 'fe-forge-frontend';
 
@@ -35,6 +71,31 @@ export class AppComponent {
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private keyboardInset = readKeyboardInset();
+
+  private spoilerRouteData(): 'units' | 'classes' | 'mounts' | 'builds' | null {
+    let route = this.router.routerState.snapshot.root;
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+    const source = route.data['spoilerData'];
+    return source === 'units' || source === 'classes' || source === 'mounts' || source === 'builds'
+      ? source : null;
+  }
+
+  dismissSpoilerNotice(dontTellAgain: boolean): void {
+    if (dontTellAgain) {
+      try {
+        localStorage.setItem(SPOILER_NOTICE_KEY, 'true');
+      } catch (error) {
+        console.warn('Could not save the spoiler notice preference.', error);
+        this.spoilerNoticeError.set("Couldn't save your preference. Try again, or uncheck \"Don't tell me again\" to dismiss.");
+        return;
+      }
+      this.noticeSuppressed.set(true);
+    }
+    this.spoilerNoticeError.set('');
+    this.dismissedVisit.set(this.visit().id);
+  }
 
   constructor() {
     const destroyRef = inject(DestroyRef);
@@ -352,6 +413,15 @@ export class AppComponent {
   openSuggestions(): void {
     this.closeMenu();
     this.suggestionsOpen.set(true);
+  }
+}
+
+function readSpoilerNoticePreference(): boolean {
+  try {
+    return localStorage.getItem(SPOILER_NOTICE_KEY) === 'true';
+  } catch (error) {
+    console.warn('Could not read the spoiler notice preference.', error);
+    return false;
   }
 }
 

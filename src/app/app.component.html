@@ -147,6 +147,10 @@
   <router-outlet />
 </main>
 
+@if (spoilerNoticeVisible()) {
+  <app-spoiler-notice [error]="spoilerNoticeError()" (dismissed)="dismissSpoilerNotice($event)" />
+}
+
 @if (suggestionsOpen()) {
   <app-suggestion-dialog (closed)="suggestionsOpen.set(false)" />
 }

@@ -1,5 +1,5 @@
 :host {
-  padding-bottom: 1.5rem;
+  flex: none;
 }
 
 .catalog-filters {
@@ -40,8 +40,53 @@
   opacity: 0.7;
 }
 
+.catalog-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--panel-border);
+  margin-top: 0.75rem;
+}
+
+.catalog-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 44px;
+  min-height: 44px;
+  padding: 0.5rem 0.6rem;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  opacity: 0.7;
+
+  img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+  }
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+  }
+
+  &--active {
+    border-bottom-color: var(--accent);
+    color: var(--accent);
+    opacity: 1;
+  }
+}
+
 .catalog-group {
   margin-bottom: 1.25rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 
   h2 {
     margin: 0 0 0.5rem;

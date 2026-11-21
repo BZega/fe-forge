@@ -24,7 +24,7 @@ with the reference pages.
 | Page | What it does |
 | --- | --- |
 | Characters | Every unit's personal growths with a quality heatmap, plus recruitment details |
-| Classes | Class growth modifiers and abilities, grouped by rank; details show available male/female class icons side by side |
+| Classes | Class growth modifiers and abilities, grouped by rank; male/female icons stretch to fill identical 104px square boxes on desktop and 72px square boxes on mobile |
 | Weapons & Equipment | Searchable item catalog grouped by type, with upgrades and named forms in one card's version dropdown and permanently visible details; equal-height cards use three responsive columns with incomplete rows centered. New equipment types appear automatically from `src/app/data/item.json` |
 | Mounts | Mount growth bonuses, grouped by mount type |
 | Battalions | Each battalion's rank, flat stat bonuses and skill, grouped by battalion type |
@@ -32,7 +32,20 @@ with the reference pages.
 The nav bar also has **Suggestions** (send feedback) and **Spoilers** (hide War Arc,
 Salvation Arc and DLC units, classes and mounts).
 
+Pages with spoiler-filtered data show a small reminder once per page visit only
+when the current spoiler settings hide entries in that page's data. For example,
+Mounts does not warn if Salvation Arc is shown and only War Arc or DLC is hidden.
+Home, Weapons & Equipment, and Battalions do not show
+it. **Don't tell me again** saves a browser-local preference that persists across
+reloads; clearing the site's local storage restores the reminders.
+
 ### Equipment
+
+Item name icons use cursed artwork when `Curse` is not `--`, and prototype
+artwork when the name contains `Prototype`. Checked items use enabled icons;
+unchecked items use disabled icons. Shield, Staff, Mask and Accessory items
+use their equipment icons, including cursed versions. Skill requirements keep
+their regular skill icons.
 
 Projected Stats (in-game view and in-game stat entry) and each Growth Mapper
 section have an **Equipment** modal. Weapons are separated into Sword, Spear,

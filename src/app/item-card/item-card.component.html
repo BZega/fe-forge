@@ -7,9 +7,13 @@
   <ng-template #heading>
       <span class="equipment-heading" [class.equipment-heading--no-effectiveness]="!effectiveness().length">
         <span class="equipment-name">
+          @if (equipmentIcon(); as src) {
+            <img class="equipment-icon" [src]="src" [alt]="item.WeaponType" />
+          } @else {
           @if (skillKey(item.WeaponType); as key) {
             <img class="equipment-icon" [src]="icon(key)" [alt]="item.WeaponType" referrerpolicy="no-referrer"
               (error)="useFallbackIcon($event, fallbackIcon(key))" />
+          }
           }
           <span class="equipment-name-text"><span class="equipment-base-name">{{ canUpgrade() ? baseName() : item.Name }}</span>@if (canUpgrade()) {<span class="equipment-upgrade-wrap" [class.equipment-upgrade-wrap--base]="item.Name === baseName()">
             <select #upgrade class="equipment-upgrade" [attr.aria-label]="'Upgrade ' + baseName()"
@@ -38,7 +42,7 @@
             }
           </span>
         }
-        <span class="equipment-durability" [attr.aria-label]="'Durability ' + item.Durability" title="Durability">{{ item.Durability }}</span>
+        <span class="equipment-durability" [class.stat-bonus]="improvedFields().has('Durability')" [attr.aria-label]="'Durability ' + item.Durability" title="Durability">{{ item.Durability }}</span>
       </span>
   </ng-template>
   <ng-template #body>
@@ -47,15 +51,15 @@
       @if (hasCombatDetails()) {
       <div class="equipment-columns">
         <dl>
-          <div><dt>{{ item.Pwr === undefined ? 'Mt' : 'Pwr' }}</dt><dd>{{ item.Pwr ?? item.Mt }}</dd></div>
-          <div><dt>Hit</dt><dd>{{ item.Hit }}</dd></div>
-          <div><dt>Crit</dt><dd>{{ item.Crit }}</dd></div>
+          <div><dt>{{ item.Pwr === undefined ? 'Mt' : 'Pwr' }}</dt><dd [class.stat-bonus]="improvedFields().has('Mt')">{{ item.Pwr ?? item.Mt }}</dd></div>
+          <div><dt>Hit</dt><dd [class.stat-bonus]="improvedFields().has('Hit')">{{ item.Hit }}</dd></div>
+          <div><dt>Crit</dt><dd [class.stat-bonus]="improvedFields().has('Crit')">{{ item.Crit }}</dd></div>
           <div><dt>Curse</dt><dd>{{ item.Curse }}</dd></div>
         </dl>
         <dl>
-          <div><dt>Wt</dt><dd>{{ item.Wt }}</dd></div>
-          <div><dt>Avo</dt><dd>{{ item.Avo }}</dd></div>
-          <div><dt>Rng</dt><dd>{{ item.Range }}</dd></div>
+          <div><dt>Wt</dt><dd [class.stat-bonus]="improvedFields().has('Wt')">{{ item.Wt }}</dd></div>
+          <div><dt>Avo</dt><dd [class.stat-bonus]="improvedFields().has('Avo')">{{ item.Avo }}</dd></div>
+          <div><dt>Rng</dt><dd [class.stat-bonus]="improvedFields().has('Range')">{{ item.Range }}</dd></div>
           <div>
             <dt>Skill</dt>
             <dd class="equipment-skills">

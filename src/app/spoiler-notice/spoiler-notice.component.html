@@ -1,0 +1,15 @@
+<dialog #dialog aria-labelledby="spoiler-notice-title" aria-describedby="spoiler-notice-description" (cancel)="dismiss($event)">
+  <h2 id="spoiler-notice-title">Some data is hidden</h2>
+  <p id="spoiler-notice-description">
+    One or more spoiler toggles are on. Characters, classes, or mounts may be missing
+    from this page. Turn off the toggles in the Spoilers menu to show them.
+  </p>
+  <label>
+    <input #remember type="checkbox" [checked]="dontTellAgain()" (change)="dontTellAgain.set(remember.checked)" />
+    Don't tell me again
+  </label>
+  @if (error()) {
+    <p role="alert">{{ error() }}</p>
+  }
+  <button type="button" autofocus (click)="dismiss()">Got it</button>
+</dialog>

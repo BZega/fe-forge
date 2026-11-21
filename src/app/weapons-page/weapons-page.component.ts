@@ -1,7 +1,9 @@
 import { afterRenderEffect, ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal, viewChildren } from '@angular/core';
 import { HelpDialogComponent } from '../help-dialog/help-dialog.component';
 import { ItemCardComponent } from '../item-card/item-card.component';
-import { Item, ITEMS, itemBaseName, itemVariants } from '../models/equipment';
+import { Item, ITEMS, itemBaseName, itemVariants, EQUIPMENT_SLOTS } from '../models/equipment';
+import { skillIconUrl, useFallbackIcon } from '../icon-links';
+import { SKILL_KEYS, SKILL_LABELS, SkillKey } from '../models/growth.models';
 
 const TYPE_ORDER = ['Sword', 'Spear', 'Axe', 'Bow', 'Gauntlets', 'Black Magic', 'White Magic', 'Shield', 'Mask', 'Staff', 'Accessory'];
 
@@ -16,6 +18,25 @@ export class WeaponsPageComponent {
   readonly items = input<readonly Item[]>(ITEMS);
   readonly search = signal('');
   readonly selectedType = signal('');
+  readonly useFallbackIcon = useFallbackIcon;
+  private readonly equipmentTypes: readonly string[] = EQUIPMENT_SLOTS.filter((slot) => slot !== 'Weapon');
+  readonly tabs = computed(() => ['', ...this.types().filter((type) => !this.equipmentTypes.includes(type)), 'Equipment']);
+
+  tabSkill(tab: string): SkillKey | null {
+    if (tab === 'Equipment') return 'heavyArmor';
+    if (tab === 'Gauntlets') return 'gauntlet';
+    return SKILL_KEYS.find((key) => SKILL_LABELS[key] === tab) ?? null;
+  }
+
+  tabIcon(skill: SkillKey, selected: boolean): string {
+    if (skill === 'heavyArmor') return 'icons/equipment/shield.png';
+    return skillIconUrl(skill, selected ? 'good' : 'neutral') ?? this.fallbackIcon(skill);
+  }
+
+  fallbackIcon(skill: SkillKey): string {
+    if (skill === 'heavyArmor') return 'icons/equipment/shield.png';
+    return `icons/skills/black/${skill}.svg`;
+  }
   private readonly chosenVariants = signal<ReadonlyMap<string, string>>(new Map());
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly cards = viewChildren(ItemCardComponent, { read: ElementRef<HTMLElement> });
@@ -60,8 +81,9 @@ export class WeaponsPageComponent {
     }).map((item) => ({ key: this.familyKey(item), type: item.WeaponType, variants: itemVariants(item, this.items()) }));
   });
   readonly helpText = [
-    'Browse weapons, magic and equipment. Filter by type or search by name, type or description.',
+    'Browse weapons, magic and equipment. Use the icon tabs to filter by weapon type or Equipment, or search by name, type or description. ALL shows every type.',
     'Details are always visible. Use each item’s version dropdown to compare upgrades and named forms, including combat values, skill requirements and effectiveness.',
+    'Yellow values with an up arrow indicate improvements over the original weapon. Reduced Weight also counts as an improvement.',
     'Equipment types, including Shields, Masks, Staffs and Accessories, appear automatically when items of those types are added to the catalog.',
   ];
 
@@ -74,7 +96,8 @@ export class WeaponsPageComponent {
   readonly groups = computed(() => {
     const query = this.search().trim().toLowerCase();
     return this.types()
-      .filter((type) => !this.selectedType() || type === this.selectedType())
+      .filter((type) => !this.selectedType() || (this.selectedType() === 'Equipment'
+        ? this.equipmentTypes.includes(type) : type === this.selectedType()))
       .map((type) => ({
         type,
         items: this.families().filter((family) => family.type === type).flatMap((family) => {

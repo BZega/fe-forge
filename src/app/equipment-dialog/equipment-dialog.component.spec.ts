@@ -63,7 +63,7 @@ describe('EquipmentDialogComponent', () => {
     picker.activeTab.set('Sword');
     fixture.detectChanges();
     expect(host.querySelector('[role="tab"][aria-label="Sword"] img')!.getAttribute('src')).toBe(skillIconUrl('sword', 'good'));
-    expect(host.querySelector('[role="tab"][aria-label="Equipment"] img')!.getAttribute('src')).toBe(skillIconUrl('heavyArmor'));
+    expect(host.querySelector('[role="tab"][aria-label="Equipment"] img')!.getAttribute('src')).toBe('icons/equipment/shield.png');
     expect(host.querySelector('[role="tab"][aria-label="Sword"]')!.textContent!.trim()).toBe('');
     expect(host.querySelector('.picker-category')!.textContent).toBe('Sword');
     const names = () => picker.filtered().flatMap((group) => group.items).map((item) => item.name);
@@ -369,7 +369,7 @@ describe('EquipmentDialogComponent', () => {
       .toEqual(['D', 'Unknown C']);
     picker.activeTab.set('Equipment');
     fixture.detectChanges();
-    expect(host.querySelector('summary img')).toBeNull();
+    expect(host.querySelector('summary img')!.getAttribute('src')).toBe('icons/equipment/shield.png');
     expect(host.querySelector('.equipment-skills')!.textContent!.trim()).toBe('--');
     expect(host.textContent).toContain('Def +2');
   });

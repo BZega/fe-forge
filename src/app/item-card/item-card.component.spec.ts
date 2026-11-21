@@ -3,6 +3,117 @@ import { Item, ITEMS } from '../models/equipment';
 import { ItemCardComponent } from './item-card.component';
 
 describe('ItemCardComponent', () => {
+  for (const type of ['Sword', 'Spear', 'Axe', 'Bow']) {
+    for (const special of ['cursed', 'prototype']) {
+      it(`uses checked and unchecked ${special} ${type} icons`, () => {
+        const { fixture, host } = open();
+        fixture.componentRef.setInput('selectable', true);
+        fixture.componentRef.setInput('item', {
+          ...ITEMS[0], WeaponType: type,
+          Name: special === 'prototype' ? 'Prototype example' : 'Example',
+          Curse: special === 'cursed' ? '10' : '--',
+        });
+        fixture.detectChanges();
+        const icon = () => host.querySelector<HTMLImageElement>('.equipment-name img')!;
+        expect(icon().getAttribute('src')).toBe(`icons/equipment/${special}_${type.toLowerCase()}_disabled.png`);
+        fixture.componentRef.setInput('selected', true);
+        fixture.detectChanges();
+        expect(icon().getAttribute('src')).toBe(`icons/equipment/${special}_${type.toLowerCase()}_enabled.png`);
+      });
+    }
+
+    it('uses enabled special icons on read-only resource cards', () => {
+      const { fixture, host } = open();
+      for (const [name, curse, prefix] of [['Example', '10', 'cursed'], ['Prototype example', '--', 'prototype']]) {
+        fixture.componentRef.setInput('item', { ...ITEMS[0], Name: name, Curse: curse });
+        fixture.detectChanges();
+        expect(host.querySelector('.equipment-name img')!.getAttribute('src')).toBe(`icons/equipment/${prefix}_sword_enabled.png`);
+      }
+      expect(host.querySelector('input[type="checkbox"]')).toBeNull();
+    });
+  }
+
+  for (const type of ['Shield', 'Staff', 'Mask', 'Accessory']) {
+    it(`uses normal and cursed ${type} equipment icons`, () => {
+      const { fixture, host } = open();
+      fixture.componentRef.setInput('item', { ...ITEMS[0], WeaponType: type });
+      fixture.detectChanges();
+      expect(host.querySelector('.equipment-name img')!.getAttribute('src')).toBe(`icons/equipment/${type.toLowerCase()}.png`);
+      fixture.componentRef.setInput('item', { ...ITEMS[0], WeaponType: type, Curse: '0' });
+      fixture.detectChanges();
+      expect(host.querySelector('.equipment-name img')!.getAttribute('src')).toBe(`icons/equipment/cursed_${type.toLowerCase()}.png`);
+    });
+  }
+
+  it('highlights increased maximum durability without shifting the value', () => {
+    const { fixture, host } = open();
+    const base = { ...ITEMS[0], Durability: '10/10' };
+    const upgrade = { ...base, Name: 'Wooden Sword+1', Durability: '15/15' };
+    fixture.componentRef.setInput('variants', [base, upgrade]);
+    fixture.componentRef.setInput('item', upgrade);
+    fixture.componentRef.setInput('highlightUpgrades', true);
+    fixture.detectChanges();
+    const durability = host.querySelector('.equipment-durability')!;
+    expect(durability.classList.contains('stat-bonus')).toBeTrue();
+    expect(durability.textContent).toBe('15/15');
+    for (const value of ['5/10', '5/5', '--']) {
+      fixture.componentRef.setInput('item', { ...upgrade, Durability: value });
+      fixture.detectChanges();
+      expect(durability.classList.contains('stat-bonus')).toBeFalse();
+    }
+  });
+
+  it('keeps upgraded values aligned without reserving space for the arrow', () => {
+    const { fixture, host } = open();
+    fixture.componentRef.setInput('variants', [ITEMS[0], { ...ITEMS[0], Name: 'Wooden Sword+1', Mt: 3 }]);
+    fixture.componentRef.setInput('item', { ...ITEMS[0], Name: 'Wooden Sword+1', Mt: 3 });
+    document.body.appendChild(host);
+    try {
+      fixture.componentRef.setInput('alwaysExpanded', true);
+      fixture.detectChanges();
+      const value = host.querySelector<HTMLElement>('.equipment-columns dd')!;
+      const right = value.getBoundingClientRect().right;
+      fixture.componentRef.setInput('highlightUpgrades', true);
+      fixture.detectChanges();
+      expect(value.classList.contains('stat-bonus')).toBeTrue();
+      expect(value.getBoundingClientRect().right).toBe(right);
+      expect(getComputedStyle(value).marginRight).toBe('0px');
+    } finally {
+      host.remove();
+    }
+  });
+
+  it('marks numeric upgrade improvements against the base, including reduced weight', () => {
+    const { fixture, card, host } = open();
+    const base: Item = { ...ITEMS[0], Wt: 4, Avo: 5 };
+    const upgrade: Item = { ...base, Name: `${base.Name}+1`, Mt: 3, Hit: 95, Crit: 2, Wt: 3, Avo: 4 };
+    fixture.componentRef.setInput('variants', [base, upgrade]);
+    fixture.componentRef.setInput('item', upgrade);
+    fixture.detectChanges();
+    expect(card.improvedFields().size).toBe(0);
+    fixture.componentRef.setInput('highlightUpgrades', true);
+    fixture.detectChanges();
+    expect([...card.improvedFields()]).toEqual(['Mt', 'Hit', 'Crit', 'Wt']);
+    expect(host.querySelectorAll('dd.stat-bonus').length).toBe(4);
+    fixture.componentRef.setInput('item', base);
+    fixture.detectChanges();
+    expect(host.querySelector('.stat-bonus')).toBeNull();
+  });
+
+  it('compares magic power and ignores placeholders and families without a base', () => {
+    const { fixture, card } = open();
+    const base: Item = { ...ITEMS[0], Pwr: 2, Hit: '--' };
+    const upgrade: Item = { ...base, Name: `${base.Name}+1`, Pwr: 4, Hit: 90 };
+    fixture.componentRef.setInput('variants', [base, upgrade]);
+    fixture.componentRef.setInput('item', upgrade);
+    fixture.componentRef.setInput('highlightUpgrades', true);
+    fixture.detectChanges();
+    expect([...card.improvedFields()]).toEqual(['Mt']);
+    fixture.componentRef.setInput('variants', [upgrade]);
+    fixture.detectChanges();
+    expect(card.improvedFields().size).toBe(0);
+  });
+
   const vulnerary: Item = {
     Name: 'Vulnerary', Description: 'Restores 20 HP', Durability: '3',
     WeaponType: 'Item', EffectiveType: [], Skills: [],

@@ -3255,7 +3255,7 @@
   },
   {
     "Name": "Pilum+3",
-    "Description": "A high-quality throwing spear with incredible power. Grants Phys+3 during combat against a foe 2+ spaces away.",
+    "Description": "A high-quality throwing spear. Grants Phys+3 during combat against a foe 2+ spaces away.",
     "Durability": "25/25",
     "EffectiveType": [
       "Cavalry"
@@ -3450,7 +3450,7 @@
   },
   {
     "Name": "Ji+2",
-    "Description": "A spear-like weapon that supports various combat styles. Hit+5 to Windweave combat art Allows use of the Windweave combat art.",
+    "Description": "A spear-like weapon that supports various combat styles. Allows use of the Windweave combat art with Hit+5.",
     "Durability": "25/25",
     "EffectiveType": [
       "Cavalry",
@@ -3478,7 +3478,7 @@
   },
   {
     "Name": "Ji+3",
-    "Description": "A spear-like weapon that supports various combat styles. Hit+10 to Windweave combat art Allows use of the Windweave combat art.",
+    "Description": "A spear-like weapon that supports various combat styles. Allows use of the Windweave combat art with Hit+10.",
     "Durability": "25/25",
     "EffectiveType": [
       "Cavalry",
@@ -3522,11 +3522,11 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Spear",
+        "SkillType": "Sword",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Sword",
+        "SkillType": "Spear",
         "SkillRank": "D"
       }
     ]
@@ -3549,13 +3549,14 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Spear",
+        "SkillType": "Sword",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Sword",
+        "SkillType": "Spear",
         "SkillRank": "D"
       }
+
     ]
   },
   {
@@ -3576,11 +3577,11 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Spear",
+        "SkillType": "Sword",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Sword",
+        "SkillType": "Spear",
         "SkillRank": "D"
       }
     ]
@@ -3603,13 +3604,13 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Spear",
+        "SkillType": "Sword",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Sword",
+        "SkillType": "Spear",
         "SkillRank": "D"
-      }
+      }      
     ]
   },
   {
@@ -3630,12 +3631,12 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Spear",
-        "SkillRank": "B"
-      },
-      {
         "SkillType": "Sword",
         "SkillRank": "D"
+      },
+      {
+        "SkillType": "Spear",
+        "SkillRank": "B"
       }
     ]
   },
@@ -3657,12 +3658,12 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Spear",
-        "SkillRank": "B"
-      },
-      {
         "SkillType": "Sword",
         "SkillRank": "D"
+      },
+      {
+        "SkillType": "Spear",
+        "SkillRank": "B"
       }
     ]
   },
@@ -3684,12 +3685,12 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Spear",
-        "SkillRank": "B"
-      },
-      {
         "SkillType": "Sword",
         "SkillRank": "D"
+      },
+      {
+        "SkillType": "Spear",
+        "SkillRank": "B"
       }
     ]
   },
@@ -3711,13 +3712,13 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Spear",
-        "SkillRank": "B"
-      },
-      {
         "SkillType": "Sword",
         "SkillRank": "D"
-      }
+      },
+      {
+        "SkillType": "Spear",
+        "SkillRank": "B"
+      }      
     ]
   },
   {
@@ -3952,7 +3953,7 @@
   },
   {
     "Name": "The Nameless",
-    "Description": "A spear that has lost its original power-and its name. Eshmel only.",
+    "Description": "A spear that has lost its original power— and its name.",
     "Durability": "20/20",
     "EffectiveType": [
       "Cavalry"
@@ -4090,7 +4091,7 @@
   },
   {
     "Name": "Shining Spear+5",
-    "Description": "A Supreme Arc with the power of the sun. Recovers HP equal to all damage dealt using Sol combat art. Allows use of the Sol combat art.",
+    "Description": "A Supreme Arc with the power of the sun. Allows use of the Sol combat art, upgraded to recover HP equal to all damage dealt.",
     "Durability": "20/20",
     "EffectiveType": [
       "Cavalry"
@@ -4159,7 +4160,7 @@
   },
   {
     "Name": "Sinza's Trident+2",
-    "Description": "The lost trident of Esmeralda's father. Mt+2 to Brute Throw combat art. Allows use of the Brute Throw combat art.",
+    "Description": "The lost trident of Esmeralda's father. Allows use of the Brute Throw combat art with Mt+2.",
     "Durability": "30/30",
     "EffectiveType": [
       "Cavalry"
@@ -4182,7 +4183,7 @@
   },
   {
     "Name": "Sinza's Trident+3",
-    "Description": "The lost trident of Esmeralda's father. Mt+5 to Brute Throw combat art. Allows use of the Brute Throw combat art.",
+    "Description": "The lost trident of Esmeralda's father. Allows use of the Brute Throw combat art with Mt+5.",
     "Durability": "30/30",
     "EffectiveType": [
       "Cavalry"
@@ -4251,7 +4252,7 @@
   },
   {
     "Name": "Mahadu's Spear+2",
-    "Description": "A shining golden spear wielded by a hero of legend. Mt+2 to Full Moon combat art. Allows use of the Full Moon combat art.",
+    "Description": "A shining golden spear wielded by a hero of legend. Allows use of the Full Moon combat art with Mt+2.",
     "Durability": "20/20",
     "EffectiveType": [
       "Cavalry"
@@ -4274,7 +4275,7 @@
   },
   {
     "Name": "Mahadu's Spear+3",
-    "Description": "A shining golden spear wielded by a hero of legend. Mt+4 to Full Moon combat art. Allows use of the Full Moon combat art.",
+    "Description": "A shining golden spear wielded by a hero of legend. Allows use of the Full Moon combat art with Mt+4.",
     "Durability": "20/20",
     "EffectiveType": [
       "Cavalry"
@@ -4297,7 +4298,7 @@
   },
   {
     "Name": "Mahadu's Spear+4",
-    "Description": "A shining golden spear wielded by a hero of legend. Mt+6 to Full Moon combat art. Allows use of the Full Moon combat art.",
+    "Description": "A shining golden spear wielded by a hero of legend. Allows use of the Full Moon combat art with Mt+6.",
     "Durability": "20/20",
     "EffectiveType": [
       "Cavalry"
@@ -4320,7 +4321,7 @@
   },
   {
     "Name": "Mahadu's Spear+5",
-    "Description": "A shining golden spear wielded by a hero of legend. Mt+7 to Full Moon combat art. Allows use of the Full Moon combat art.",
+    "Description": "A shining golden spear wielded by a hero of legend. Allows use of the Full Moon combat art with Mt+7.",
     "Durability": "20/20",
     "EffectiveType": [
       "Cavalry"
@@ -4389,7 +4390,7 @@
   },
   {
     "Name": "Muen+2",
-    "Description": "A magic spear imbued with dark power. Hit+15 to Black Roar combat art. Allows use of the Black Roar combat art.",
+    "Description": "A magic spear imbued with dark power. Allows use of the Black Roar combat art with Hit+15.",
     "Durability": "30/30",
     "EffectiveType": [
       "Cavalry"
@@ -4412,7 +4413,7 @@
   },
   {
     "Name": "Muen+3",
-    "Description": "A magic spear imbued with dark power. Hit+20 to Black Roar combat art. Allows use of the Black Roar combat art.",
+    "Description": "A magic spear imbued with dark power. Allows use of the Black Roar combat art with Hit+20.",
     "Durability": "30/30",
     "EffectiveType": [
       "Cavalry"
@@ -4688,7 +4689,7 @@
   },
   {
     "Name": "Assal+3",
-    "Description": "A spear that Seteth once forged. Increased recovery for Sacred Strike combat art. Allows use of the Sacred Strike combat art.",
+    "Description": "A spear Seteth once forged. Allows use of the Sacred Strike combat art with increased recovery.",
     "Durability": "20/20",
     "EffectiveType": [
       "Cavalry"
@@ -4827,7 +4828,7 @@
   {
     "Name": "Chosen Lance+1",
     "Description": "Once given to a princess of ice who appears in myths about a foreign land.",
-    "Durability": "20/20",
+    "Durability": "25/25",
     "EffectiveType": [
       "Cavalry"
     ],
@@ -4850,7 +4851,7 @@
   {
     "Name": "Chosen Lance+2",
     "Description": "Once given to a princess of ice who appears in myths about a foreign land.",
-    "Durability": "20/20",
+    "Durability": "30/30",
     "EffectiveType": [
       "Cavalry"
     ],
@@ -4873,7 +4874,7 @@
   {
     "Name": "Chosen Lance+3",
     "Description": "Once given to a princess of ice who appears in myths about a foreign land.",
-    "Durability": "20/20",
+    "Durability": "30/30",
     "EffectiveType": [
       "Cavalry"
     ],
@@ -4917,7 +4918,7 @@
     ]
   },
   {
-    "Name": "Mahadu's Darkspear (no skills)",
+    "Name": "Mahadu's Darkspear ",
     "Description": "An evil spear made from memories of the risen dead.",
     "Durability": "20/20",
     "EffectiveType": [
@@ -4963,7 +4964,7 @@
     ]
   },
   {
-    "Name": "Prototype VII (DLC)",
+    "Name": "Prototype VII",
     "Description": "A prototype of a certain weapon. Smuggled out of the shadowy Agartha organization.",
     "Durability": "5/5",
     "EffectiveType": [
@@ -4971,7 +4972,7 @@
     ],
     "Mt": 10,
     "Hit": 80,
-    "Crit": 0,
+    "Crit": 5,
     "Curse": "--",
     "Wt": 9,
     "Avo": 0,
@@ -4986,7 +4987,7 @@
     ]
   },
   {
-    "Name": "Prototype VII (DLC)+1",
+    "Name": "Prototype VII: |",
     "Description": "A prototype of a certain weapon. Smuggled out of the shadowy Agartha organization.",
     "Durability": "5/5",
     "EffectiveType": [
@@ -5009,9 +5010,9 @@
     ]
   },
   {
-    "Name": "Prototype VII (DLC)+2",
+    "Name": "Prototype VII: ||",
     "Description": "A prototype of a certain weapon. Smuggled out of the shadowy Agartha organization.",
-    "Durability": "5/5",
+    "Durability": "10/10",
     "EffectiveType": [
       "Cavalry"
     ],
@@ -5032,17 +5033,17 @@
     ]
   },
   {
-    "Name": "Prototype VII (DLC)+3",
+    "Name": "Prototype VII: |||",
     "Description": "A prototype of a certain weapon. Smuggled out of the shadowy Agartha organization.",
-    "Durability": "5/5",
+    "Durability": "15/15",
     "EffectiveType": [
       "Cavalry"
     ],
     "Mt": 22,
     "Hit": 80,
-    "Crit": 0,
+    "Crit": 10,
     "Curse": "--",
-    "Wt": 9,
+    "Wt": 8,
     "Avo": 0,
     "Range": "1",
     "WeaponType": "Spear",
@@ -6041,7 +6042,7 @@
   },
   {
     "Name": "Smashing Axe+3",
-    "Description": "An axe heavy enough to crush stone. Crit+20 to Pulverize combat art. Allows use of the Pulverize combat art.",
+    "Description": "An axe heavy enough to crush stone. Allows use of the Pulverize combat art with Crit+20.",
     "Durability": "25/25",
     "EffectiveType": [],
     "Mt": 24,
@@ -6160,11 +6161,11 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Axe",
+        "SkillType": "Sword",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Sword",
+        "SkillType": "Axe",
         "SkillRank": "D"
       }
     ]
@@ -6185,11 +6186,11 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Axe",
+        "SkillType": "Sword",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Sword",
+        "SkillType": "Axe",
         "SkillRank": "D"
       }
     ]
@@ -6210,11 +6211,11 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Axe",
+        "SkillType": "Sword",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Sword",
+        "SkillType": "Axe",
         "SkillRank": "D"
       }
     ]
@@ -6235,11 +6236,11 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Axe",
+        "SkillType": "Sword",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Sword",
+        "SkillType": "Axe",
         "SkillRank": "D"
       }
     ]
@@ -6262,11 +6263,11 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Axe",
+        "SkillType": "Spear",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Spear",
+        "SkillType": "Axe",
         "SkillRank": "D"
       }
     ]
@@ -6289,11 +6290,11 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Axe",
+        "SkillType": "Spear",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Spear",
+        "SkillType": "Axe",
         "SkillRank": "D"
       }
     ]
@@ -6316,11 +6317,11 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Axe",
+        "SkillType": "Spear",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Spear",
+        "SkillType": "Axe",
         "SkillRank": "D"
       }
     ]
@@ -6343,13 +6344,13 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Axe",
+        "SkillType": "Spear",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Spear",
+        "SkillType": "Axe",
         "SkillRank": "D"
-      }
+      }      
     ]
   },
   {
@@ -6509,7 +6510,7 @@
   },
   {
     "Name": "Mace+3",
-    "Description": "A bludgeoning weapon. Mt+3 to Magic Strike combat art. Allows use of the Magic Strike combat art.",
+    "Description": "A bludgeoning weapon. Allows use of the Magic Strike combat art with Mt+3.",
     "Durability": "20/20",
     "EffectiveType": [],
     "Mt": 20,
@@ -6782,7 +6783,7 @@
   },
   {
     "Name": "Dagda's Club",
-    "Description": "A Supreme Arc that obliterates all things. Grants Godly Strike combat art, but removes all others. Allows use of the Godly Strike combat art.",
+    "Description": "A Supreme Arc that obliterates all things. Allows use of Godly Strike combat art, but removes all others.",
     "Durability": "35/35",
     "EffectiveType": [],
     "Mt": 36,
@@ -6803,7 +6804,7 @@
   },
   {
     "Name": "Dagda's Club+1",
-    "Description": "A Supreme Arc that obliterates all things. Grants Godly Strike combat art, but removes all others. Allows use of the Godly Strike combat art.",
+    "Description": "A Supreme Arc that obliterates all things. Allows use of Godly Strike combat art, but removes all others.",
     "Durability": "35/35",
     "EffectiveType": [],
     "Mt": 38,
@@ -6824,7 +6825,7 @@
   },
   {
     "Name": "Dagda's Club+2",
-    "Description": "A Supreme Arc that obliterates all things. Grants Godly Strike combat art, but removes all others. Allows use of the Godly Strike combat art.",
+    "Description": "A Supreme Arc that obliterates all things. Allows use of Godly Strike combat art, but removes all others.",
     "Durability": "35/35",
     "EffectiveType": [],
     "Mt": 40,
@@ -6845,7 +6846,7 @@
   },
   {
     "Name": "Dagda's Club+3",
-    "Description": "A Supreme Arc that obliterates all things. Grants Godly Strike combat art, but removes all others. Allows use of the Godly Strike combat art.",
+    "Description": "A Supreme Arc that obliterates all things. Allows use of Godly Strike combat art, but removes all others.",
     "Durability": "35/35",
     "EffectiveType": [],
     "Mt": 42,
@@ -6929,7 +6930,7 @@
   },
   {
     "Name": "Credna's Mallet+3",
-    "Description": "A Supreme Arc with strong magic. After using Flame Ring, restores some HP to unit. Allows use of the Flame Ring combat art.",
+    "Description": "A Supreme Arc with strong magic. Allows use of the Flame Ring combat art. After using Flame Ring, restores some HP to unit.",
     "Durability": "30/30",
     "EffectiveType": [],
     "Mt": 28,
@@ -7117,7 +7118,7 @@
     ]
   },
   {
-    "Name": "Prototype V (DLC)",
+    "Name": "Prototype V",
     "Description": "A prototype of a certain weapon. Smuggled out of the shadowy Agartha organization.",
     "Durability": "5/5",
     "EffectiveType": [],
@@ -7138,7 +7139,7 @@
     ]
   },
   {
-    "Name": "Prototype V (DLC)+1",
+    "Name": "Prototype V: |",
     "Description": "A prototype of a certain weapon. Smuggled out of the shadowy Agartha organization.",
     "Durability": "5/5",
     "EffectiveType": [],
@@ -7159,15 +7160,15 @@
     ]
   },
   {
-    "Name": "Prototype V (DLC)+2",
+    "Name": "Prototype V: ||",
     "Description": "A prototype of a certain weapon. Smuggled out of the shadowy Agartha organization.",
-    "Durability": "5/5",
+    "Durability": "10/10",
     "EffectiveType": [],
     "Mt": 24,
     "Hit": 50,
     "Crit": 0,
     "Curse": "--",
-    "Wt": 13,
+    "Wt": 12,
     "Avo": 0,
     "Range": "1",
     "WeaponType": "Axe",
@@ -7180,15 +7181,15 @@
     ]
   },
   {
-    "Name": "Prototype V (DLC)+3",
+    "Name": "Prototype V: |||",
     "Description": "A prototype of a certain weapon. Smuggled out of the shadowy Agartha organization.",
-    "Durability": "5/5",
+    "Durability": "15/15",
     "EffectiveType": [],
     "Mt": 30,
-    "Hit": 50,
+    "Hit": 55,
     "Crit": 0,
     "Curse": "--",
-    "Wt": 13,
+    "Wt": 12,
     "Avo": 0,
     "Range": "1",
     "WeaponType": "Axe",
@@ -8561,7 +8562,7 @@
   },
   {
     "Name": "Venin Bow+3",
-    "Description": "A poison bow. Poisoner's Talent.",
+    "Description": "A poison bow. If unit's attack hits, inflicts Poison on foe. Allows use of the Poisoner's Talent combat art.",
     "Durability": "20/20",
     "EffectiveType": [
       "Extra Flying"
@@ -8584,7 +8585,7 @@
   },
   {
     "Name": "Venin Bow+4",
-    "Description": "A poison bow. Poisoner's Talent.",
+    "Description": "A poison bow. If unit's attack hits, inflicts Poison on foe. Allows use of the Poisoner's Talent combat art.",
     "Durability": "20/20",
     "EffectiveType": [
       "Extra Flying"
@@ -8607,7 +8608,7 @@
   },
   {
     "Name": "Venin Bow+5",
-    "Description": "A poison bow. Poisoner's Talent.",
+    "Description": "A poison bow. If unit's attack hits, inflicts Poison on foe. Allows use of the Poisoner's Talent combat art.",
     "Durability": "20/20",
     "EffectiveType": [
       "Extra Flying"
@@ -8791,7 +8792,7 @@
   },
   {
     "Name": "Idah's Bow+3",
-    "Description": "One of the Arcs passed down through Aragonian royals. Holy Flash combat art with increased recovery. Allows use of the Holy Flash combat art.",
+    "Description": "Arc passed down through Arago royalty. Allows use of the Holy Flash combat art with increased recovery.",
     "Durability": "20/20",
     "EffectiveType": [
       "Extra Flying"
@@ -8860,7 +8861,7 @@
   },
   {
     "Name": "Kalla's Bow+2",
-    "Description": "A Supreme Arc imbued with the power of wind. Hit+15 to Heaven's Wind combat art. Allows use of the Heaven's Wind combat art.",
+    "Description": "A Supreme Arc imbued with the power of wind. Allows use of the Heaven's Wind combat art with Hit+15.",
     "Durability": "30/30",
     "EffectiveType": [
       "Extra Flying"
@@ -8883,7 +8884,7 @@
   },
   {
     "Name": "Kalla's Bow+3",
-    "Description": "A Supreme Arc imbued with the power of wind. Hit+20 to Heaven's Wind combat art. Allows use of the Heaven's Wind combat art.",
+    "Description": "A Supreme Arc imbued with the power of wind. Allows use of the Heaven's Wind combat art with Hit+20.",
     "Durability": "30/30",
     "EffectiveType": [
       "Extra Flying"
@@ -8928,7 +8929,7 @@
     ]
   },
   {
-    "Name": "Ugo's Bow (long range)",
+    "Name": "Ugo's Bow ",
     "Description": "A magic bow of a distinctively red color that is imbued with dark power. Allows use of the Drilling Breach combat art.",
     "Durability": "20/20",
     "EffectiveType": [
@@ -9066,7 +9067,7 @@
     ]
   },
   {
-    "Name": "Prototype XI (DLC)",
+    "Name": "Prototype XI",
     "Description": "A prototype of a certain weapon. Smuggled out of the shadowy Agartha organization.",
     "Durability": "5/5",
     "EffectiveType": [
@@ -9089,7 +9090,7 @@
     ]
   },
   {
-    "Name": "Prototype XI (DLC)+1",
+    "Name": "Prototype XI: |",
     "Description": "A prototype of a certain weapon. Smuggled out of the shadowy Agartha organization.",
     "Durability": "5/5",
     "EffectiveType": [
@@ -9112,9 +9113,9 @@
     ]
   },
   {
-    "Name": "Prototype XI (DLC)+2",
+    "Name": "Prototype XI: ||",
     "Description": "A prototype of a certain weapon. Smuggled out of the shadowy Agartha organization.",
-    "Durability": "5/5",
+    "Durability": "10/10",
     "EffectiveType": [
       "Extra Flying"
     ],
@@ -9122,7 +9123,7 @@
     "Hit": 70,
     "Crit": 0,
     "Curse": "--",
-    "Wt": 7,
+    "Wt": 6,
     "Avo": 0,
     "Range": "2",
     "WeaponType": "Bow",
@@ -9135,9 +9136,9 @@
     ]
   },
   {
-    "Name": "Prototype XI (DLC)+3",
+    "Name": "Prototype XI: |||",
     "Description": "A prototype of a certain weapon. Smuggled out of the shadowy Agartha organization.",
-    "Durability": "5/5",
+    "Durability": "10/10",
     "EffectiveType": [
       "Extra Flying"
     ],
@@ -9145,9 +9146,9 @@
     "Hit": 70,
     "Crit": 0,
     "Curse": "--",
-    "Wt": 7,
+    "Wt": 6,
     "Avo": 0,
-    "Range": "2",
+    "Range": "2-3",
     "WeaponType": "Bow",
     "BonusStats": null,
     "Skills": [
@@ -10111,11 +10112,11 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Gauntlets",
+        "SkillType": "Sword",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Sword",
+        "SkillType": "Gauntlets",
         "SkillRank": "D"
       }
     ]
@@ -10136,13 +10137,13 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Gauntlets",
+        "SkillType": "Sword",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Sword",
+        "SkillType": "Gauntlets",
         "SkillRank": "D"
-      }
+      }      
     ]
   },
   {
@@ -10161,11 +10162,11 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Gauntlets",
+        "SkillType": "Sword",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Sword",
+        "SkillType": "Gauntlets",
         "SkillRank": "D"
       }
     ]
@@ -10186,11 +10187,11 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Gauntlets",
+        "SkillType": "Sword",
         "SkillRank": "D"
       },
       {
-        "SkillType": "Sword",
+        "SkillType": "Gauntlets",
         "SkillRank": "D"
       }
     ]
@@ -10211,12 +10212,12 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Gauntlets",
-        "SkillRank": "C"
-      },
-      {
         "SkillType": "Sword",
         "SkillRank": "D"
+      },
+      {
+        "SkillType": "Gauntlets",
+        "SkillRank": "C"
       }
     ]
   },
@@ -10236,12 +10237,12 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Gauntlets",
-        "SkillRank": "C"
-      },
-      {
         "SkillType": "Sword",
         "SkillRank": "D"
+      },
+      {
+        "SkillType": "Gauntlets",
+        "SkillRank": "C"
       }
     ]
   },
@@ -10261,18 +10262,18 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Gauntlets",
-        "SkillRank": "C"
-      },
-      {
         "SkillType": "Sword",
         "SkillRank": "D"
+      },
+      {
+        "SkillType": "Gauntlets",
+        "SkillRank": "C"
       }
     ]
   },
   {
     "Name": "Qiankun Circles+3",
-    "Description": "Circular weapons that can also be thrown. Grants Hit/Crit/Avo+10 during combat against a foe 2+ spaces away.",
+    "Description": "Throwable weapons. Grants Hit/Crit/Avo+10 during combat against a foe 2+ spaces away.",
     "Durability": "20/20",
     "EffectiveType": [],
     "Mt": 17,
@@ -10286,12 +10287,12 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Gauntlets",
-        "SkillRank": "C"
-      },
-      {
         "SkillType": "Sword",
         "SkillRank": "D"
+      },
+      {
+        "SkillType": "Gauntlets",
+        "SkillRank": "C"
       }
     ]
   },
@@ -10416,18 +10417,18 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Gauntlets",
-        "SkillRank": "B"
-      },
-      {
         "SkillType": "Sword",
         "SkillRank": "D"
+      },
+      {
+        "SkillType": "Gauntlets",
+        "SkillRank": "B"
       }
     ]
   },
   {
     "Name": "Windfire Rings+1",
-    "Description": "A beautiful Arc imbued with the power of fire. If unit attacks first, grants Hit+5 during combat. Allows use of the Flame Wheel combat art.",
+    "Description": "An Arc imbued with fire. Allows use of the Flame Wheel combat art. If unit attacks first, grants Hit+5 during combat.",
     "Durability": "15/15",
     "EffectiveType": [],
     "Mt": 19,
@@ -10441,18 +10442,18 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Gauntlets",
-        "SkillRank": "B"
-      },
-      {
         "SkillType": "Sword",
         "SkillRank": "D"
+      },
+      {
+        "SkillType": "Gauntlets",
+        "SkillRank": "B"
       }
     ]
   },
   {
     "Name": "Windfire Rings+2",
-    "Description": "A beautiful Arc imbued with the power of fire. If unit attacks first, grants Hit+10 during combat. Allows use of the Flame Wheel combat art.",
+    "Description": "An Arc imbued with fire. Allows use of the Flame Wheel combat art. If unit attacks first, grants Hit+10 during combat.",
     "Durability": "15/15",
     "EffectiveType": [],
     "Mt": 21,
@@ -10466,18 +10467,18 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Gauntlets",
-        "SkillRank": "B"
-      },
-      {
         "SkillType": "Sword",
         "SkillRank": "D"
+      },
+      {
+        "SkillType": "Gauntlets",
+        "SkillRank": "B"
       }
     ]
   },
   {
     "Name": "Windfire Rings+3",
-    "Description": "A beautiful Arc imbued with the power of fire. If unit attacks first, grants Hit+15 during combat. Allows use of the Flame Wheel combat art.",
+    "Description": "An Arc imbued with fire. Allows use of the Flame Wheel combat art. If unit attacks first, grants Hit+15 during combat.",
     "Durability": "15/15",
     "EffectiveType": [],
     "Mt": 22,
@@ -10491,12 +10492,12 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Gauntlets",
-        "SkillRank": "B"
-      },
-      {
         "SkillType": "Sword",
         "SkillRank": "D"
+      },
+      {
+        "SkillType": "Gauntlets",
+        "SkillRank": "B"
       }
     ]
   },
@@ -10566,7 +10567,7 @@
   {
     "Name": "Salamander+3",
     "Description": "A handheld firearm of great power. Treated as a magical attack. Allows use of the Compressed Laser combat art.",
-    "Durability": "3/3",
+    "Durability": "5/5",
     "EffectiveType": [],
     "Mt": 15,
     "Hit": 80,
@@ -10587,10 +10588,10 @@
   {
     "Name": "Salamander+4",
     "Description": "A handheld firearm of great power. Treated as a magical attack. Allows use of the Compressed Laser combat art.",
-    "Durability": "3/3",
+    "Durability": "5/5",
     "EffectiveType": [],
     "Mt": 18,
-    "Hit": 80,
+    "Hit": 85,
     "Crit": 0,
     "Curse": "--",
     "Wt": 3,
@@ -10608,10 +10609,10 @@
   {
     "Name": "Salamander+5",
     "Description": "A handheld firearm of great power. Treated as a magical attack. Allows use of the Compressed Laser combat art.",
-    "Durability": "3/3",
+    "Durability": "5/5",
     "EffectiveType": [],
     "Mt": 21,
-    "Hit": 80,
+    "Hit": 85,
     "Crit": 0,
     "Curse": "--",
     "Wt": 3,
@@ -10692,7 +10693,7 @@
   {
     "Name": "Zerberus+3",
     "Description": "A handheld firearm made for Troy. Treated as a magical attack. Allows use of the Compressed Laser combat art.",
-    "Durability": "5/5",
+    "Durability": "10/10",
     "EffectiveType": [],
     "Mt": 20,
     "Hit": 80,
@@ -10734,7 +10735,7 @@
   {
     "Name": "Breidablik+1",
     "Description": "Once used by a certain summoner. Treated as a magical attack. Increases support-point gain. Allows use of the Light of Bonds combat art.",
-    "Durability": "20/20",
+    "Durability": "25/25",
     "EffectiveType": [],
     "Mt": 3,
     "Hit": 85,
@@ -10755,7 +10756,7 @@
   {
     "Name": "Breidablik+2",
     "Description": "Once used by a certain summoner. Treated as a magical attack. Increases support-point gain. Allows use of the Light of Bonds combat art.",
-    "Durability": "20/20",
+    "Durability": "30/30",
     "EffectiveType": [],
     "Mt": 5,
     "Hit": 85,
@@ -10776,7 +10777,7 @@
   {
     "Name": "Breidablik+3",
     "Description": "Once used by a certain summoner. Treated as a magical attack. Increases support-point gain. Allows use of the Light of Bonds combat art.",
-    "Durability": "20/20",
+    "Durability": "30/30",
     "EffectiveType": [],
     "Mt": 15,
     "Hit": 85,
@@ -11041,7 +11042,7 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
+        "SkillType": "",
         "SkillRank": "--"
       }
     ]
@@ -11062,8 +11063,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "B*"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11083,8 +11084,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "D"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11104,8 +11105,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "B"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11125,8 +11126,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "S"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11148,8 +11149,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "B"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11171,8 +11172,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "S*"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11192,8 +11193,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "B*"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11213,8 +11214,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "E"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11236,8 +11237,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "S"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11257,7 +11258,7 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
+        "SkillType": "",
         "SkillRank": "--"
       }
     ]
@@ -11278,8 +11279,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "D"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11301,8 +11302,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "E"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11322,8 +11323,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "B"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11343,8 +11344,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "A"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11364,8 +11365,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "D"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11385,8 +11386,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "C*"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11406,8 +11407,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "S"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11427,8 +11428,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "B*"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11448,8 +11449,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "E"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11469,8 +11470,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "B"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11490,8 +11491,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "D"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11511,8 +11512,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "E"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11534,8 +11535,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "Black Magic",
-        "SkillRank": "D"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11555,8 +11556,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "A"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11576,8 +11577,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "B"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11597,8 +11598,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "B"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11618,8 +11619,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "C"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11639,8 +11640,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "A"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ],
     "Pwr": 20
@@ -11661,8 +11662,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "B"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11682,8 +11683,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "D"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ],
     "Pwr": 10
@@ -11704,8 +11705,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "D"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ],
     "Pwr": 3
@@ -11726,8 +11727,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "D"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11747,8 +11748,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "C"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ],
     "Pwr": 8
@@ -11769,8 +11770,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "B"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ],
     "Pwr": 30
@@ -11791,8 +11792,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "B"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11812,8 +11813,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "C"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11833,8 +11834,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "C"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11854,8 +11855,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "C"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11877,8 +11878,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "D"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11898,8 +11899,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "C"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11921,8 +11922,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "B"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11942,8 +11943,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "C"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11963,8 +11964,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "B"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   },
@@ -11984,8 +11985,8 @@
     "BonusStats": null,
     "Skills": [
       {
-        "SkillType": "White Magic",
-        "SkillRank": "A"
+        "SkillType": "",
+        "SkillRank": "--"
       }
     ]
   }

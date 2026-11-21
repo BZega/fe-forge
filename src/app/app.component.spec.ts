@@ -1,6 +1,208 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Component } from '@angular/core';
+import { provideRouter, Router } from '@angular/router';
 import { AppComponent } from './app.component';
+import { routes } from './app.routes';
+import { SpoilerService } from './services/spoiler.service';
+import { GrowthDataService } from './services/growth-data.service';
+import { of } from 'rxjs';
+import { Mount } from './models/growth.models';
+
+@Component({ template: '<p>Page content</p>' })
+class NoticeTestPage {}
+
+describe('AppComponent spoiler reminders', () => {
+  const preferenceKey = 'fe-forge.spoiler-notice-dismissed';
+  let fixture: ReturnType<typeof TestBed.createComponent<AppComponent>>;
+  let router: Router;
+  let spoilers: SpoilerService;
+  let previousPreference: string | null;
+  let previousTiers: string | null;
+
+  const navigate = async (url: string) => {
+    await router.navigateByUrl(url);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  };
+  const notice = () => fixture.nativeElement.querySelector('app-spoiler-notice dialog') as HTMLDialogElement | null;
+  const dismiss = () => {
+    (notice()!.querySelector('button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+  };
+
+  beforeEach(async () => {
+    previousPreference = localStorage.getItem(preferenceKey);
+    previousTiers = localStorage.getItem('fe-forge.hidden-spoiler-tiers');
+    localStorage.removeItem(preferenceKey);
+    await TestBed.configureTestingModule({
+      imports: [AppComponent],
+      providers: [provideRouter(routes.map(({ loadComponent, ...route }) =>
+        loadComponent ? { ...route, component: NoticeTestPage } : route,
+      ))],
+    }).compileComponents();
+    router = TestBed.inject(Router);
+    spoilers = TestBed.inject(SpoilerService);
+    spoilers.setAllHidden(true);
+    fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    fixture.destroy();
+    const preferences: [string, string | null][] = [
+      [preferenceKey, previousPreference],
+      ['fe-forge.hidden-spoiler-tiers', previousTiers],
+    ];
+    for (const [key, value] of preferences) {
+      if (value === null) {
+        localStorage.removeItem(key);
+      } else {
+        localStorage.setItem(key, value);
+      }
+    }
+  });
+
+  for (const url of ['/growth-mapper', '/calculator', '/projected-stats', '/characters',
+    '/characters/1', '/classes', '/classes/1', '/mounts', '/seed-mapper']) {
+    it(`shows a modal reminder on direct navigation to ${url}`, async () => {
+      await navigate(url);
+      expect(notice()?.open).toBeTrue();
+      expect(notice()?.textContent).toContain('Some data is hidden');
+    });
+  }
+
+  for (const url of ['/', '/weapons', '/battalions']) {
+    it(`never warns on ${url}, including after leaving a filtered page`, async () => {
+      await navigate('/growth-mapper');
+      await navigate(url);
+      expect(notice()).toBeNull();
+    });
+  }
+
+  it('warns for a single hidden tier, but not when all tiers are shown', async () => {
+    spoilers.setAllHidden(false);
+    await navigate('/growth-mapper');
+    expect(notice()).toBeNull();
+    spoilers.setHidden('dlc', true);
+    fixture.detectChanges();
+    expect(notice()?.open).toBeTrue();
+    spoilers.setAllHidden(false);
+    fixture.detectChanges();
+    expect(notice()).toBeNull();
+  });
+
+  for (const tier of ['war', 'dlc'] as const) {
+    it(`does not warn on mounts when only ${tier} spoilers are hidden`, async () => {
+      spoilers.setAllHidden(false);
+      spoilers.setHidden(tier, true);
+      await navigate('/mounts');
+      expect(notice()).toBeNull();
+    });
+
+    it(`only warns on classes for a tier that hides classes (${tier})`, async () => {
+      spoilers.setAllHidden(false);
+      spoilers.setHidden(tier, true);
+      await navigate('/classes');
+      expect(!!notice()).toBe(tier === 'dlc');
+    });
+  }
+
+  it('updates the mounts warning when Salvation Arc actually hides mounts', async () => {
+    spoilers.setHidden('salvation', false);
+    await navigate('/mounts');
+    expect(notice()).toBeNull();
+    spoilers.setHidden('salvation', true);
+    fixture.detectChanges();
+    expect(notice()?.open).toBeTrue();
+    spoilers.setHidden('salvation', false);
+    fixture.detectChanges();
+    expect(notice()).toBeNull();
+  });
+
+  it('does not warn for an empty catalog even when all spoiler toggles are on', async () => {
+    fixture.destroy();
+    spyOn(TestBed.inject(GrowthDataService), 'getMounts').and.returnValue(of([]));
+    fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    await navigate('/mounts');
+    expect(notice()).toBeNull();
+  });
+
+  it('does not warn when none of the available catalog entries is hidden', async () => {
+    fixture.destroy();
+    const data = TestBed.inject(GrowthDataService);
+    let visibleMounts: Mount[] = [];
+    data.getMounts().subscribe((mounts) => visibleMounts = spoilers.filter(mounts));
+    expect(visibleMounts.length).toBeGreaterThan(0);
+    spyOn(data, 'getMounts').and.returnValue(of(visibleMounts));
+    fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    await navigate('/mounts');
+    expect(notice()).toBeNull();
+  });
+
+  it('dismisses for this visit only and warns again when returning', async () => {
+    await navigate('/growth-mapper');
+    dismiss();
+    expect(notice()).toBeNull();
+    spoilers.setAllHidden(false);
+    fixture.detectChanges();
+    spoilers.setAllHidden(true);
+    fixture.detectChanges();
+    expect(notice()).toBeNull();
+    await navigate('/weapons');
+    await navigate('/growth-mapper');
+    expect(notice()?.open).toBeTrue();
+  });
+
+  it('dismisses with Escape without reopening during the same visit', async () => {
+    await navigate('/classes');
+    notice()!.dispatchEvent(new Event('cancel', { cancelable: true }));
+    fixture.detectChanges();
+    expect(notice()).toBeNull();
+  });
+
+  it('persists the opt-out across navigation and app recreation', async () => {
+    await navigate('/growth-mapper');
+    const checkbox = notice()!.querySelector('input')!;
+    checkbox.click();
+    dismiss();
+    expect(localStorage.getItem(preferenceKey)).toBe('true');
+    await navigate('/classes');
+    expect(notice()).toBeNull();
+    fixture.destroy();
+    fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    expect(notice()).toBeNull();
+  });
+
+  it('reports storage failure and lets the user dismiss without saving', async () => {
+    await navigate('/growth-mapper');
+    spyOn(console, 'warn');
+    const save = spyOn(Storage.prototype, 'setItem').and.throwError('Storage unavailable');
+    const checkbox = notice()!.querySelector('input')!;
+    checkbox.click();
+    dismiss();
+    expect(notice()?.querySelector('[role=alert]')?.textContent).toContain("Couldn't save");
+    expect(console.warn).toHaveBeenCalled();
+    checkbox.click();
+    dismiss();
+    expect(notice()).toBeNull();
+    save.and.callThrough();
+  });
+
+  it('anchors the navbar and prevents root scrolling', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    const nav = host.querySelector('.topnav')!;
+    expect(getComputedStyle(host).overflow).toBe('clip');
+    expect(getComputedStyle(nav).position).toBe('sticky');
+    expect(getComputedStyle(nav).top).toBe('0px');
+    host.scrollTop = 100;
+    expect(host.scrollTop).toBe(0);
+    expect(host.querySelector('.topnav')).toBeTruthy();
+  });
+});
 
 describe('AppComponent', () => {
   beforeEach(async () => {

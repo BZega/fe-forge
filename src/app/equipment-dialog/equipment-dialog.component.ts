@@ -37,10 +37,12 @@ export class EquipmentDialogComponent {
   }
 
   tabIcon(skill: SkillKey, selected: boolean): string {
+    if (skill === 'heavyArmor') return 'icons/equipment/shield.png';
     return skillIconUrl(skill, selected ? 'good' : 'neutral') ?? this.fallbackIcon(skill);
   }
 
   fallbackIcon(skill: SkillKey): string {
+    if (skill === 'heavyArmor') return 'icons/equipment/shield.png';
     return `icons/skills/black/${skill}.svg`;
   }
   private readonly displayItems = computed(() => {

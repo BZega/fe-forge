@@ -2,7 +2,8 @@
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  overflow: hidden;
+  // Only main should scroll, including browser focus/scroll restoration.
+  overflow: clip;
 }
 
 main {
@@ -29,7 +30,8 @@ main {
 
 .topnav {
   flex: none;
-  position: relative;
+  position: sticky;
+  top: 0;
   display: flex;
   align-items: center;
   gap: 1.5rem;

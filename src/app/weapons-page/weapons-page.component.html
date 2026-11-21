@@ -10,15 +10,20 @@
     <span>Search items</span>
     <input id="item-search" #query type="search" placeholder="Name, type or description" [value]="search()" (input)="search.set(query.value)" />
   </label>
-  <label for="item-type-filter">
-    <span>Item type</span>
-    <select id="item-type-filter" #type aria-label="Item type" [value]="selectedType()" (change)="selectedType.set(type.value)">
-      <option value="">All types</option>
-      @for (type of types(); track type) {
-        <option [value]="type">{{ type }}</option>
+</div>
+<div class="catalog-tabs" role="group" aria-label="Item type">
+  @for (tab of tabs(); track tab) {
+    <button type="button" class="catalog-tab" [class.catalog-tab--active]="selectedType() === tab"
+      [attr.aria-pressed]="selectedType() === tab" [attr.aria-label]="tab || 'All types'"
+      [title]="tab || 'All types'" (click)="selectedType.set(tab)">
+      @if (tabSkill(tab); as skill) {
+        <img [src]="tabIcon(skill, selectedType() === tab)" alt="" referrerpolicy="no-referrer"
+          (error)="useFallbackIcon($event, fallbackIcon(skill))" />
+      } @else {
+        {{ tab || 'ALL' }}
       }
-    </select>
-  </label>
+    </button>
+  }
 </div>
 <p class="catalog-count" role="status">{{ resultCount() }} {{ resultCount() === 1 ? 'item' : 'items' }}</p>
 
@@ -27,8 +32,8 @@
     <h2 [id]="'item-type-' + index">{{ group.type }} <span>({{ group.items.length }})</span></h2>
     <div class="catalog-items">
       @for (family of group.items; track family.key) {
-        <app-item-card [item]="family.item" [variants]="family.variants" [showVariants]="true" [alwaysExpanded]="true"
-          (variantChange)="changeVariant(family.item, $event)" />
+        <app-item-card [item]="family.item" [variants]="family.variants" [showVariants]="true" [alwaysExpanded]="true" [showBonusStats]="false"
+          [highlightUpgrades]="true" (variantChange)="changeVariant(family.item, $event)" />
       }
     </div>
   </section>

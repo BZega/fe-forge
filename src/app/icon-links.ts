@@ -1,5 +1,6 @@
 import data from './data/icon-links.json';
 import { SkillKey, SkillPreference } from './models/growth.models';
+import type { Item } from './models/equipment';
 
 const LINKS = data as unknown as {
   characters: Record<string, string>;
@@ -23,22 +24,22 @@ const CLASS_ICON_SLUGS = new Set(`
   light_cavalry myrmidon noble orichaldia ornius_rider ovate priest pugilist ranger
   rogue sentinel shadow_seeker shaman shido sniper soldier swordmaster
   the_apsara the_avatar the_blade the_calamity the_cavalier the_eternal the_godhand
-  the_trident troubadour valkyrium war_monk warrior wing_soldier wiseman
+  the_trident troubadour valkyrium war_monk warrior winged_soldier wiseman
 `.trim().split(/\s+/));
 
 export function classIcons(name: string): { label: string; src: string }[] {
-  const slug = name === 'Winged Soldier' ? 'wing_soldier' : name.toLowerCase().replace(/ /g, '_');
+  const slug = name === 'Winged Soldier' ? 'winged_soldier' : name.toLowerCase().replace(/ /g, '_');
   if (!CLASS_ICON_SLUGS.has(slug)) {
     return [];
   }
 
-  const genders = slug === 'wing_soldier' || slug === 'celestial_trooper'
+  const genders = slug === 'winged_soldier' || slug === 'celestial_trooper'
     ? ['Female'] as const
     : ['Male', 'Female'] as const;
 
   return genders.map((label) => ({
     label,
-    src: `icons/classes/${slug}__${slug.startsWith('the_') ? `variant_${label === 'Male' ? 1 : 2}` : label.toLowerCase()}.png`,
+    src: `icons/classes/${slug}_${label.toLowerCase()}.png`,
   }));
 }
 
@@ -53,6 +54,19 @@ export function abilityIconUrl(name: string): string {
 
 export function skillIconUrl(skill: SkillKey, preference: SkillPreference = 'neutral'): string | null {
   return LINKS.skills[skill]?.[preference] ?? null;
+}
+
+export function equipmentIconUrl(item: Item, checked: boolean): string | null {
+  const type = item.WeaponType.trim().toLowerCase();
+  const cursed = item.Curse.trim() !== '--';
+  if (['shield', 'staff', 'mask', 'accessory'].includes(type)) {
+    return `icons/equipment/${cursed ? 'cursed_' : ''}${type}.png`;
+  }
+  const special = cursed ? 'cursed' : /prototype/i.test(item.Name) ? 'prototype' : null;
+  if (special && ['sword', 'spear', 'axe', 'bow', 'gauntlets'].includes(type)) {
+    return `icons/equipment/${special}_${type}_${checked ? 'enabled' : 'disabled'}.png`;
+  }
+  return null;
 }
 
 export function useFallbackIcon(event: Event, fallback: string): void {
