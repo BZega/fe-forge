@@ -313,9 +313,11 @@ describe('ProjectionStartDialogComponent', () => {
     const panelRect = panel.getBoundingClientRect();
     const options = menu.querySelector<HTMLElement>('.stat-menu-options')!;
     const optionsRect = options.getBoundingClientRect();
+    expect(getComputedStyle(options).right).toBe('0px');
     expect(optionsRect.left).toBeGreaterThanOrEqual(panelRect.left);
     expect(optionsRect.right).toBeLessThanOrEqual(panelRect.right);
     for (const button of Array.from(options.querySelectorAll<HTMLButtonElement>('button'))) {
+      expect(button.getBoundingClientRect().left).toBeGreaterThanOrEqual(panelRect.left);
       expect(button.getBoundingClientRect().right).toBeLessThanOrEqual(panelRect.right);
     }
   });

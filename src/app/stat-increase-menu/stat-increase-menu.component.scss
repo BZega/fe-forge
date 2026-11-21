@@ -86,11 +86,6 @@
       background: rgb(255 255 255 / 10%);
     }
 
-    :host-context(.start-compare-actions) .stat-menu-options {
-      right: 0;
-      left: auto;
-    }
-
     &:focus-visible {
       outline: 1px solid var(--accent);
       outline-offset: -1px;
@@ -100,5 +95,10 @@
       opacity: 0.4;
       cursor: not-allowed;
     }
+  }
+
+  :host-context(.start-compare-actions) .stat-menu-options {
+    right: 0;
+    left: auto;
   }
 }
