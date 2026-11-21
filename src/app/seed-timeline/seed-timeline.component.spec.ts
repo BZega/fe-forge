@@ -383,18 +383,20 @@ describe('SeedTimelineComponent', () => {
     timeline.value = String(first);
     timeline.dispatchEvent(new Event('change'));
     fixture.detectChanges();
-    const select = host.querySelector<HTMLSelectElement>('select[aria-label="Battalion"]')!;
     const battalion = page.battalions().find((candidate) => candidate.mag > 0)!;
-    select.value = String(battalion.id);
-    select.dispatchEvent(new Event('change'));
+    const assign = () => Array.from(host.querySelectorAll<HTMLButtonElement>('app-stat-increase-menu button'))
+      .find((button) => button.textContent!.trim() === 'Assign')!;
+    assign().click();
+    fixture.detectChanges();
+    page.onBattalionConfirmed(battalion);
     fixture.detectChanges();
     const branch = () => page.sectionViews().find((view) => view.section.id === first)!;
     expect(page.battalionOf(branch())?.id).toBe(battalion.id);
     expect(state.seedMap().sections.find((section) => section.id === latest)!.battalionId ?? null).toBeNull();
     expect(seed().battalionId ?? null).toBeNull();
     expect(page.statTotalTitle(page.endStatsOf(branch())[STAT_KEYS.indexOf('mag')])).toContain(battalion.name);
-    select.value = '';
-    select.dispatchEvent(new Event('change'));
+    assign().click();
+    page.onBattalionConfirmed(null);
     fixture.detectChanges();
     expect(page.battalionOf(branch())).toBeNull();
   });
@@ -408,7 +410,7 @@ describe('SeedTimelineComponent', () => {
     state.setReclass(seed().id, seed().rows[1].id, classId('Ornius Rider'));
     fixture.detectChanges();
     const withBattalion = page.endStatsOf(view());
-    expect(host.querySelector<HTMLSelectElement>('select[aria-label="Battalion"]')!.title).toContain('Not counted');
+    expect(page.battalionHint(view())).toContain('Not counted');
     expect(page.battalionOf(view())?.id).toBe(battalion.id);
     state.setBattalion(seed().id, null);
     expect(page.endStatsOf(view()).map((stat) => stat.value)).toEqual(withBattalion.map((stat) => stat.value));
@@ -431,15 +433,14 @@ describe('SeedTimelineComponent', () => {
   it('opens equipment for the focused timeline', () => {
     const { fixture, page, host } = render();
     const equipmentButton = () => Array.from(host.querySelectorAll<HTMLButtonElement>('button'))
-      .find((button) => button.textContent!.includes('Inventory ('))!;
+      .find((button) => button.textContent!.trim() === 'Inventory')!;
     equipmentButton().click();
     fixture.detectChanges();
     expect(page.equipmentSectionId()).toBe(seed().id);
     expect(host.querySelector('app-equipment-dialog')).not.toBeNull();
     page.onEquipmentConfirmed(['Wooden Sword']);
     fixture.detectChanges();
-    expect(equipmentButton().textContent).toContain('1/5');
-    expect(equipmentButton().title).toBe('Wooden Sword');
+    expect(seed().equipment).toContain('Wooden Sword');
     equipmentButton().click();
     fixture.detectChanges();
     expect(host.querySelector('app-equipment-dialog')).not.toBeNull();

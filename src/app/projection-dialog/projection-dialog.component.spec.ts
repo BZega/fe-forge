@@ -169,6 +169,7 @@ describe('ProjectionDialogComponent', () => {
 
   it('adds the abilities picked in the results to the in-game view only', () => {
     const { fixture, dialog } = open('Cai');
+    fixture.componentRef.setInput('availableClasses', [classes.find((unitClass) => unitClass.name === 'The Blade')!]);
     dialog.submit();
     fixture.detectChanges();
     const spd = () => dialog.projection().find((row) => row.stat === 'spd')!.total;

@@ -16,7 +16,9 @@
       </label>
 
       <div class="timeline-actions">
-        <button type="button" class="ghost-button" (click)="mapperRef.openBoosters(focus)">Stat boosters</button>
+        <app-stat-increase-menu [abilitiesEnabled]="mapperRef.hasAvailableAbilities(focus)"
+          (items)="mapperRef.openBoosters(focus)" (inventory)="mapperRef.equipmentSectionId.set(focus.section.id)"
+          (abilities)="mapperRef.openAbilityPicker(focus)" (assign)="mapperRef.battalionSectionId.set(focus.section.id)" />
         <button
           type="button"
           class="ghost-button"
@@ -26,31 +28,6 @@
         >
           Projected Stats
         </button>
-        <button type="button" class="ghost-button" (click)="mapperRef.openAbilityPicker(focus)">
-          Abilities ({{ mapperRef.equippedAbilities(focus).length }}/{{ mapperRef.maxAbilities }})
-        </button>
-        <button
-          type="button"
-          class="ghost-button"
-          [title]="mapperRef.pickerSummary(focus.section.equipment ?? [])"
-          (click)="mapperRef.equipmentSectionId.set(focus.section.id)"
-        >
-          Inventory ({{ focus.section.equipment?.length ?? 0 }}/5)
-        </button>
-
-        <select class="timeline-select" aria-label="Battalion"
-          [title]="mapperRef.battalionHint(focus)"
-          (change)="mapperRef.onBattalionChange(focus, $any($event.target).value)">
-          <option value="" [selected]="mapperRef.battalionOf(focus) === null">— No battalion —</option>
-          @for (group of mapperRef.battalionGroups(); track group.type) {
-            <optgroup [label]="group.type">
-              @for (battalion of group.battalions; track battalion.id) {
-                <option [value]="battalion.id" [selected]="focus.section.battalionId === battalion.id">{{ battalion.name }}</option>
-              }
-            </optgroup>
-          }
-        </select>
-
         @if (focus.section.exam) {
           <button
             type="button"

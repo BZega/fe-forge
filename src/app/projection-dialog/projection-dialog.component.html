@@ -61,7 +61,9 @@
       </label>
 
       <div class="results-bar">
-        <button type="button" class="ghost-button" (click)="boosterPickerOpen.set(true)">Stat boosters</button>
+        <app-stat-increase-menu [abilitiesEnabled]="abilityOptions().length > 0"
+          (items)="boosterPickerOpen.set(true)" (inventory)="equipmentPickerOpen.set(true)"
+          (abilities)="abilityPickerOpen.set(true)" (assign)="battalionPickerOpen.set(true)" />
         <div class="view-toggle" role="group" aria-label="Projected stats view">
           <button
             type="button"
@@ -87,34 +89,6 @@
           <app-stat-booster-dialog [entries]="boosterEntries()" [inherited]="usedBoosters()"
             context="Additional permanent base-stat gains at the selected projected level. Uses inherited from the Growth Mapper reduce the remaining allowance."
             (confirmed)="onBoostersConfirmed($event)" (closed)="boosterPickerOpen.set(false)" />
-        }
-        @if (view() === 'inGame') {
-          <button
-            type="button"
-            class="ghost-button"
-            [title]="'Stat abilities: ' + (equippedAbilityNames().join(', ') || 'None')"
-            (click)="abilityPickerOpen.set(true)"
-          >
-            Abilities ({{ equippedAbilities().length }}/{{ maxAbilities }})
-          </button>
-          <button type="button" class="ghost-button" [title]="chosenEquipment().join(', ') || 'No equipment'" (click)="equipmentPickerOpen.set(true)">
-            Inventory ({{ chosenEquipment().length }}/5)
-          </button>
-          <select
-            class="results-weapon"
-            aria-label="Battalion"
-            [title]="mountedAtEnd() ? 'Not counted: the class is mounted at this level' : 'Battalion'"
-            (change)="setBattalion($any($event.target).value)"
-          >
-            <option value="" [selected]="chosenBattalion() === null">— No battalion —</option>
-            @for (group of battalionGroups(); track group.type) {
-              <optgroup [label]="group.type">
-                @for (option of group.battalions; track option.id) {
-                  <option [value]="option.id" [selected]="chosenBattalion()?.id === option.id">{{ option.name }}</option>
-                }
-              </optgroup>
-            }
-          </select>
         }
         @if (actualLevels().length > 0) {
           @if (actualAtEnd()) {
@@ -157,7 +131,7 @@
     [title]="'Equipped stat abilities · ' + unit().name"
     [context]="'Added to the in-game view. Up to ' + maxAbilities + ' can be equipped; picking an upgrade replaces the ability it upgrades.'"
     [groups]="abilityGroups()"
-    [selected]="equippedAbilityNames()"
+    [selected]="selectedAbilityFamilies()"
     [max]="maxAbilities"
     (confirmed)="onAbilitiesConfirmed($event)"
     [weaponNeeded]="personalWeapon()"
@@ -172,4 +146,8 @@
     (confirmed)="onEquipmentConfirmed($event)"
     (closed)="equipmentPickerOpen.set(false)"
   />
+}
+@if (battalionPickerOpen()) {
+  <app-battalion-dialog eyebrow="Projected Stats" [battalions]="battalions()" [selected]="chosenBattalion()"
+    (confirmed)="chosenBattalion.set($event); battalionPickerOpen.set(false)" (closed)="battalionPickerOpen.set(false)" />
 }

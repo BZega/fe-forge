@@ -377,10 +377,16 @@
     [history]="projected.history"
     [actuals]="projected.actuals"
     [abilities]="projected.abilities"
+    [availableClasses]="projected.availableClasses"
     [equipment]="projected.equipment"
     [weapon]="projected.weapon"
     (closed)="projection.set(null)"
   />
+}
+
+@if (battalionSectionId() !== null) {
+  <app-battalion-dialog [battalions]="battalions()" [selected]="selectedBattalion()"
+    (confirmed)="onBattalionConfirmed($event)" (closed)="battalionSectionId.set(null)" />
 }
 
 @if (equipmentSection(); as section) {

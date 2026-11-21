@@ -195,11 +195,25 @@
   margin-top: 0.85rem;
   font-size: 0.85rem;
   justify-content: space-between;
+  flex-wrap: wrap;
   padding-bottom: 4px;
 
   input {
     accent-color: var(--accent);
   }
+}
+
+.start-compare-label,
+.start-compare-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.start-compare-actions {
+  flex: 1 1 auto;
+  justify-content: flex-end;
 }
 
 .start-actuals {

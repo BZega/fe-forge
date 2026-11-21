@@ -133,15 +133,18 @@
   }
 
   @if (canCompare() && planStart()) {
-    <label class="start-compare">
-      <div style="display: flex; align-items: center; gap: 0.4rem;">
+    <div class="start-compare">
+      <label class="start-compare-label">
         <input type="checkbox" [checked]="compareActuals()" (change)="compareActuals.set($any($event.target).checked)" />
         I have actual stats to compare
+      </label>
+      <div class="start-compare-actions">
+        @if (!entered()) {
+          <app-stat-increase-menu (items)="boosterPickerOpen.set(true)" (inventory)="equipmentPickerOpen.set(true)"
+            (abilities)="abilityPickerOpen.set(true)" (assign)="battalionPickerOpen.set(true)" />
+        }
       </div>
-      <div>
-        <button type="button" class="ghost-button" (click)="boosterPickerOpen.set(true)">Add stat boosters</button>
-      </div>
-    </label>
+    </div>
 
     @if (compareActuals()) {
       <div class="start-stats start-actuals" [style.--stat-count]="statKeys.length">
@@ -196,32 +199,10 @@
         </label>
       </div>
 
-      @if (inGameStats()) {
-        <div class="start-kind-abilities">
-          <button
-            type="button"
-            class="ghost-button"
-            [title]="'Stat abilities: ' + (equippedAbilityNames().join(', ') || 'None')"
-            (click)="abilityPickerOpen.set(true)"
-          >
-            Abilities ({{ equippedAbilities().length }}/{{ maxAbilities }})
-          </button>
-          <button type="button" class="ghost-button" [title]="equipment().join(', ') || 'No equipment'" (click)="equipmentPickerOpen.set(true)">
-            Inventory ({{ equipment().length }}/5)
-          </button>
-          <select class="start-select" aria-label="Battalion" title="Not counted while the class is mounted" (change)="setBattalion($any($event.target).value)">
-            <option value="" [selected]="battalion() === null">— No battalion —</option>
-            @for (group of battalionGroups(); track group.type) {
-              <optgroup [label]="group.type">
-                @for (option of group.battalions; track option.id) {
-                  <option [value]="option.id" [selected]="battalion()?.id === option.id">{{ option.name }}</option>
-                }
-              </optgroup>
-            }
-          </select>
-          <span class="start-kind-hint">Class, mount, battalion, equipment and abilities are taken off to compare.</span>
-        </div>
-      }
+      <div class="start-kind-actions">
+        <app-stat-increase-menu (items)="boosterPickerOpen.set(true)" (inventory)="equipmentPickerOpen.set(true)"
+          (abilities)="abilityPickerOpen.set(true)" (assign)="battalionPickerOpen.set(true)" />
+      </div>
     </fieldset>
   }
 
@@ -300,6 +281,11 @@
   </footer>
 </div>
 
+@if (showAbilityWarning()) {
+  <app-ability-warning-dialog [abilities]="missingAbilities()"
+    (confirmed)="finishConfirm()" (closed)="showAbilityWarning.set(false)" />
+}
+
 @if (abilityPickerOpen()) {
   <app-picker-dialog
     eyebrow="Projected Stats"
@@ -326,4 +312,8 @@
 @if (boosterPickerOpen()) {
   <app-stat-booster-dialog [entries]="boosterEntries()" [context]="boosterContext()"
     (confirmed)="onBoostersConfirmed($event)" (closed)="boosterPickerOpen.set(false)" />
+}
+@if (battalionPickerOpen()) {
+  <app-battalion-dialog eyebrow="Projected Stats" [battalions]="battalions()" [selected]="battalion()"
+    (confirmed)="battalion.set($event); battalionPickerOpen.set(false)" (closed)="battalionPickerOpen.set(false)" />
 }

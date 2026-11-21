@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, HostListener, inject, input, linkedSignal, OnInit, output, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ClassPlanComponent, MAX_PROJECTION_LEVEL, PlanStep } from '../class-plan/class-plan.component';
-import { abilitiesFor, abilityPickerGroups, Battalion, BATTALION_TYPE_ORDER, classLabel, MAX_EQUIPPED_ABILITIES, StatBoostAbility, STAT_KEYS, STAT_LABELS, Unit, WeaponKey } from '../models/growth.models';
-import { abilitiesAt, abilityLock, InGameGear, inGameBonus, isMountedClass, usesWeapon } from '../models/bonuses';
+import { abilitiesFor, abilityAvailableInClasses, abilityFamily, Battalion, BATTALION_TYPE_ORDER, ClassAbility, classLabel, MAX_EQUIPPED_ABILITIES, StatBoostAbility, STAT_KEYS, STAT_LABELS, Unit, UnitClass, WeaponKey } from '../models/growth.models';
+import { abilitiesAt, InGameGear, inGameBonus, isMountedClass, statAbilityPickerGroups, usesWeapon } from '../models/bonuses';
 import { levelUpGrowth, projectStats, RecruitmentChapter, stepAtLevel } from '../models/recruitment.models';
 import { PickerDialogComponent } from '../picker-dialog/picker-dialog.component';
 import { ProjectionActual } from '../projection-start-dialog/projection-start-dialog.component';
@@ -13,12 +13,14 @@ import { hasStatBonus, statBreakdown } from '../models/stat-display';
 import { BoosterCounts, BoosterEntry, boosterStats } from '../models/stat-boosters';
 import { StatBoosterDialogComponent } from '../stat-booster-dialog/stat-booster-dialog.component';
 import { MAX_BASE_STATS } from '../models/growth.models';
+import { StatIncreaseMenuComponent } from '../stat-increase-menu/stat-increase-menu.component';
+import { BattalionDialogComponent } from '../battalion-dialog/battalion-dialog.component';
 
 export type ActualTone = 'higher' | 'even' | 'lower';
 
 @Component({
   selector: 'app-projection-dialog',
-  imports: [ClassPlanComponent, EquipmentDialogComponent, PickerDialogComponent, StatBoosterDialogComponent],
+  imports: [BattalionDialogComponent, ClassPlanComponent, EquipmentDialogComponent, PickerDialogComponent, StatBoosterDialogComponent, StatIncreaseMenuComponent],
   templateUrl: './projection-dialog.component.html',
   styleUrls: ['../exam-dialog/exam-dialog.component.scss', './projection-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +35,7 @@ export class ProjectionDialogComponent implements OnInit {
   readonly actuals = input<readonly ProjectionActual[]>([]);
   readonly history = input<{ start: RecruitmentChapter; steps: readonly PlanStep[] } | null>(null);
   readonly abilities = input<readonly StatBoostAbility[]>([]);
+  readonly availableClasses = input<readonly UnitClass[]>([]);
   readonly weapon = input<WeaponKey | null>(null);
   readonly battalion = input<Battalion | null>(null);
   readonly equipment = input<readonly string[]>([]);
@@ -59,24 +62,28 @@ export class ProjectionDialogComponent implements OnInit {
 
   private readonly api = inject(GrowthDataService);
   private readonly statBoostAbilities = toSignal(this.api.getStatBoostAbilities(), { initialValue: [] as StatBoostAbility[] });
+  private readonly classAbilities = toSignal(this.api.getClassAbilities(), { initialValue: [] as ClassAbility[] });
 
   readonly maxAbilities = MAX_EQUIPPED_ABILITIES;
-  readonly abilityOptions = computed(() => abilitiesFor(this.statBoostAbilities(), this.unit().name));
-  readonly abilityGroups = computed(() => abilityPickerGroups(this.abilityOptions(), (ability) => abilityLock(ability, this.endLevel())));
-  private readonly abilityNames = linkedSignal<readonly string[]>(() => this.abilities().map((ability) => ability.name));
+  readonly abilityOptions = computed(() => abilitiesFor(this.statBoostAbilities(), this.unit().name).filter((ability) =>
+    abilityAvailableInClasses(ability, [...this.availableClasses(), ...this.steps().map((step) => step.unitClass)], this.classAbilities())));
+  readonly abilityGroups = computed(() => statAbilityPickerGroups(this.abilityOptions(), this.endLevel()));
+  private readonly abilityNames = linkedSignal<readonly string[]>(() => this.abilities().map(abilityFamily));
   readonly chosenWeapon = computed(() => equipmentWeapon(this.chosenEquipment()));
   readonly chosenBattalion = linkedSignal<Battalion | null>(() => this.battalion());
   readonly abilityPickerOpen = signal(false);
+  readonly battalionPickerOpen = signal(false);
 
-  private readonly battalions = toSignal(this.api.getBattalions(), { initialValue: [] as Battalion[] });
+  readonly battalions = toSignal(this.api.getBattalions(), { initialValue: [] as Battalion[] });
   readonly battalionGroups = computed(() =>
     BATTALION_TYPE_ORDER.map((type) => ({ type, battalions: this.battalions().filter((battalion) => battalion.type === type) })),
   );
 
   readonly equippedAbilities = computed(() =>
-    this.abilityOptions().filter((ability) => this.abilityNames().includes(ability.name)),
+    this.abilityOptions().filter((ability) => !ability.upgradeOf && this.abilityNames().includes(abilityFamily(ability))),
   );
   readonly equippedAbilityNames = computed(() => abilitiesAt(this.equippedAbilities(), this.endLevel()).map((ability) => ability.name));
+  readonly selectedAbilityFamilies = computed(() => abilitiesAt(this.equippedAbilities(), this.endLevel()).map(abilityFamily));
   readonly personalWeapon = computed(() => usesWeapon(this.unit().name, this.endLevel(), []));
 
   onAbilitiesConfirmed(names: string[]): void {
@@ -241,7 +248,7 @@ export class ProjectionDialogComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   close(): void {
-    if (this.abilityPickerOpen() || this.equipmentPickerOpen() || this.boosterPickerOpen()) {
+    if (this.abilityPickerOpen() || this.equipmentPickerOpen() || this.boosterPickerOpen() || this.battalionPickerOpen()) {
       return;
     }
 

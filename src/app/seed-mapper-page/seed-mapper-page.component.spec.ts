@@ -482,7 +482,7 @@ describe('SeedMapperPageComponent starting stats', () => {
     expect(config.selected).toEqual(['Divine Wall']);
     expect(config.max).toBe(5);
     expect(config.groups.map((group) => group.label)).toEqual(['Class abilities']);
-    expect(config.groups[0].items.map((item) => item.name)).toContain('Divine Law');
+    expect(config.groups[0].items.map((item) => item.name)).not.toContain('Divine Law');
   });
 
   it('adds and removes available classes when the class dialog is confirmed, keeping Noble/Commoner', () => {
@@ -521,25 +521,32 @@ describe('SeedMapperPageComponent starting stats', () => {
     const base = (key: (typeof STAT_KEYS)[number]) => 10 + STAT_KEYS.indexOf(key);
     const reach = (level: number) => state.setStatsLevel(level - 1);
 
-    it('is offered to Mu, under character abilities, locked until she learns it', () => {
+    it('offers Mu class abilities and one Warrior’s Blood entry at the appropriate levels', () => {
       expect(options()).not.toContain("Warrior's Blood");
 
       state.setUnit(unitId('Mu'));
+      allow('Gladiator');
       reach(19);
-      expect(options()).toContain("Warrior's Blood");
-      expect(component.pickerConfig()!.groups.map((group) => group.label)).toEqual(['Class abilities', 'Character abilities']);
+      expect(options()).toContain('Attack Basics');
+      expect(options()).not.toContain("Warrior's Blood");
+      expect(options()).not.toContain("Warrior's Blood+");
       const item = (name: string) => component.pickerConfig()!.groups.flatMap((group) => group.items).find((candidate) => candidate.name === name)!;
-      expect(item("Warrior's Blood").locked).toBe('Learned at Lv 20');
 
       reach(20);
-      options();
+      expect(options()).toContain("Warrior's Blood");
       expect(item("Warrior's Blood").locked).toBeUndefined();
-      expect(item("Warrior's Blood+").locked).toBe('Learned at Lv 35');
+      expect(options()).not.toContain("Warrior's Blood+");
 
+      state.setAbilities(sectionId(), ["Warrior's Blood"]);
       reach(35);
-      options();
-      expect(item("Warrior's Blood").locked).toBe("Replaced by Warrior's Blood+ from Lv 35");
+      expect(options()).not.toContain("Warrior's Blood");
       expect(item("Warrior's Blood+").locked).toBeUndefined();
+      expect(item("Warrior's Blood+").id).toBe("Warrior's Blood");
+      expect(component.pickerConfig()!.selected).toEqual(["Warrior's Blood"]);
+      component.onPickerConfirmed(component.pickerConfig()!.selected);
+      expect(component.equippedAbilities(view()).map((ability) => ability.name)).toEqual(["Warrior's Blood+"]);
+      reach(34);
+      expect(component.equippedAbilities(view()).map((ability) => ability.name)).toEqual(["Warrior's Blood"]);
     });
 
     it('lists Mu, not Mu*, among the units', () => {
@@ -630,14 +637,21 @@ describe('SeedMapperPageComponent starting stats', () => {
     };
     const str = () => baseStats()[STAT_KEYS.indexOf('str')];
 
-    it("locks a mastery ability until its class is available, naming the class it needs", () => {
-      expect(item('Attack Basics').locked).toBe('Needs Gladiator in available classes');
-      expect(item('Hunting Basics').locked).toBe('Needs Hunter in available classes');
+    it('enables abilities only when a qualifying class is available', () => {
+      state.setUnit(unitId('Cai'));
+      expect(component.hasAvailableAbilities(view())).toBeFalse();
+      allow('Gladiator');
+      expect(component.hasAvailableAbilities(view())).toBeTrue();
+    });
+
+    it('offers mastery abilities only when their class is available', () => {
+      expect(item('Attack Basics')).toBeUndefined();
+      expect(item('Hunting Basics')).toBeUndefined();
 
       allow('Gladiator');
 
       expect(item('Attack Basics').locked).toBeUndefined();
-      expect(item('Hunting Basics').locked).toBe('Needs Hunter in available classes');
+      expect(item('Hunting Basics')).toBeUndefined();
     });
 
     it('stops counting an equipped ability once its class leaves the pool', () => {
@@ -665,7 +679,7 @@ describe('SeedMapperPageComponent starting stats', () => {
       const attack = component.pickerConfig()!.groups.flatMap((group) => group.items).find((candidate) => candidate.name === 'Attack Basics')!;
 
       expect(attack.locked).toBeUndefined();
-      expect(item('Attack Basics').locked).toBe('Needs Gladiator in available classes');
+      expect(item('Attack Basics')).toBeUndefined();
     });
 
     it('never locks character abilities by class, which no class teaches', () => {

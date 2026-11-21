@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { PlanStep } from '../class-plan/class-plan.component';
 import unitClassData from '../data/unit-classes.json';
-import { baseStatsOf, GrowthRates, MAX_BASE_STATS, STAT_KEYS, StatKey, Unit, UnitClass } from '../models/growth.models';
+import { baseStatsOf, GrowthRates, MAX_BASE_STATS, STAT_KEYS, StatKey, toGrowth, Unit, UnitClass } from '../models/growth.models';
 import { blazeBonusOf } from '../models/bonuses';
 import { ITEMS } from '../models/equipment';
 import { levelUpGrowth, projectStats } from '../models/recruitment.models';
@@ -79,6 +79,32 @@ describe('ProjectionBuildComponent', () => {
 
     return { fixture, build: fixture.componentInstance, host: fixture.nativeElement as HTMLElement, result: () => result };
   };
+
+  it('switches between stat boosters in Base and the stat increase menu in In-game', () => {
+    const { fixture, host } = open(chapterStart('Cai'));
+    const toolbar = host.querySelector('.view-bar')!;
+    expect(toolbar.querySelector('app-stat-increase-menu')).not.toBeNull();
+    expect(Array.from(toolbar.querySelectorAll<HTMLButtonElement>(':scope > button'))
+      .some((button) => button.textContent!.trim() === 'Stat boosters')).toBeFalse();
+    const items = Array.from(toolbar.querySelectorAll<HTMLButtonElement>('app-stat-increase-menu button'))
+      .find((button) => button.textContent!.trim() === 'Items')!;
+    items.click();
+    fixture.detectChanges();
+    expect(host.querySelector('app-stat-booster-dialog')).not.toBeNull();
+    fixture.componentInstance.boosterPickerOpen.set(false);
+    fixture.componentInstance.view.set('base');
+    fixture.detectChanges();
+    expect(toolbar.querySelector('app-stat-increase-menu')).toBeNull();
+    const button = Array.from(toolbar.querySelectorAll<HTMLButtonElement>('button'))
+      .find((entry) => entry.textContent!.trim() === 'Stat boosters')!;
+    button.click();
+    fixture.detectChanges();
+    expect(host.querySelector('app-stat-booster-dialog')).not.toBeNull();
+    fixture.componentInstance.boosterPickerOpen.set(false);
+    fixture.componentInstance.view.set('inGame');
+    fixture.detectChanges();
+    expect(toolbar.querySelector('app-stat-increase-menu')).not.toBeNull();
+  });
 
   describe('equipment bonuses', () => {
     const sword = ITEMS.find((item) => item.Name === 'Wooden Sword')!;
@@ -239,6 +265,7 @@ describe('ProjectionBuildComponent', () => {
       steps: [
         { fromLevel: 20, unitClass: rider, mount: null, bondLevel: null },
         { fromLevel: 21, unitClass: byName('Noble/Commoner'), mount: null, bondLevel: null },
+        { fromLevel: 50, unitClass: byName('The Blade'), mount: null, bondLevel: null },
       ],
     };
     const spd = (level: number, view: 'base' | 'inGame' = 'inGame') => {
@@ -258,7 +285,7 @@ describe('ProjectionBuildComponent', () => {
     const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, 20])) as GrowthRates;
     const start = {
       ...manualStart('Lysander', 10, stats),
-      steps: [{ fromLevel: 10, unitClass: rider, mount: null, bondLevel: null }],
+      steps: [{ fromLevel: 10, unitClass: rider, mount: null, bondLevel: null }, { fromLevel: 50, unitClass: byName('The Blade'), mount: null, bondLevel: null }],
       options: { ...options, level: 10 },
     };
     const { build, fixture, result } = open(start);
@@ -283,7 +310,7 @@ describe('ProjectionBuildComponent', () => {
       baseStats: true,
       actual: { level: 10, stats: actualStats as Record<StatKey, number | null>, inGame: true },
       abilities: [insight],
-      steps: [{ fromLevel: 1, unitClass: rider, mount: null, bondLevel: null }],
+      steps: [{ fromLevel: 1, unitClass: rider, mount: null, bondLevel: null }, { fromLevel: 50, unitClass: byName('The Blade'), mount: null, bondLevel: null }],
       options: { ...options, level: 10 },
     };
     const { build } = open(start);
@@ -297,6 +324,60 @@ describe('ProjectionBuildComponent', () => {
     expect(spd().rank).not.toBeNull();
 
     expect(open(start, { level: 11 }).build.rows().every((row) => row.actual === null)).toBeTrue();
+  });
+
+  it('adds bonuses to base actuals and subtracts them from in-game actuals without changing entered gear', () => {
+    const sword = ITEMS.find((item) => item.Name === 'Wooden Sword')!;
+    const original = sword.BonusStats;
+    sword.BonusStats = [{ Str: 4 }];
+    try {
+      const noble = byName('Noble/Commoner');
+      const actualStats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, stat === 'str' ? 30 : null])) as Record<StatKey, number | null>;
+      const start = {
+        ...manualStart('Lysander', 1, baseStatsOf('Lysander')!),
+        baseStats: true,
+        equipment: ['Wooden Sword'],
+        steps: [{ fromLevel: 1, unitClass: noble, mount: null, bondLevel: null }],
+        actual: { level: 10, stats: actualStats, inGame: false },
+      };
+      const base = open(start, { level: 10 }).build;
+      const row = () => base.rows().find((candidate) => candidate.stat === 'str')!;
+      expect(row().actual).toBe(30 + noble.bonusStats.str + 4);
+      base.view.set('base');
+      expect(row().actual).toBe(30);
+      base.onEquipmentConfirmed([]);
+      base.view.set('inGame');
+      expect(row().actual).toBe(30 + noble.bonusStats.str);
+
+      const enteredInGame = open({ ...start, actual: { ...start.actual, inGame: true } }, { level: 10 }).build;
+      const inGameRow = () => enteredInGame.rows().find((candidate) => candidate.stat === 'str')!;
+      expect(inGameRow().actual).toBe(30);
+      enteredInGame.view.set('base');
+      expect(inGameRow().actual).toBe(30 - noble.bonusStats.str - 4);
+      enteredInGame.onEquipmentConfirmed([]);
+      enteredInGame.view.set('inGame');
+      expect(inGameRow().actual).toBe(26);
+    } finally {
+      sword.BonusStats = original;
+    }
+  });
+
+  it('applies theoretical equipment to projections without actual stats only in the in-game view', () => {
+    const sword = ITEMS.find((item) => item.Name === 'Wooden Sword')!;
+    const original = sword.BonusStats;
+    sword.BonusStats = [{ Str: 4 }];
+    try {
+      const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, 20])) as GrowthRates;
+      const start = { ...manualStart('Lysander', 10, stats), equipment: ['Wooden Sword'] };
+      const { build } = open(start, { level: 10 });
+      const row = () => build.rows().find((candidate) => candidate.stat === 'str')!;
+      const inGame = row().summary.mean;
+      expect(row().actual).toBeNull();
+      build.view.set('base');
+      expect(inGame - row().summary.mean).toBe(byName('Noble/Commoner').bonusStats.str + 4);
+    } finally {
+      sword.BonusStats = original;
+    }
   });
 
   it('lines up every growth rate and bar, whatever the values', () => {
@@ -325,6 +406,26 @@ describe('ProjectionBuildComponent', () => {
 
     expect(strIn('Noble/Commoner')).toBe(21);
     expect(strIn('Ornius Rider')).toBe(20);
+  });
+
+  it('suppresses an assigned battalion throughout a mounted period and restores it after reclassing', () => {
+    const stats = Object.fromEntries(STAT_KEYS.map((stat) => [stat, 20])) as GrowthRates;
+    const battalion = { ...toGrowth({ str: 2 }), id: 1, name: 'Test', type: 'Physical' as const, rank: 'E', total: 2, skillName: '', skillDescription: '' };
+    const rider = byName('Ornius Rider');
+    const noble = byName('Noble/Commoner');
+    const start = { ...manualStart('Lysander', 10, stats), battalion, steps: [
+      { fromLevel: 10, unitClass: rider, mount: null, bondLevel: null },
+      { fromLevel: 31, unitClass: noble, mount: null, bondLevel: null },
+    ] };
+    const modifier = (level: number) => {
+      const { build } = open(start, { level });
+      const inGame = build.rows().find((row) => row.stat === 'str')!.summary.mean;
+      build.view.set('base');
+      return inGame - build.rows().find((row) => row.stat === 'str')!.summary.mean -
+        (level < 31 ? rider : noble).bonusStats.str;
+    };
+    [10, 20, 30].forEach((level) => expect(modifier(level)).toBeCloseTo(0, 10));
+    [31, 32].forEach((level) => expect(modifier(level)).toBeCloseTo(2, 10));
   });
 
   it("counts Mu's Warrior's Blood picked at Lv 20 as Warrior's Blood+ from Lv 35", () => {
@@ -367,7 +468,8 @@ describe('ProjectionBuildComponent', () => {
   });
 
   it("keeps the card's abilities and inventory when only its level changes, but not when the build is edited", () => {
-    const start = chapterStart('Cai');
+    const original = chapterStart('Cai');
+    const start = { ...original, steps: [...original.steps, { fromLevel: 50, unitClass: byName('The Blade'), mount: null, bondLevel: null }] };
     const { build, fixture } = open(start);
     build.onAbilitiesConfirmed(['Divine Insight']);
     build.onEquipmentConfirmed(['Bronze Axe']);

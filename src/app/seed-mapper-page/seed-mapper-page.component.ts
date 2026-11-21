@@ -11,7 +11,7 @@ import { classLevelGate, levelUpGrowth, RecruitmentChapter } from '../models/rec
 import { Battalion, BATTALION_TYPE_ORDER, CLASS_LEVEL_CONFIGS, MAX_BASE_STATS } from '../models/growth.models';
 import { isMountedClass } from '../models/bonuses';
 import { abilitiesFor, baseStatsOf, bondLevelOf, characterKey, ClassAbility, CLASS_RANK_ORDER, ClassRank, DEFAULT_MOUNT_BOND_LEVEL, GrowthRates, MAX_EQUIPPED_ABILITIES, Mount, MountBondLevel, mountBonusAt, mountGrowthAt, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, sumGrowth, toGrowth, Unit, UnitClass, WeaponKey, ZERO_GROWTH } from '../models/growth.models';
-import { abilitiesAt, abilityLock, blazeBonusOf, MAX_EXTRA_BONUS, personalBonusesAt, usesWeapon } from '../models/bonuses';
+import { abilitiesAt, abilityLock, blazeBonusOf, MAX_EXTRA_BONUS, personalBonusesAt, statAbilityPickerGroups, usesWeapon } from '../models/bonuses';
 import { estimateRoll, MAX_UNRELIABLE_GAINS, MIN_READINGS_TO_FILL, RollBounds, rollBounds, RollEstimate, RollObservation, UNKNOWN_ROLL } from '../models/seed-roll';
 import { CURRENT_SAVE_VERSION, migrateSave, newSaveId, SeedSave } from '../models/seed-save';
 import { SearchableSelectComponent, SelectItemGroup } from '../searchable-select/searchable-select.component';
@@ -24,6 +24,7 @@ import { SeedSerializerService } from '../services/seed-serializer.service';
 import { SpoilerService } from '../services/spoiler.service';
 import { ALWAYS_AVAILABLE_CLASS, availableClassIds, effectiveClassId, ExamDraft, InlineExam, MAX_LEVEL, MIN_LEVEL, rowSwitchesTo, SeedComparator, SeedMapperStateService, SeedMarkUpdate, SeedRow, SeedSection, switchesClass } from '../services/seed-mapper-state.service';
 import { EquipmentDialogComponent } from '../equipment-dialog/equipment-dialog.component';
+import { BattalionDialogComponent } from '../battalion-dialog/battalion-dialog.component';
 import { equippedItems, equipmentWeapon, itemBoosts } from '../models/equipment';
 import { hasStatBonus, statBreakdown } from '../models/stat-display';
 import { LevelEntryDialogComponent, LevelEntryRow } from '../level-entry-dialog/level-entry-dialog.component';
@@ -140,6 +141,7 @@ const NO_ROLLS: RollEstimate[] = STAT_KEYS.map(() => estimateRoll([]));
   selector: 'app-seed-mapper-page',
   imports: [
     DatePipe,
+    BattalionDialogComponent,
     ExamDialogComponent,
     EquipmentDialogComponent,
     HelpDialogComponent,
@@ -310,31 +312,13 @@ export class SeedMapperPageComponent {
 
     const view = this.sectionViews().find((candidate) => candidate.section.id === dialog.sectionId);
     const level = view ? this.endLevelOf(view) : 0;
-    const toItem = (ability: StatBoostAbility) => {
-      const missing = this.missingClassesFor(ability, dialog.sectionId);
-
-      return {
-        id: ability.name,
-        name: ability.name,
-        description: ability.description,
-        family: familyOf(ability),
-        usesWeapon: ability.weaponBoosts !== undefined,
-        locked:
-          missing.length > 0
-            ? `Needs ${missing.map((unitClass) => unitClass.name).join(' or ')} in available classes`
-            : abilityLock(ability, level),
-      };
-    };
-    const abilities = this.unitAbilities();
+    const abilities = this.unitAbilities().filter((ability) => this.missingClassesFor(ability, dialog.sectionId).length === 0);
 
     return {
       title: `Stat abilities${view ? ` · ${view.title}` : ''}`,
       context: `Up to ${MAX_EQUIPPED_ABILITIES} can be equipped. A class's mastery ability needs that class in the available classes. Picking an upgrade replaces the ability it upgrades.`,
-      groups: [
-        { label: 'Class abilities', items: abilities.filter((ability) => !ability.characters).map(toItem) },
-        { label: 'Character abilities', items: abilities.filter((ability) => ability.characters).map(toItem) },
-      ].filter((group) => group.items.length > 0),
-      selected: view ? this.equippedAbilities(view).map((ability) => ability.name) : [],
+      groups: statAbilityPickerGroups(abilities, level),
+      selected: view ? this.equippedAbilities(view).map(familyOf) : [],
       max: MAX_EQUIPPED_ABILITIES,
       weaponNeeded: usesWeapon(this.unitName(), level, []),
     };
@@ -578,6 +562,22 @@ export class SeedMapperPageComponent {
 
   openAbilityPicker(view: SectionView): void {
     this.pickerDialog.set({ kind: 'abilities', sectionId: view.section.id });
+  }
+
+  hasAvailableAbilities(view: SectionView): boolean {
+    return this.unitAbilities().some((ability) =>
+      this.missingClassesFor(ability, view.section.id).length === 0 && !abilityLock(ability, this.endLevelOf(view)));
+  }
+
+  readonly battalionSectionId = signal<number | null>(null);
+  readonly selectedBattalion = computed(() => {
+    const section = this.seedMap().sections.find((candidate) => candidate.id === this.battalionSectionId());
+    return this.battalions().find((battalion) => battalion.id === section?.battalionId) ?? null;
+  });
+  onBattalionConfirmed(battalion: Battalion | null): void {
+    const sectionId = this.battalionSectionId();
+    if (sectionId !== null) this.state.setBattalion(sectionId, battalion?.id ?? null);
+    this.battalionSectionId.set(null);
   }
 
   readonly equipmentSectionId = signal<number | null>(null);
@@ -1201,7 +1201,7 @@ export class SeedMapperPageComponent {
       { name: 'Blaze', boosts: blazeBonusOf(unitName) },
     ];
     const battalion = this.battalions().find((candidate) => candidate.id === section.battalionId);
-    if (battalion && !(shownClass && isMountedClass(shownClass.name))) {
+    if (battalion && shownClass && !isMountedClass(shownClass.name)) {
       bonuses.push({ name: battalion.name, boosts: toGrowth(battalion) });
     }
 
@@ -1802,6 +1802,7 @@ export class SeedMapperPageComponent {
     history: { start: RecruitmentChapter; steps: PlanStep[] };
     actuals: ProjectionActual[];
     abilities: StatBoostAbility[];
+    availableClasses: readonly UnitClass[];
     equipment: readonly string[];
     battalion: Battalion | null;
     weapon: WeaponKey | null;
@@ -1900,6 +1901,7 @@ export class SeedMapperPageComponent {
         ))), steps },
       actuals,
       abilities: this.equippedAbilities(view),
+      availableClasses: this.availableClasses(view),
       equipment: view.section.equipment ?? [],
       battalion: this.battalionOf(view),
       weapon: view.section.weapon,

@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { ClassPlanComponent } from '../class-plan/class-plan.component';
 import unitClassData from '../data/unit-classes.json';
 import unitData from '../data/units.json';
 import { STAT_KEYS, Unit, UnitClass } from '../models/growth.models';
@@ -104,11 +106,12 @@ describe('ProjectionStartDialogComponent', () => {
     level.dispatchEvent(new Event('change'));
     fixture.detectChanges();
     expect(host.querySelector('.start-kind')).not.toBeNull();
-    expect(host.querySelector('.start-kind-abilities')).toBeNull();
+    expect(host.querySelector('.start-kind app-stat-increase-menu')).not.toBeNull();
 
     dialog.inGameStats.set(true);
     fixture.detectChanges();
-    host.querySelector<HTMLButtonElement>('.start-kind-abilities .ghost-button')!.click();
+    Array.from(host.querySelectorAll<HTMLButtonElement>('app-stat-increase-menu button'))
+      .find((button) => button.textContent!.trim() === 'Abilities')!.click();
     fixture.detectChanges();
     expect(host.querySelector('app-picker-dialog')).not.toBeNull();
 
@@ -116,9 +119,20 @@ describe('ProjectionStartDialogComponent', () => {
     fixture.detectChanges();
     expect(host.querySelector('app-picker-dialog')).toBeNull();
     dialog.confirm();
-
+    fixture.detectChanges();
+    expect(confirmed()).toBeNull();
+    expect(host.querySelector('.warning-dialog')!.textContent).toContain('Divine Insight');
+    expect(host.querySelector('.warning-dialog')!.textContent).toContain('The Blade');
+    dialog.finishConfirm();
     expect(confirmed()!.inGameStats).toBeTrue();
-    expect(confirmed()!.abilities!.map((ability) => ability.name)).toEqual(['Divine Insight']);
+    expect(confirmed()!.abilities).toEqual([]);
+    const plan = fixture.debugElement.query(By.directive(ClassPlanComponent)).componentInstance as ClassPlanComponent;
+    const gladiator = (unitClassData as UnitClass[]).find((unitClass) => unitClass.name === 'Gladiator')!;
+    plan.pickClass(plan.plan()[0].id, gladiator.id);
+    dialog.onAbilitiesConfirmed(['Attack Basics']);
+    fixture.detectChanges();
+    dialog.confirm();
+    expect(confirmed()!.abilities!.map((ability) => ability.name)).toEqual(['Attack Basics']);
   });
 
   it("uses Mu's Inventory weapon for an in-game starting build, with no separate weapon selector", () => {
@@ -149,6 +163,22 @@ describe('ProjectionStartDialogComponent', () => {
     restored.fixture.detectChanges();
     expect(restored.host.querySelector('app-picker-dialog')!.textContent).toContain('weapon equipped in Inventory');
     expect(restored.host.querySelector('select[aria-label="Equipped weapon"]')).toBeNull();
+  });
+
+  it('keeps projected gear chosen for base stats without treating it as part of the entered stats', () => {
+    const { dialog, fixture, confirmed } = open();
+    dialog.pickManualUnit(unitId('Cai'));
+    fixture.detectChanges();
+    const plan = fixture.debugElement.query(By.directive(ClassPlanComponent)).componentInstance as ClassPlanComponent;
+    const gladiator = (unitClassData as UnitClass[]).find((unitClass) => unitClass.name === 'Gladiator')!;
+    plan.pickClass(plan.plan()[0].id, gladiator.id);
+    dialog.onAbilitiesConfirmed(['Attack Basics']);
+    dialog.onEquipmentConfirmed(['Wooden Sword']);
+    fixture.detectChanges();
+    dialog.confirm();
+    expect(confirmed()!.inGameStats).toBeFalse();
+    expect(confirmed()!.abilities!.map((ability) => ability.name)).toEqual(['Attack Basics']);
+    expect(confirmed()!.equipment).toEqual(['Wooden Sword']);
   });
 
   it('offers actual stats to compare for a recruitment start, at the actual level', () => {
@@ -262,24 +292,45 @@ describe('ProjectionStartDialogComponent', () => {
     const { dialog, fixture, host } = open();
     dialog.pickManualUnit(unitId('Cai'));
     fixture.detectChanges();
-    const button = Array.from(host.querySelectorAll<HTMLButtonElement>('button'))
-      .find((entry) => entry.textContent?.trim() === 'Add stat boosters')!;
+    const button = Array.from(host.querySelectorAll<HTMLButtonElement>('app-stat-increase-menu button'))
+      .find((entry) => entry.textContent?.trim() === 'Items')!;
+    expect(button.closest('.start-compare')).not.toBeNull();
     button.click();
     fixture.detectChanges();
     expect(dialog.entered()).toBeNull();
     expect(host.querySelector('app-stat-booster-dialog')).not.toBeNull();
   });
 
-  it('places the booster button inside Actual stats are for both base and in-game stats', () => {
+  it('keeps the stat increase dropdown inside the build dialog at narrow widths', () => {
+    const { dialog, fixture, host } = open();
+    dialog.pickManualUnit(unitId('Cai'));
+    fixture.detectChanges();
+    const panel = host.querySelector<HTMLElement>('.dialog--start')!;
+    const menu = host.querySelector<HTMLDetailsElement>('.start-compare app-stat-increase-menu details')!;
+    panel.style.width = '270px';
+    menu.open = true;
+    fixture.detectChanges();
+    const panelRect = panel.getBoundingClientRect();
+    const options = menu.querySelector<HTMLElement>('.stat-menu-options')!;
+    const optionsRect = options.getBoundingClientRect();
+    expect(optionsRect.left).toBeGreaterThanOrEqual(panelRect.left);
+    expect(optionsRect.right).toBeLessThanOrEqual(panelRect.right);
+    for (const button of Array.from(options.querySelectorAll<HTMLButtonElement>('button'))) {
+      expect(button.getBoundingClientRect().right).toBeLessThanOrEqual(panelRect.right);
+    }
+  });
+
+  it('offers stat increases for both base and in-game actuals', () => {
     const { dialog, fixture, host } = open();
     dialog.setSource('chapter');
     dialog.unitId.set(unitId('Cai'));
     dialog.compareActuals.set(true);
     fixture.detectChanges();
     const buttons = () => Array.from(host.querySelectorAll<HTMLButtonElement>('button'))
-      .filter((button) => button.textContent?.trim() === 'Add stat boosters');
+      .filter((button) => button.textContent?.trim() === 'Items');
     expect(buttons().length).toBe(1);
     expect(buttons()[0].closest('.start-kind')).not.toBeNull();
+    expect(host.querySelectorAll('.start-kind-actions > .ghost-button').length).toBe(0);
     expect(host.querySelector('.start-kind legend')!.textContent).toContain('Actual stats are');
     dialog.setInGame(true);
     fixture.detectChanges();
@@ -290,7 +341,7 @@ describe('ProjectionStartDialogComponent', () => {
     expect(host.querySelector('app-stat-booster-dialog')).not.toBeNull();
   });
 
-  it('places a single booster button inside These stats are for manually entered stats', () => {
+  it('offers the stat increase menu for base and in-game manually entered stats', () => {
     const { dialog, fixture, host } = open();
     dialog.pickManualUnit(unitId('Cai'));
     fixture.detectChanges();
@@ -298,13 +349,98 @@ describe('ProjectionStartDialogComponent', () => {
     level.value = '20';
     level.dispatchEvent(new Event('change'));
     fixture.detectChanges();
-    const buttons = Array.from(host.querySelectorAll<HTMLButtonElement>('button'))
-      .filter((button) => button.textContent?.trim() === 'Add stat boosters');
-    expect(buttons.length).toBe(1);
-    expect(buttons[0].closest('.start-kind')).not.toBeNull();
+    const buttons = () => Array.from(host.querySelectorAll<HTMLButtonElement>('button'))
+      .filter((button) => button.textContent?.trim() === 'Items');
+    expect(buttons().length).toBe(1);
+    expect(buttons()[0].closest('.start-kind')).not.toBeNull();
+    expect(host.querySelector('.start-kind-actions > .ghost-button')).toBeNull();
     expect(host.querySelector('.start-kind legend')!.textContent).toContain('These stats are');
-    buttons[0].click();
+    dialog.setInGame(true);
+    fixture.detectChanges();
+    expect(buttons().length).toBe(1);
+    buttons()[0].click();
     fixture.detectChanges();
     expect(host.querySelector('app-stat-booster-dialog')).not.toBeNull();
+  });
+
+  it('offers and retains theoretical bonuses without actual stats, including level-gated abilities', () => {
+    const { dialog, fixture, host, confirmed } = open({ showOptions: true });
+    dialog.pickManualUnit(unitId('Mu'));
+    dialog.setOption('level', 35);
+    fixture.detectChanges();
+    expect(dialog.entered()).toBeNull();
+    expect(host.querySelector('.start-compare app-stat-increase-menu')).not.toBeNull();
+    const abilities = dialog.abilityGroups().flatMap((group) => group.items);
+    expect(abilities.map((ability) => ability.name)).toContain("Warrior's Blood+");
+    dialog.onAbilitiesConfirmed(["Warrior's Blood"]);
+    dialog.onEquipmentConfirmed(['Wooden Sword']);
+    dialog.confirm();
+    expect(confirmed()!.actual).toBeNull();
+    expect(confirmed()!.abilities!.map((ability) => ability.name)).toEqual(["Warrior's Blood"]);
+    expect(confirmed()!.equipment).toEqual(['Wooden Sword']);
+  });
+
+  it('allows editing the class plan instead of removing an ability', () => {
+    const { dialog, fixture, host, confirmed } = open();
+    dialog.pickManualUnit(unitId('Cai'));
+    fixture.detectChanges();
+    dialog.onAbilitiesConfirmed(['Attack Basics']);
+    dialog.confirm();
+    fixture.detectChanges();
+    expect(confirmed()).toBeNull();
+    const warning = host.querySelector<HTMLDialogElement>('.warning-dialog')!;
+    expect(warning.open).toBeTrue();
+    expect(warning.textContent).toContain('Attack Basics');
+    expect(warning.textContent).toContain('Gladiator');
+    Array.from(warning.querySelectorAll<HTMLButtonElement>('button'))
+      .find((button) => button.textContent!.trim() === 'Cancel')!.click();
+    fixture.detectChanges();
+    expect(host.querySelector('.warning-dialog')).toBeNull();
+    expect(confirmed()).toBeNull();
+    const plan = fixture.debugElement.query(By.directive(ClassPlanComponent)).componentInstance as ClassPlanComponent;
+    const gladiator = (unitClassData as UnitClass[]).find((unitClass) => unitClass.name === 'Gladiator')!;
+    plan.pickClass(plan.plan()[0].id, gladiator.id);
+    fixture.detectChanges();
+    dialog.confirm();
+    expect(confirmed()!.abilities!.map((ability) => ability.name)).toEqual(['Attack Basics']);
+  });
+
+  it('lists every unavailable ability and keeps eligible abilities when continuing', () => {
+    const { dialog, fixture, host, confirmed } = open();
+    dialog.pickManualUnit(unitId('Cai'));
+    fixture.detectChanges();
+    const plan = fixture.debugElement.query(By.directive(ClassPlanComponent)).componentInstance as ClassPlanComponent;
+    const gladiator = (unitClassData as UnitClass[]).find((unitClass) => unitClass.name === 'Gladiator')!;
+    plan.pickClass(plan.plan()[0].id, gladiator.id);
+    dialog.onAbilitiesConfirmed(['Attack Basics', 'Hunting Basics', 'Divine Insight']);
+    fixture.detectChanges();
+    dialog.confirm();
+    fixture.detectChanges();
+    const warningDialog = host.querySelector<HTMLDialogElement>('.warning-dialog')!;
+    const warning = warningDialog.textContent!;
+    expect(warning).toContain('Hunting Basics');
+    expect(warning).toContain('Hunter');
+    expect(warning).toContain('Divine Insight');
+    expect(warning).not.toContain('Attack Basics');
+    Array.from(warningDialog.querySelectorAll<HTMLButtonElement>('button'))
+      .find((button) => button.textContent!.trim() === 'Confirm')!.click();
+    expect(confirmed()!.abilities!.map((ability) => ability.name)).toEqual(['Attack Basics']);
+  });
+
+  it('dismisses the warning on Escape without closing or confirming the build editor', () => {
+    const { dialog, fixture, host, confirmed } = open();
+    dialog.pickManualUnit(unitId('Cai'));
+    fixture.detectChanges();
+    dialog.onAbilitiesConfirmed(['Attack Basics']);
+    let closed = false;
+    dialog.closed.subscribe(() => closed = true);
+    dialog.confirm();
+    fixture.detectChanges();
+    const warning = host.querySelector<HTMLDialogElement>('.warning-dialog')!;
+    warning.dispatchEvent(new Event('cancel', { cancelable: true }));
+    fixture.detectChanges();
+    expect(host.querySelector('.warning-dialog')).toBeNull();
+    expect(confirmed()).toBeNull();
+    expect(closed).toBeFalse();
   });
 });

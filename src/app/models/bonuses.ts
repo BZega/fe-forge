@@ -5,6 +5,7 @@ import { equippedItems, equipmentWeapon, itemBoosts } from './equipment';
 import {
   abilityBoosts,
   abilityFamily,
+  abilityPickerGroups,
   Battalion,
   characterKey,
   GrowthRates,
@@ -123,6 +124,17 @@ export function abilityLock(ability: StatBoostAbility, level: number): string | 
   return current && current.name !== ability.name ? `Replaced by ${current.name} from Lv ${current.learnedAt}` : undefined;
 }
 
+export function statAbilityPickerGroups(abilities: readonly StatBoostAbility[], level: number) {
+  const visible = abilities.flatMap((ability) => {
+    if (!ability.characters) return [ability];
+    if (ability.upgradeOf) return [];
+    const current = abilityAt(ability, level);
+    return current ? [current] : [];
+  });
+  return abilityPickerGroups(visible, (ability) => ability.characters ? undefined : abilityLock(ability, level))
+    .map((group) => ({ ...group, items: group.items.map((item) => ({ ...item, id: item.family })) }));
+}
+
 export function usesWeapon(unitName: string, level: number, abilities: readonly StatBoostAbility[]): boolean {
   return [...abilitiesAt(abilities, level), ...personalBonusesAt(unitName, level)].some(
     (bonus) => bonus.weaponBoosts,
@@ -143,7 +155,7 @@ export function inGameBonus(
     ...equippedItems(gear.equipment).map(itemBoosts),
     toGrowth(mountBonusAt(mount, bondLevel)),
     abilityBoosts(abilitiesAt(gear.abilities, level), weapon),
-    toGrowth(mounted ? null : gear.battalion),
+    toGrowth(unitClass === null || mounted ? null : gear.battalion),
     blazeBonusOf(unitName),
     abilityBoosts(personalBonusesAt(unitName, level), weapon),
   );

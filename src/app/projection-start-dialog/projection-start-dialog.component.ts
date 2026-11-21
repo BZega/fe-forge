@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, HostListener, inject, input, linkedSignal, OnInit, output, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ClassPlanComponent, MAX_PROJECTION_LEVEL, PlanEntry, PlanStep } from '../class-plan/class-plan.component';
-import { abilitiesFor, abilityPickerGroups, baseStatsOf, Battalion, BATTALION_TYPE_ORDER, classLabel, GrowthRates, MAX_EQUIPPED_ABILITIES, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, Unit, WeaponKey } from '../models/growth.models';
-import { abilitiesAt, abilityLock, inGameBonus, MAX_EXTRA_BONUS, usesWeapon } from '../models/bonuses';
+import { abilitiesFor, abilityAvailableInClasses, abilityFamily, baseStatsOf, Battalion, BATTALION_TYPE_ORDER, ClassAbility, classLabel, GrowthRates, MAX_EQUIPPED_ABILITIES, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, Unit, UnitClass, WeaponKey } from '../models/growth.models';
+import { abilitiesAt, inGameBonus, MAX_EXTRA_BONUS, statAbilityPickerGroups, usesWeapon } from '../models/bonuses';
 import { PickerDialogComponent } from '../picker-dialog/picker-dialog.component';
 import { levelUpGrowth, RecruitmentChapter, stepAtLevel } from '../models/recruitment.models';
 import { SearchableSelectComponent } from '../searchable-select/searchable-select.component';
@@ -14,6 +14,9 @@ import { equipmentWeapon } from '../models/equipment';
 import { BoosterCounts, BoosterEntry, boosterStats } from '../models/stat-boosters';
 import { StatBoosterDialogComponent } from '../stat-booster-dialog/stat-booster-dialog.component';
 import { MAX_BASE_STATS } from '../models/growth.models';
+import { StatIncreaseMenuComponent } from '../stat-increase-menu/stat-increase-menu.component';
+import { BattalionDialogComponent } from '../battalion-dialog/battalion-dialog.component';
+import { AbilityWarningDialogComponent } from '../ability-warning-dialog/ability-warning-dialog.component';
 
 export type StartSource = 'chapter' | 'manual';
 export interface ProjectionStart {
@@ -65,7 +68,7 @@ const emptyStats = (): StatInputs => Object.fromEntries(STAT_KEYS.map((stat) => 
 
 @Component({
   selector: 'app-projection-start-dialog',
-  imports: [ClassPlanComponent, EquipmentDialogComponent, PickerDialogComponent, SearchableSelectComponent, StatBoosterDialogComponent],
+  imports: [AbilityWarningDialogComponent, BattalionDialogComponent, ClassPlanComponent, EquipmentDialogComponent, PickerDialogComponent, SearchableSelectComponent, StatBoosterDialogComponent, StatIncreaseMenuComponent],
   templateUrl: './projection-start-dialog.component.html',
   styleUrls: ['../exam-dialog/exam-dialog.component.scss', './projection-start-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -143,19 +146,24 @@ export class ProjectionStartDialogComponent implements OnInit {
   readonly weapon = computed(() => equipmentWeapon(this.equipment()));
 
   private readonly statBoostAbilities = toSignal(this.api.getStatBoostAbilities(), { initialValue: [] as StatBoostAbility[] });
+  private readonly classAbilities = toSignal(this.api.getClassAbilities(), { initialValue: [] as ClassAbility[] });
+  private readonly classes = toSignal(this.api.getClasses(), { initialValue: [] as UnitClass[] });
 
   readonly abilityOptions = computed(() =>
     abilitiesFor(this.statBoostAbilities(), (this.source() === 'chapter' ? this.unit() : this.manualUnit())?.name ?? null),
   );
-  readonly enteredLevel = computed(() => (this.entered() === 'actual' ? (this.actualLevel() ?? 1) : this.manualLevel()));
+  readonly enteredLevel = computed(() => {
+    if (this.entered() === 'actual') return this.actualLevel() ?? this.options().level;
+    return this.entered() === 'start' && this.inGameStats() ? this.manualLevel() : this.options().level;
+  });
 
-  readonly abilityGroups = computed(() => abilityPickerGroups(this.abilityOptions(), (ability) => abilityLock(ability, this.enteredLevel())));
+  readonly abilityGroups = computed(() => statAbilityPickerGroups(this.abilityOptions(), this.enteredLevel()));
 
   readonly equippedAbilities = computed(() =>
-    this.abilityOptions().filter((ability) => this.abilityNames().includes(ability.name)),
+    this.abilityOptions().filter((ability) => !ability.upgradeOf && this.abilityNames().includes(abilityFamily(ability))),
   );
   readonly equippedAbilityNames = computed(() =>
-    abilitiesAt(this.equippedAbilities(), this.enteredLevel()).map((ability) => ability.name),
+    abilitiesAt(this.equippedAbilities(), this.enteredLevel()).map(abilityFamily),
   );
 
   readonly personalWeapon = computed(() => usesWeapon(this.enteredName(), this.enteredLevel(), []));
@@ -163,7 +171,8 @@ export class ProjectionStartDialogComponent implements OnInit {
   private readonly enteredName = computed(() => (this.source() === 'chapter' ? this.unit() : this.manualUnit())?.name ?? '');
 
   readonly battalion = signal<Battalion | null>(null);
-  private readonly battalions = toSignal(this.api.getBattalions(), { initialValue: [] as Battalion[] });
+  readonly battalions = toSignal(this.api.getBattalions(), { initialValue: [] as Battalion[] });
+  readonly battalionPickerOpen = signal(false);
   readonly battalionGroups = computed(() =>
     BATTALION_TYPE_ORDER.map((type) => ({ type, battalions: this.battalions().filter((battalion) => battalion.type === type) })),
   );
@@ -297,7 +306,8 @@ export class ProjectionStartDialogComponent implements OnInit {
 
     const bonus = inGameBonus(this.enteredName(), this.actualLevel()!, step?.unitClass ?? null, step?.mount ?? null, step?.bondLevel ?? null, {
       equipment: this.equipment(),
-      abilities: this.equippedAbilities(),
+      abilities: this.equippedAbilities().filter((ability) =>
+        abilityAvailableInClasses(ability, (this.planEditor()?.steps() ?? []).map((entry) => entry.unitClass), this.classAbilities())),
       weapon: this.weapon(),
       battalion: this.battalion(),
     });
@@ -347,7 +357,7 @@ export class ProjectionStartDialogComponent implements OnInit {
     if (initial) {
       this.options.set({ ...initial.options });
       this.boosters.set({ ...initial.boosters });
-      this.abilityNames.set((initial.abilities ?? []).map((ability) => ability.name));
+      this.abilityNames.set((initial.abilities ?? []).map(abilityFamily));
       this.equipment.set(initial.equipment ?? []);
       this.battalion.set(initial.battalion ?? null);
       this.inGameStats.set(initial.inGameStats ?? initial.actual?.inGame ?? false);
@@ -448,12 +458,13 @@ export class ProjectionStartDialogComponent implements OnInit {
       : null;
     const shared = {
       boosters: { ...this.boosters() },
-      equipment: inGame ? this.equipment() : [],
+      equipment: this.equipment(),
       inGameStats: entered === 'start' && inGame,
       actual,
-      abilities: inGame ? this.equippedAbilities() : [],
-      weapon: inGame ? this.weapon() : null,
-      battalion: inGame ? this.battalion() : null,
+      abilities: this.equippedAbilities().filter((ability) =>
+        abilityAvailableInClasses(ability, steps.map((step) => step.unitClass), this.classAbilities())),
+      weapon: this.weapon(),
+      battalion: this.battalion(),
       plan: plan.plan(),
       steps,
       options: actual ? { ...this.options(), level: actual.level } : this.options(),
@@ -517,8 +528,29 @@ export class ProjectionStartDialogComponent implements OnInit {
   });
 
   private readonly planEditor = viewChild(ClassPlanComponent);
+  readonly showAbilityWarning = signal(false);
+  readonly missingAbilities = computed(() => {
+    const planned = (this.planEditor()?.steps() ?? []).map((step) => step.unitClass);
+    return this.equippedAbilities()
+      .filter((ability) => !abilityAvailableInClasses(ability, planned, this.classAbilities()))
+      .map((ability) => {
+        const definition = this.classAbilities().find((candidate) => candidate.name === ability.name);
+        const teachers = definition ? this.classes().filter((unitClass) => unitClass.masterAbilities.includes(definition.id)) : [];
+        return { name: ability.name, teachers: teachers.map((unitClass) => unitClass.name) };
+      });
+  });
 
   confirm(): void {
+    if (!this.start()) return;
+    if (this.missingAbilities().length > 0) {
+      this.showAbilityWarning.set(true);
+      return;
+    }
+    this.finishConfirm();
+  }
+
+  finishConfirm(): void {
+    this.showAbilityWarning.set(false);
     this.clampActuals(this.equippedLimits());
     const start = this.start();
 
@@ -529,7 +561,11 @@ export class ProjectionStartDialogComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   close(): void {
-    if (this.abilityPickerOpen() || this.equipmentPickerOpen() || this.boosterPickerOpen()) {
+    if (this.abilityPickerOpen() || this.equipmentPickerOpen() || this.boosterPickerOpen() || this.battalionPickerOpen()) {
+      return;
+    }
+    if (this.showAbilityWarning()) {
+      this.showAbilityWarning.set(false);
       return;
     }
 

@@ -1,0 +1,104 @@
+:host {
+  display: inline-block;
+  font-size: 0.85rem;
+}
+
+.stat-menu {
+  position: relative;
+}
+
+.stat-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  list-style: none;
+  white-space: nowrap;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &:hover {
+    border-color: var(--accent);
+    background: rgb(255 255 255 / 6%);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+.stat-menu[open] .stat-menu-trigger {
+  border-color: var(--accent);
+  background: rgb(240 192 74 / 8%);
+}
+
+.stat-menu-chevron {
+  width: 0.4rem;
+  height: 0.4rem;
+  margin: 0 0.1rem 0.2rem 0;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  color: var(--accent);
+  transform: rotate(45deg);
+}
+
+.stat-menu[open] .stat-menu-chevron {
+  margin: 0.2rem 0.1rem 0 0;
+  transform: rotate(225deg);
+}
+
+.stat-menu-options {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  display: grid;
+  min-width: 100%;
+  padding: 0.25rem;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: #0f2225;
+  box-shadow: 0 14px 30px rgb(0 0 0 / 55%);
+
+  button {
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    border: 0;
+    border-radius: 5px;
+    color: inherit;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+    white-space: nowrap;
+
+    &:hover:not(:disabled),
+    &:focus-visible {
+      background: rgb(255 255 255 / 10%);
+    }
+
+    :host-context(.start-compare-actions) .stat-menu-options {
+      right: 0;
+      left: auto;
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--accent);
+      outline-offset: -1px;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}

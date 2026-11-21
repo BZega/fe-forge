@@ -253,6 +253,16 @@ export function abilitiesFor(abilities: readonly StatBoostAbility[], unitName: s
   return abilities.filter((ability) => !ability.characters || (key !== null && ability.characters.includes(key)));
 }
 
+export function abilityAvailableInClasses(
+  ability: StatBoostAbility,
+  classes: readonly UnitClass[],
+  classAbilities: readonly ClassAbility[],
+): boolean {
+  if (ability.characters) return true;
+  const definition = classAbilities.find((candidate) => candidate.name === ability.name);
+  return definition !== undefined && classes.some((unitClass) => unitClass.masterAbilities.includes(definition.id));
+}
+
 export function isLearned(ability: Pick<StatBoostAbility, 'learnedAt'>, level: number): boolean {
   return (ability.learnedAt ?? 0) <= level;
 }

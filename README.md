@@ -126,7 +126,7 @@ so displayed in-game totals can exceed those base caps. Projected probability
 distributions also stop at the base caps before bonuses are added.
 Growth Mapper keeps **Add levels**, **Exam / Reclass**, and **Seed RNG** visible
 while scrolling. The Timeline controls also stick below the main action bar,
-including the timeline selector, Projected Stats, Abilities, Inventory, and Battalion.
+including the timeline selector, Projected Stats, and the Stat Increase menu.
 **Add levels** opens a draft for the selected timeline with one level ready to mark.
 Choose a count from 1 to `99 - current level` to enter multiple level-ups together.
 Tap the stats that rose, then confirm the batch; Cancel, closing, or Escape discards
@@ -136,11 +136,23 @@ additions without opening the modal.
 The modal carries forward the timeline's current class and mount, including
 level-gated growth changes. Use Exam / Reclass between batches to change class.
 
-Growth Mapper's timeline toolbar includes a Battalion selector for the selected
-branch. Its bonuses share the +10 limit with equipment, mounts, abilities and
-Blaze. As in Projected Stats, battalions do not contribute while the class is
-mounted. The selection is inherited by new branches, saved with the map, and
-passed to the Projected Stats dialog.
+The **Stat Increase** menu groups Items (permanent stat boosters), Inventory,
+Abilities and Assign (battalion) in Growth Mapper and the Projected Stats build
+editor's actual-stat area. Build results show Stat boosters in Base view and
+the Stat Increase menu in In-game view. The battalion
+dialog has searchable type tabs and an All tab, ordered by rank; expand a battalion
+to see its stat bonuses. Growth Mapper offers class abilities from added or
+successfully examined classes; Projected Stats removes abilities without a
+corresponding planned class when the start is confirmed, after warning which
+abilities will be removed and allowing the plan to be edited instead. Mu can also select
+Warrior's Blood at level 20; it upgrades automatically at level 35.
+The build editor offers stat increases for base or in-game inputs and for
+theoretical projections without actual stats. In-game inputs have their
+selected bonuses subtracted for Base view; Base inputs receive those bonuses
+only in In-game view.
+Battalion bonuses share the +10 limit with equipment, mounts, abilities and Blaze,
+and apply only while the current class is unmounted. A selected battalion is
+inherited by new branches, saved with the map, and passed to Projected Stats.
 Character recruitment stats also include passive Blaze modifiers (for example,
 Cai's Mag+3) in the value and Modifier tooltip. Structured Blaze source bonuses
 take precedence over legacy fallback values and are applied once, not stacked.

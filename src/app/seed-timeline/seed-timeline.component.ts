@@ -4,6 +4,7 @@ import type { SectionView, SeedMapperPageComponent, StatTotal } from '../seed-ma
 import { SearchableSelectComponent } from '../searchable-select/searchable-select.component';
 import { skillIconUrl, useFallbackIcon } from '../icon-links';
 import { boosterDescription } from '../models/stat-boosters';
+import { StatIncreaseMenuComponent } from '../stat-increase-menu/stat-increase-menu.component';
 
 interface TimelineLevel {
   kind: 'level';
@@ -60,7 +61,7 @@ interface TimelineOption {
 
 @Component({
   selector: 'app-seed-timeline',
-  imports: [SearchableSelectComponent],
+  imports: [SearchableSelectComponent, StatIncreaseMenuComponent],
   templateUrl: './seed-timeline.component.html',
   styleUrl: './seed-timeline.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
