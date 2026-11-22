@@ -1,6 +1,6 @@
 import { afterRenderEffect, ChangeDetectionStrategy, Component, computed, effect, ElementRef, input, model, signal, untracked, viewChild } from '@angular/core';
 import { GrowthRates, Mount, mountBonusAt, mountGrowthAt, STAT_KEYS, STAT_LABELS, StatKey } from '../models/growth.models';
-import type { SectionView, SeedMapperPageComponent, StatTotal } from '../seed-mapper-page/seed-mapper-page.component';
+import type { SectionView, SeedMapperPageComponent } from '../seed-mapper-page/seed-mapper-page.component';
 import { SearchableSelectComponent } from '../searchable-select/searchable-select.component';
 import { skillIconUrl, useFallbackIcon } from '../icon-links';
 import { boosterDescription } from '../models/stat-boosters';
@@ -356,7 +356,4 @@ export class SeedTimelineComponent {
     }
   }
 
-  endTotals(view: SectionView): StatTotal[] {
-    return this.mapper().endStatsOf(view);
-  }
 }

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Item, ITEMS } from '../models/equipment';
+import { Item, ITEMS, itemVariants } from '../models/equipment';
 import { ItemCardComponent } from './item-card.component';
 
 describe('ItemCardComponent', () => {
@@ -193,6 +193,27 @@ describe('ItemCardComponent', () => {
     fixture.detectChanges();
     expect(host.querySelector('.equipment-name-text')!.textContent).toBe('Wooden Sword+1');
     expect(host.querySelector('select')).toBeNull();
+  });
+
+  it('displays and selects a mount charm as the final amulet upgrade', () => {
+    const { fixture, card, host } = open();
+    const base = ITEMS.find((item) => item.Name === 'Swift-Horse Amulet')!;
+    const charm = ITEMS.find((item) => item.Name === 'Swift-Horse Charm')!;
+    fixture.componentRef.setInput('item', base);
+    fixture.componentRef.setInput('variants', itemVariants(base, ITEMS));
+    fixture.componentRef.setInput('selectable', true);
+    fixture.detectChanges();
+    const select = host.querySelector<HTMLSelectElement>('.equipment-upgrade')!;
+    expect(Array.from(select.options).map((option) => option.textContent?.trim())).toEqual(['', '+1', '+2', '+3', 'Charm']);
+    const change = jasmine.createSpy('variantChange');
+    card.variantChange.subscribe(change);
+    select.value = charm.Name;
+    select.dispatchEvent(new Event('change'));
+    expect(change).toHaveBeenCalledWith(charm.Name);
+    fixture.componentRef.setInput('item', charm);
+    fixture.detectChanges();
+    expect(host.querySelector('.equipment-base-name')!.textContent).toBe('Swift-Horse');
+    expect(select.selectedOptions[0].textContent?.trim()).toBe('Charm');
   });
 
   it('keeps named Answerer forms unchanged on read-only cards', () => {

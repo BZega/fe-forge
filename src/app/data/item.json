@@ -12175,7 +12175,7 @@
     "Mt": "--",
     "Hit": "--",
     "Crit": "--",
-    "Curse": "2",
+    "Curse": "1",
     "Wt": "8",
     "Avo": "--",
     "Range": "--",
@@ -12190,7 +12190,7 @@
   },
   {
     "Name": "Jurah's Ice Mirror",
-    "Description": "A supreme arc coated in a tranquil frost. Unit takes half damage when attacked with a critical.",
+    "Description": "A Supreme Arc coated in a tranquil frost. Unit takes half damage when attacked with a critical.",
     "Durability": "",
     "EffectiveType": [],
     "Mt": "--",
@@ -12283,7 +12283,7 @@
   },
   {
     "Name": "Healing Staff",
-    "Description": "Grants Mag+3.",
+    "Description": "When healing an ally with magic, restores +10 HP",
     "Durability": "",
     "EffectiveType": [],
     "Mt": "--",
@@ -12314,7 +12314,7 @@
     "Mt": "--",
     "Hit": "--",
     "Crit": "--",
-    "Curse": "2",
+    "Curse": "1",
     "Wt": "8",
     "Avo": "--",
     "Range": "--",
@@ -12334,7 +12334,7 @@
   },
   {
     "Name": "Fortuna's Wand",
-    "Description": "A supreme arc that enhances the caster's power. Grants Rng+1 to healing magic.",
+    "Description": "A Supreme Arc that enhances the caster's power. Grants Rng+1 to healing magic.",
     "Durability": "",
     "EffectiveType": [],
     "Mt": "--",
@@ -12346,6 +12346,3054 @@
     "Range": "--",
     "WeaponType": "Staff",
     "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Charm Mask",
+    "Description": "Inflicts Hit-20 on foe during combat. Trigger % = Cha ÷ 2",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Mask",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Turmoil Mask",
+    "Description": "A mask imbued with dark power. If foe is Confused, multiplies unit's damage by 1.5 when attacking.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "1",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Mask",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Archer Ring",
+    "Description": "Grants Hit+5",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "5",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Hunter's Ring",
+    "Description": "Grants Crit+3",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "3",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Goddess Ring",
+    "Description": "Grants Lck+5",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Lck": 5
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Giant's Ring",
+    "Description": "Grants Bld+4",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "0",
+    "Avo": "-20",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Gale Ring",
+    "Description": "Grants Spd+3",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Spd": 3
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Poisonbane Gem",
+    "Description": "If foe is Poisoned, unit takes 80% damage when attacked.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Poisonhunt Gem",
+    "Description": "If foe is Poisoned, multiplies unit's damage by 1.3 when attacking.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "15",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Wander Gem",
+    "Description": "Unit cannot sufffer a follow-up during combat. Trigger % = 5.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Bolt Gem",
+    "Description": "Multiplies damage by 1.5 when attacking with a combat art. Trigger % = 10.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Conflagrant Gem",
+    "Description": "Grants Hit+20 when attacking with a combat art. Trigger % = 30.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Verdant Gem",
+    "Description": "When using a combat art, grants Avo+20 during combat. Trigger % = 30.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Victory Gem",
+    "Description": "After defeating a foe, restores a little HP to unit.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Sacred Gem",
+    "Description": "If unit makes a critical, unit recovers HP equal to a third of damage they deal.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Challenge Gem",
+    "Description": "If foe is equipped with the same weapon type, grants Atk+3 to unit during combat.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Scourge Gem",
+    "Description": "Unit makes a follow-up regardless of AS during combat. Trigger % = 5.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Nullwind Gem",
+    "Description": "If unit attacks first, unit cannot suffer a follow-up during combat. Trigger % = 10.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Miracle Gem",
+    "Description": "Unit takes no damage when attacked. Trigger % = 3.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Spirit Gem",
+    "Description": "Grants Avo+20 when attacked with a magical attack. Trigger % = 30.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Swordbreak Amulet",
+    "Description": "If foe uses a sword, grants Hit/Avo+15 to unit during combat.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Spearbreak Amulet",
+    "Description": "If foe uses a spear, grants Hit/Avo+15 to unit during combat.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Axebreak Amulet",
+    "Description": "If foe uses an axe, grants Hit/Avo+15 to unit during combat.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Bowbreak Amulet",
+    "Description": "If foe uses a bow, grants Hit/Avo+15 to unit during combat.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Fistbreak Amulet",
+    "Description": "If foe uses gauntlets, grants Hit/Avo+15 to unit during combat.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Sea-Spirit Charm",
+    "Description": "Inflicts Lck-5 on adjacent foes.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Haze Badge",
+    "Description": "When equipped with a sword or bow, if unit's attack hits, deals at least 5 damage.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Electron Agitator",
+    "Description": "A cord made using an ancient alloy. If unit's magic attack hits, inflicts Confusion on foe. Trigger % = 20.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Lashing Rapture",
+    "Description": "A tongue imbued with dark power. After defeating a foe, restores some HP to a unit.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "1",
+    "Wt": "8",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Poisonbone Chain",
+    "Description": "A chain imbued with dark power. If unit's magic attack hits, inflicts Poison on foe. Trigger % = 50.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "1",
+    "Wt": "8",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Cloth of Aurora",
+    "Description": "An Arc imbued with the power of the stars. Grants Res+5 to unit and Res+3 to adjacent allies.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Res": 5
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Kalla's Needle",
+    "Description": "An Arc kept hidden for a goddess's defense. Grants Atk+5 when making a follow-up.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Mars's Kneepads",
+    "Description": "An Arc crafted for the Bringer of War. Grants Atk+3, Crit+10 when attacking with a combat art.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": null,
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Swift-Horse Amulet",
+    "Description": "Grants Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      { 
+        "Dex": 1 
+      }
+    ],
+    "Skills": [
+      { 
+        "SkillType": "", 
+        "SkillRank": "--" 
+      }
+    ]
+  },
+  {
+    "Name": "Swift-Horse Amulet+1",
+    "Description": "Grants Dex+1, Def+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      { 
+        "Dex": 1, 
+        "Def": 1 
+      }
+    ],
+    "Skills": [
+      { 
+        "SkillType": "", 
+        "SkillRank": "--" 
+      }
+    ]
+  },
+  {
+    "Name": "Swift-Horse Amulet+2",
+    "Description": "Grants Dex+2, Def+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      { 
+        "Dex": 2, 
+        "Def": 1 
+      }
+    ],
+    "Skills": [
+      { 
+        "SkillType": "", 
+        "SkillRank": "--" 
+      }
+    ]
+  },
+  {
+    "Name": "Swift-Horse Amulet+3",
+    "Description": "Grants Dex+2, Spd+1, Def+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      { 
+        "Dex": 2, 
+        "Spd": 1, 
+        "Def": 1 
+      }
+    ],
+    "Skills": [
+      { 
+        "SkillType": "", 
+        "SkillRank": "--" 
+      }
+    ]
+  },
+  {
+    "Name": "Swift-Horse Charm",
+    "Description": "Grants Dex+3, Spd+1, Def+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      { 
+        "Dex": 3, 
+        "Spd": 1, 
+        "Def": 1 
+      }
+    ],
+    "Skills": [
+      { 
+        "SkillType": "", 
+        "SkillRank": "--" 
+      }
+    ]
+  },
+  {
+    "Name": "Red-Horse Amulet",
+    "Description": "Grants Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Horse Amulet+1",
+    "Description": "Grants Str+1, Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1,
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Horse Amulet+2",
+    "Description": "Grants Str+1, Dex+1, Def+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1,
+        "Dex": 1,
+        "Def": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Horse Amulet+3",
+    "Description": "Grants Str+2, Dex+1, Def+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2,
+        "Dex": 1,
+        "Def": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Horse Charm",
+    "Description": "Grants Str+2, Dex+1, Def+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2,
+        "Dex": 1,
+        "Def": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Horse Amulet",
+    "Description": "Grants Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Horse Amulet+1",
+    "Description": "Grants Dex+1, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Horse Amulet+2",
+    "Description": "Grants Str+1, Dex+1, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1,
+        "Dex": 1,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Horse Amulet+3",
+    "Description": "Grants Str+1, Dex+1, Spd+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1,
+        "Dex": 1,
+        "Spd": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Horse Charm",
+    "Description": "Grants Str+1, Dex+1, Spd+3.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1,
+        "Dex": 1,
+        "Spd": 3
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Monoceros Amulet",
+    "Description": "Grants Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Monoceros Amulet+1",
+    "Description": "Grants Dex+1, Lck+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1,
+        "Lck": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Monoceros Amulet+2",
+    "Description": "Grants Dex+1, Lck+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1,
+        "Lck": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Monoceros Amulet+3",
+    "Description": "Grants Dex+1, Spd+1, Lck+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1,
+        "Spd": 1,
+        "Lck": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Monoceros Charm",
+    "Description": "Grants Dex+1, Spd+1, Lck+3.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1,
+        "Spd": 1,
+        "Lck": 3
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Bird-Plume Amulet",
+    "Description": "Grants Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Bird-Plume Amulet+1",
+    "Description": "Grants Dex+1, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Bird-Plume Amulet+2",
+    "Description": "Grants Dex+2, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 2,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Bird-Plume Amulet+3",
+    "Description": "Grants Dex+2, Spd+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 2,
+        "Spd": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Bird-Plume Charm",
+    "Description": "Grants Dex+3, Spd+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 3,
+        "Spd": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "White-Plume Amulet",
+    "Description": "Grants Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "White-Plume Amulet+1",
+    "Description": "Grants Dex+1, Res+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1,
+        "Res": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "White-Plume Amulet+2",
+    "Description": "Grants Dex+1, Res+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1,
+        "Res": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "White-Plume Amulet+3",
+    "Description": "Grants Dex+1, Spd+1, Res+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1,
+        "Spd": 1,
+        "Res": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "White-Plume Charm",
+    "Description": "Grants Dex+1, Spd+1, Res+3.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1,
+        "Spd": 1,
+        "Res": 3
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Strong-Plume Amulet",
+    "Description": "Grants Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Strong-Plume Amulet+1",
+    "Description": "Grants Dex+1, Def+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1,
+        "Def": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Strong-Plume Amulet+2",
+    "Description": "Grants Dex+1, Def+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1,
+        "Def": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Strong-Plume Amulet+3",
+    "Description": "Grants Dex+1, Def+3.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1,
+        "Def": 3
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Strong-Plume Charm",
+    "Description": "Grants Str+1, Dex+1, Def+3.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1,
+        "Dex": 1,
+        "Def": 3
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Plume Amulet",
+    "Description": "Grants Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Plume Amulet+1",
+    "Description": "Grants Str+1, Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1,
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Plume Amulet+2",
+    "Description": "Grants Str+1, Dex+1, Def+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1,
+        "Dex": 1,
+        "Def": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Plume Amulet+3",
+    "Description": "Grants Str+2, Dex+1, Def+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2,
+        "Dex": 1,
+        "Def": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Plume Charm",
+    "Description": "Grants Str+3, Dex+1, Def+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 3,
+        "Dex": 1,
+        "Def": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Magic-Plume Amulet",
+    "Description": "Grants Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Magic-Plume Amulet+1",
+    "Description": "Grants Mag+1, Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Mag": 1,
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Magic-Plume Amulet+2",
+    "Description": "Grants Mag+2, Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Mag": 2,
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Magic-Plume Amulet+3",
+    "Description": "Grants Mag+2, Dex+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Mag": 2,
+        "Dex": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Magic-Plume Charm",
+    "Description": "Grants Mag+3, Dex+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Mag": 3,
+        "Dex": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Plume Amulet",
+    "Description": "Grants Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Plume Amulet+1",
+    "Description": "Grants Mag+1, Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Mag": 1,
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Plume Amulet+2",
+    "Description": "Grants Mag+2, Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Mag": 2,
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Plume Amulet+3",
+    "Description": "Grants Mag+2, Dex+1, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Mag": 2,
+        "Dex": 1,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Plume Charm",
+    "Description": "Grants Mag+2, Dex+1, Spd+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Mag": 2,
+        "Dex": 1,
+        "Spd": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Winged-Horse Amulet",
+    "Description": "Grants Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Winged-Horse Amulet+1",
+    "Description": "Grants Spd+1, Res+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Spd": 1,
+        "Res": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Winged-Horse Amulet+2",
+    "Description": "Grants Spd+2, Res+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Spd": 2,
+        "Res": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Winged-Horse Amulet+3",
+    "Description": "Grants Spd+2, Res+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Spd": 2,
+        "Res": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Winged-Horse Charm",
+    "Description": "Grants Spd+3, Res+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Spd": 3,
+        "Res": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Wing Amulet",
+    "Description": "Grants Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Wing Amulet+1",
+    "Description": "Grants Mag+1, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Mag": 1,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Wing Amulet+2",
+    "Description": "Grants Mag+2, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Mag": 2,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Wing Amulet+3",
+    "Description": "Grants Mag+2, Spd+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Mag": 2,
+        "Spd": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Wing Charm",
+    "Description": "Grants Mag+3, Spd+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Mag": 3,
+        "Spd": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Holy-Wing Amulet",
+    "Description": "Grants Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Holy-Wing Amulet+1",
+    "Description": "Grants Spd+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Spd": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Holy-Wing Amulet+2",
+    "Description": "Grants Dex+1, Spd+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1,
+        "Spd": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Holy-Wing Amulet+3",
+    "Description": "Grants Dex+1, Spd+3.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Dex": 1,
+        "Spd": 3
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Holy-Wing Charm",
+    "Description": "Grants Str+1, Dex+1, Spd+3.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1,
+        "Dex": 1,
+        "Spd": 3
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Wing Amulet",
+    "Description": "Grants Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Wing Amulet+1",
+    "Description": "Grants Str+1, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Wing Amulet+2",
+    "Description": "Grants Str+2, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Wing Amulet+3",
+    "Description": "Grants Str+2, Dex+1, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2,
+        "Dex": 1,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Wing Charm",
+    "Description": "Grants Str+2, Dex+1, Spd+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2,
+        "Dex": 1,
+        "Spd": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Dragonscale Amulet",
+    "Description": "Grants Str+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Dragonscale Amulet+1",
+    "Description": "Grants Str+1, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Dragonscale Amulet+2",
+    "Description": "Grants Str+1, Dex+1, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1,
+        "Dex": 1,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Dragonscale Amulet+3",
+    "Description": "Grants Str+2, Dex+1, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2,
+        "Dex": 1,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Dragonscale Charm",
+    "Description": "Grants Str+2, Dex+2, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2,
+        "Dex": 2,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Scale Amulet",
+    "Description": "Grants Str+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Scale Amulet+1",
+    "Description": "Grants Str+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Scale Amulet+2",
+    "Description": "Grants Str+2, Dex+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2,
+        "Dex": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Scale Amulet+3",
+    "Description": "Grants Str+2, Dex+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2,
+        "Dex": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Red-Scale Charm",
+    "Description": "Grants Str+3, Dex+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 3,
+        "Dex": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Scale Amulet",
+    "Description": "Grants Str+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Scale Amulet+1",
+    "Description": "Grants Str+1, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Scale Amulet+2",
+    "Description": "Grants Str+2, Spd+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2,
+        "Spd": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Scale Amulet+3",
+    "Description": "Grants Str+2, Spd+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2,
+        "Spd": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Black-Scale Charm",
+    "Description": "Grants Str+2, Spd+3.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2,
+        "Spd": 3
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Elephant-Hair Amulet",
+    "Description": "Grants Def+1.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "1",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Def": 1
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Elephant-Hair Amulet+1",
+    "Description": "Grants Def+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "2",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Def": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Elephant-Hair Amulet+2",
+    "Description": "Grants Str+1, Def+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "3",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 1,
+        "Def": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Elephant-Hair Amulet+3",
+    "Description": "Grants Str+2, Def+2.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "4",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2,
+        "Def": 2
+      }
+    ],
+    "Skills": [
+      {
+        "SkillType": "",
+        "SkillRank": "--"
+      }
+    ]
+  },
+  {
+    "Name": "Elephant-Hair Charm",
+    "Description": "Grants Str+2, Def+3.",
+    "Durability": "",
+    "EffectiveType": [],
+    "Mt": "--",
+    "Hit": "--",
+    "Crit": "--",
+    "Curse": "--",
+    "Wt": "5",
+    "Avo": "--",
+    "Range": "--",
+    "WeaponType": "Accessory",
+    "BonusStats": [
+      {
+        "Str": 2,
+        "Def": 3
+      }
+    ],
     "Skills": [
       {
         "SkillType": "",

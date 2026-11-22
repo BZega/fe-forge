@@ -28,8 +28,16 @@ const PrototypeI_FORMS = ['Prototype I', 'Prototype I: |', 'Prototype I: ||', 'P
 const PrototypeVII_FORMS = ['Prototype VII', 'Prototype VII: |', 'Prototype VII: ||', 'Prototype VII: |||'];
 const PrototypeV_FORMS = ['Prototype V', 'Prototype V: |', 'Prototype V: ||', 'Prototype V: |||'];
 const PrototypeXI_FORMS = ['Prototype XI', 'Prototype XI: |', 'Prototype XI: ||', 'Prototype XI: |||'];
+const MOUNT_CHARM_PREFIXES = new Set([
+  'Swift-Horse', 'Red-Horse', 'Black-Horse', 'Monoceros', 'Bird-Plume', 'White-Plume',
+  'Strong-Plume', 'Red-Plume', 'Magic-Plume', 'Black-Plume', 'Winged-Horse', 'Black-Wing',
+  'Holy-Wing', 'Red-Wing', 'Dragonscale', 'Red-Scale', 'Black-Scale', 'Elephant-Hair',
+]);
 
 export function itemBaseName(name: string): string {
+  if (name.endsWith(' Charm') && MOUNT_CHARM_PREFIXES.has(name.slice(0, -' Charm'.length))) {
+    return `${name.slice(0, -' Charm'.length)} Amulet`;
+  }
   return ANSWERER_FORMS.includes(name) ? 'Answerer' : 
          PrototypeI_FORMS.includes(name) ? 'Prototype I' : 
          PrototypeVII_FORMS.includes(name) ? 'Prototype VII' : 
@@ -43,6 +51,7 @@ export function itemVariants(item: Item, catalog: readonly Item[]): Item[] {
     itemBaseName(candidate.Name) === base && candidate.WeaponType === item.WeaponType,
   ).sort((a, b) => {
     const level = (name: string) => name === base ? -1
+      : name.endsWith(' Charm') && itemBaseName(name) === base ? 4
       : ANSWERER_FORMS.includes(name) ? 10 + ANSWERER_FORMS.indexOf(name) : Number(name.slice(-1));
     return level(a.Name) - level(b.Name);
   });

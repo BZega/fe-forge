@@ -15,7 +15,7 @@
               (error)="useFallbackIcon($event, fallbackIcon(key))" />
           }
           }
-          <span class="equipment-name-text"><span class="equipment-base-name">{{ canUpgrade() ? baseName() : item.Name }}</span>@if (canUpgrade()) {<span class="equipment-upgrade-wrap" [class.equipment-upgrade-wrap--base]="item.Name === baseName()">
+          <span class="equipment-name-text"><span class="equipment-base-name">{{ canUpgrade() ? displayBaseName() : item.Name }}</span>@if (canUpgrade()) {<span class="equipment-upgrade-wrap" [class.equipment-upgrade-wrap--base]="item.Name === baseName()">
             <select #upgrade class="equipment-upgrade" [attr.aria-label]="'Upgrade ' + baseName()"
               [style.width]="variantWidth()" [style.margin-left]="namedVariant() ? '0.25em' : null"
               [value]="item.Name" [disabled]="disabled()"

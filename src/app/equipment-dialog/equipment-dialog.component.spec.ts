@@ -53,6 +53,23 @@ describe('EquipmentDialogComponent', () => {
     expect(picker.filtered().flatMap((group) => group.items).map((item) => item.name)).toEqual(['Item 6']);
   });
 
+  it('restores an equipped mount charm and switches it within the amulet family', () => {
+    const fixture = TestBed.createComponent(EquipmentDialogComponent);
+    fixture.componentRef.setInput('items', ITEMS.filter((item) => item.Name.startsWith('Swift-Horse ')));
+    fixture.componentRef.setInput('selected', ['Swift-Horse Charm']);
+    fixture.detectChanges();
+    const picker = fixture.debugElement.query(By.directive(PickerDialogComponent)).componentInstance as PickerDialogComponent;
+    expect(picker.picked()).toEqual(['Swift-Horse Charm']);
+    expect(picker.groups().flatMap((group) => group.items).map((item) => item.name)).toEqual(['Swift-Horse Charm']);
+    const select = (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>('.equipment-upgrade')!;
+    expect(select.value).toBe('Swift-Horse Charm');
+    select.value = 'Swift-Horse Amulet+3';
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(picker.picked()).toEqual(['Swift-Horse Amulet+3']);
+    expect(select.value).toBe('Swift-Horse Amulet+3');
+  });
+
   it('separates weapon types into tabs and groups equipment on its own tab', () => {
     const { fixture, picker } = open();
     const host = fixture.nativeElement as HTMLElement;

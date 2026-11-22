@@ -38,6 +38,8 @@ export class ItemCardComponent {
   readonly highlightUpgrades = input(false);
   readonly variantChange = output<string>();
   readonly baseName = computed(() => itemBaseName(this.item().Name));
+  readonly displayBaseName = computed(() => this.variantLabel(this.item()) === 'Charm'
+    ? this.item().Name.slice(0, -' Charm'.length) : this.baseName());
   readonly canUpgrade = computed(() => (this.selectable() || this.showVariants()) && this.variants().length > 1);
   readonly namedVariant = computed(() => this.variantLabel(this.item()).length > 0 && !this.variantLabel(this.item()).startsWith('+'));
   readonly variantWidth = computed(() => this.namedVariant() ? `${this.variantLabel(this.item()).length + 1}ch` : null);
@@ -89,6 +91,7 @@ export class ItemCardComponent {
   }));
 
   variantLabel(item: Item): string {
+    if (item.Name.endsWith(' Charm') && itemBaseName(item.Name) !== item.Name) return 'Charm';
     return item.Name.slice(itemBaseName(item.Name).length).trim();
   }
 

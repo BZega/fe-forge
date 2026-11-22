@@ -20,6 +20,23 @@ describe('equipment', () => {
       .toEqual(['Wooden Sword', 'Wooden Sword+3', 'Wooden Sword+9']);
   });
 
+  it('groups each mount charm after its amulet upgrades from either starting item', () => {
+    const prefixes = [
+      'Swift-Horse', 'Red-Horse', 'Black-Horse', 'Monoceros', 'Bird-Plume', 'White-Plume',
+      'Strong-Plume', 'Red-Plume', 'Magic-Plume', 'Black-Plume', 'Winged-Horse', 'Black-Wing',
+      'Holy-Wing', 'Red-Wing', 'Dragonscale', 'Red-Scale', 'Black-Scale', 'Elephant-Hair',
+    ];
+    for (const prefix of prefixes) {
+      const expected = [`${prefix} Amulet`, ...[1, 2, 3].map((level) => `${prefix} Amulet+${level}`), `${prefix} Charm`];
+      for (const name of [expected[0], expected[4]]) {
+        const item = ITEMS.find((candidate) => candidate.Name === name)!;
+        expect(itemVariants(item, ITEMS).map((variant) => variant.Name)).withContext(name).toEqual(expected);
+      }
+    }
+    const unrelated = ITEMS.find((item) => item.Name === 'Sea-Spirit Charm')!;
+    expect(itemVariants(unrelated, ITEMS).map((item) => item.Name)).toEqual(['Sea-Spirit Charm']);
+  });
+
   describe('sword catalog', () => {
     const families: [string, number[]][] = [
       ['Bronze Sword', [4, 6, 8, 18, 20, 22]],

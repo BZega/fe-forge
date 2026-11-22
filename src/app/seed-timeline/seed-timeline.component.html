@@ -179,7 +179,7 @@
 
       <div class="tgrid-caption">Lv {{ mapperRef.endLevelOf(focus) }} stats</div>
       <div class="tgrid-label">Stats</div>
-      @for (total of endTotals(focus); track $index) {
+      @for (total of mapperRef.endStatsOf(focus); track $index) {
         <div class="tgrid-total" [title]="mapperRef.statTotalTitle(total)"><span [class.stat-bonus]="mapperRef.statHasBonus(total)">{{ total.value ?? '—' }}</span></div>
       }
       <div class="tgrid-corner"></div>
