@@ -112,9 +112,17 @@ export class AppComponent {
       let frame = 0;
       let settle = 0;
       let early = 0;
+      let viewportHeight = viewport.height;
       const schedule = () => {
         cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(() => this.updateKeyboardInset(viewport));
+        frame = requestAnimationFrame(() => {
+          const resized = viewport.height !== viewportHeight;
+          viewportHeight = viewport.height;
+          this.updateKeyboardInset(viewport);
+          if (resized) {
+            this.placeFocusedField(viewport, false);
+          }
+        });
         clearTimeout(settle);
         settle = window.setTimeout(() => this.placeFocusedField(viewport, false), 200);
       };
@@ -320,7 +328,8 @@ export class AppComponent {
       if (scroller.matches('main')) {
         this.setScrollExtra(this.cssPixels('--scroll-extra') + shortfall);
       } else {
-        scroller.style.setProperty('--keyboard-dialog-extra', `${Math.ceil(shortfall)}px`);
+        const extra = parseFloat(scroller.style.getPropertyValue('--keyboard-dialog-extra')) || 0;
+        scroller.style.setProperty('--keyboard-dialog-extra', `${Math.ceil(extra + shortfall)}px`);
       }
     }
 

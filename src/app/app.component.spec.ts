@@ -548,6 +548,9 @@ describe('AppComponent mobile field visibility', () => {
       expect(modal.style.getPropertyValue('--keyboard-dialog-extra')).toBe('544px');
       expect(modalScroll).toHaveBeenCalledOnceWith({ top: 544, behavior: 'auto' });
 
+      fixture.componentInstance['scrollBy'](modal, 100, 'smooth');
+      expect(modal.style.getPropertyValue('--keyboard-dialog-extra')).toBe('644px');
+
       input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
       expect(modal.style.getPropertyValue('--keyboard-dialog-extra')).toBe('');
     });
