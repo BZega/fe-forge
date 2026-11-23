@@ -243,6 +243,44 @@ describe('SeedTimelineComponent', () => {
       button.textContent!.includes(label),
     );
 
+  it('guarantees 100%+ growth while respecting remaining base-stat room', () => {
+    const { fixture, page } = render();
+    const timeline = fixture.debugElement.query(By.directive(SeedTimelineComponent)).componentInstance as SeedTimelineComponent;
+    const growth = { ...ZERO_GROWTH, str: 110 };
+    spyOn(page, 'rowGrowth').and.returnValue(growth);
+    const row = () => timeline.asLevel(timeline.items().find((item) => item.kind === 'level')!)!;
+
+    state.setStartStat('str', 90);
+    fixture.detectChanges();
+    expect(row().marks.str).toBe(1);
+    expect(page.isStatLockedAt(page.sectionViews()[0], 0, 'str')).toBeFalse();
+    page.setSharedMark(page.sectionViews()[0], 0, 'str', 2);
+    fixture.detectChanges();
+    expect(row().marks.str).toBe(2);
+
+    state.setStartStat('str', 98);
+    fixture.detectChanges();
+    expect(row().marks.str).toBe(1);
+    expect(page.isStatLockedAt(page.sectionViews()[0], 0, 'str')).toBeTrue();
+
+    state.setStartStat('str', 99);
+    fixture.detectChanges();
+    expect(row().marks.str).toBe(0);
+    expect(page.isStatCappedAt(page.sectionViews()[0], 0, 'str')).toBeTrue();
+  });
+
+  it('locks an exact 100% growth stat at one', () => {
+    const { fixture, page } = render();
+    const timeline = fixture.debugElement.query(By.directive(SeedTimelineComponent)).componentInstance as SeedTimelineComponent;
+    spyOn(page, 'rowGrowth').and.returnValue({ ...ZERO_GROWTH, str: 100 });
+    state.setStartStat('str', 90);
+    fixture.detectChanges();
+
+    const row = timeline.asLevel(timeline.items().find((item) => item.kind === 'level')!)!;
+    expect(row.marks.str).toBe(1);
+    expect(page.isStatLockedAt(page.sectionViews()[0], 0, 'str')).toBeTrue();
+  });
+
   it('only offers the timeline view, without a section view toggle', () => {
     const { host } = render();
 
@@ -798,7 +836,7 @@ describe('SeedTimelineComponent', () => {
     expect(totals[0].value).not.toBeNull();
     expect(rows[0]).toBe(`HP ${totals[0].value}`);
     expect(rows[1]).toBe(`Lv ${page.endLevelOf(view)}`);
-    expect(rows[2]).toBe(`Mov ${4 + noble.bonusStats.mov} Bld ${Math.max(1, Math.floor(strength / 5))}`);
+    expect(rows[2]).toBe(`Mov ${5 + noble.bonusStats.mov} Bld ${Math.max(1, Math.floor(strength / 5))}`);
     expect(rows[3]).toContain('Battalion');
 
     const stats = Array.from(host.querySelectorAll<HTMLElement>('.summary-stats .summary-stat-grid > div'));
@@ -1211,9 +1249,6 @@ describe('SeedTimelineComponent', () => {
     fixture.detectChanges();
     const totals = page.endStatsOf(page.sectionViews()[0]);
     const cells = host.querySelectorAll<HTMLElement>('.summary-stats .summary-stat-grid > div');
-    const bottom = host.querySelectorAll<HTMLElement>('.tgrid-total');
-    expect(bottom.length).toBe(STAT_KEYS.length);
-    totals.forEach((total, index) => expect(bottom[index].textContent!.trim()).toBe(String(total.value ?? '—')));
     const index = STAT_KEYS.indexOf('spd') - 1;
     const speed = cells[index].querySelector<HTMLElement>('strong')!;
     expect(speed.classList.contains('stat-bonus')).toBeTrue();
@@ -1226,5 +1261,13 @@ describe('SeedTimelineComponent', () => {
     expect(speed.getBoundingClientRect().width).toBe(width);
     expect(host.querySelector('.summary-hp .stat-bonus')).toBeNull();
     expect(totals[index + 1].value).toBeGreaterThanOrEqual(30);
+
+    page.betaView.set(false);
+    fixture.detectChanges();
+    const bottom = host.querySelectorAll<HTMLElement>('.tgrid-total');
+    expect(bottom.length).toBe(STAT_KEYS.length);
+    totals.forEach((total, statIndex) =>
+      expect(bottom[statIndex].textContent!.trim()).toBe(String(total.value ?? '—')),
+    );
   });
 });

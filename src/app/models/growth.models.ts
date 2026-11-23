@@ -231,12 +231,14 @@ export interface ClassAbility {
   isCombatArt: boolean;
 }
 
+export type AbilityBonusStatKey = StatKey | 'mov' | 'bld';
+
 export interface StatBoostAbility {
   name: string;
   description: string;
-  boosts: Partial<Record<StatKey, number>>;
+  boosts: Partial<Record<AbilityBonusStatKey, number>>;
   characters?: string[];
-  weaponBoosts?: Partial<Record<WeaponKey, Partial<Record<StatKey, number>>>>;
+  weaponBoosts?: Partial<Record<WeaponKey, Partial<Record<AbilityBonusStatKey, number>>>>;
   upgradeOf?: string;
   learnedAt?: number;
 }

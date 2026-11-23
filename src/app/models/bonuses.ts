@@ -3,6 +3,7 @@ import { RECRUITMENT_FILES } from '../data/recruitment';
 import statBoostData from '../data/stat-boost-abilities.json';
 import { equippedItems, equipmentWeapon, itemBoosts } from './equipment';
 import {
+  AbilityBonusStatKey,
   abilityBoosts,
   abilityFamily,
   abilityPickerGroups,
@@ -60,7 +61,7 @@ export interface PersonalBonus {
   name: string;
   description: string;
   fromLevel: number;
-  boosts: StatBoosts;
+  boosts: Partial<Record<AbilityBonusStatKey, number>>;
   weaponBoosts?: StatBoostAbility['weaponBoosts'];
 }
 
@@ -71,7 +72,21 @@ const PERSONAL_BONUSES: Readonly<Record<string, readonly PersonalBonus[]>> = {
 };
 
 export function personalBonusesAt(unitName: string, level: number): PersonalBonus[] {
-  return (PERSONAL_BONUSES[characterKey(unitName)] ?? []).filter((bonus) => bonus.fromLevel <= level);
+  const key = characterKey(unitName);
+  const configured = (PERSONAL_BONUSES[key] ?? []).filter((bonus) => bonus.fromLevel <= level);
+  const recruitment = (RECRUITMENT_FILES as { UnitId: string; PersonalAbility?: { Name: string; Description: string } | null }[])
+    .find((file) => file.UnitId === key)?.PersonalAbility;
+  if (!recruitment) return configured;
+
+  const boosts: Partial<Record<AbilityBonusStatKey, number>> = {};
+  for (const match of recruitment.Description.matchAll(/\b(Mov|Bld)\+(\d+)/gi)) {
+    const stat = match[1].toLowerCase() as 'mov' | 'bld';
+    boosts[stat] = (boosts[stat] ?? 0) + Number(match[2]);
+  }
+
+  return Object.keys(boosts).length > 0 && !configured.some((bonus) => bonus.name === recruitment.Name)
+    ? [...configured, { name: recruitment.Name, description: recruitment.Description, fromLevel: 1, boosts }]
+    : configured;
 }
 
 export interface InGameGear {

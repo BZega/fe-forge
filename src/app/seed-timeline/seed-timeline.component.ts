@@ -208,6 +208,12 @@ export class SeedTimelineComponent {
     const mountGrowth = mountGrowthAt(mount, bondLevel);
     const mountBonus = mountBonusAt(mount, bondLevel);
 
+    for (const stat of this.statKeys) {
+      const room = mapper.statRoomAt(view, rowIndex, stat);
+      if (cells.marks[stat] > room) cells.marks[stat] = room;
+      if (room === 0) cells.auto[stat] = false;
+    }
+
     return {
       kind: 'level',
       key: `level-${view.section.id}-${row.id}`,
@@ -323,12 +329,12 @@ export class SeedTimelineComponent {
   }
 
   toggle(item: TimelineLevel, stat: StatKey): void {
-    if (!item.editable) {
-      return;
-    }
+    if (!item.editable || this.mapper().isStatLockedAt(item.view, item.rowIndex, stat)) return;
 
-    const row = item.view.section.rows[item.rowIndex];
-    this.mapper().setSharedMark(item.view, item.rowIndex, stat, !(row.marks[stat] > 0));
+    const growth = this.mapper().rowGrowth(item.view, item.rowIndex)?.[stat] ?? 0;
+    const shown = item.marks[stat];
+    const value = growth > 100 ? (shown >= 2 ? 1 : 2) : (shown > 0 ? 0 : 1);
+    this.mapper().setSharedMark(item.view, item.rowIndex, stat, value);
   }
 
   mountIcon(item: TimelineLevel): string {

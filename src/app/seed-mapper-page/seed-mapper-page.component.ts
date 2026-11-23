@@ -10,7 +10,7 @@ import { ProjectionActual } from '../projection-start-dialog/projection-start-di
 import { BASE_MOVE, buildFromStrength, classLevelGate, levelUpGrowth, RecruitmentChapter } from '../models/recruitment.models';
 import { Battalion, BATTALION_TYPE_ORDER, CLASS_LEVEL_CONFIGS, MAX_BASE_STATS } from '../models/growth.models';
 import { isMountedClass } from '../models/bonuses';
-import { abilitiesFor, abilityBoosts, baseStatsOf, bondLevelOf, characterKey, ClassAbility, classLabel, CLASS_RANK_ORDER, ClassRank, DEFAULT_MOUNT_BOND_LEVEL, GrowthRates, MAX_EQUIPPED_ABILITIES, Mount, MountBondLevel, mountBonusAt, mountGrowthAt, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, sumGrowth, toGrowth, Unit, UnitClass, WeaponKey, ZERO_GROWTH } from '../models/growth.models';
+import { AbilityBonusStatKey, abilitiesFor, abilityBoosts, baseStatsOf, bondLevelOf, characterKey, ClassAbility, classLabel, CLASS_RANK_ORDER, ClassRank, DEFAULT_MOUNT_BOND_LEVEL, GrowthRates, MAX_EQUIPPED_ABILITIES, Mount, MountBondLevel, mountBonusAt, mountGrowthAt, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, sumGrowth, toGrowth, Unit, UnitClass, WeaponKey, ZERO_GROWTH } from '../models/growth.models';
 import { abilitiesAt, abilityAt, abilityLock, blazeBonusOf, MAX_EXTRA_BONUS, personalBonusesAt, statAbilityPickerGroups, usesWeapon } from '../models/bonuses';
 import { estimateRoll, MAX_UNRELIABLE_GAINS, MIN_READINGS_TO_FILL, RollBounds, rollBounds, RollEstimate, RollObservation, UNKNOWN_ROLL } from '../models/seed-roll';
 import { CURRENT_SAVE_VERSION, migrateSave, newSaveId, SeedSave } from '../models/seed-save';
@@ -68,6 +68,17 @@ export interface EffectiveRow {
 
 interface TaggedObservation extends RollObservation {
   examOf: number | null;
+}
+
+export interface LevelUpTotal {
+  key: StatKey;
+  label: string;
+  value: number;
+  levelUps: number;
+  boosters: number;
+  abilities: number;
+  title: string;
+  boosted: boolean;
 }
 
 export interface StatTotal {
@@ -593,9 +604,33 @@ export class SeedMapperPageComponent {
     }));
   }
 
-  private summaryBonus(boosts: GrowthRates): string {
-    return this.statKeys.filter((stat) => boosts[stat] !== 0)
-      .map((stat) => `${this.statLabels[stat]} ${boosts[stat] > 0 ? '+' : ''}${boosts[stat]}`).join(', ');
+  private summaryBonus(boosts: Partial<Record<AbilityBonusStatKey, number>>): string {
+    const keys: AbilityBonusStatKey[] = [...this.statKeys, 'mov', 'bld'];
+    const labels: Record<AbilityBonusStatKey, string> = { ...this.statLabels, mov: 'Mov', bld: 'Bld' };
+    return keys.filter((stat) => (boosts[stat] ?? 0) !== 0)
+      .map((stat) => `${labels[stat]} ${(boosts[stat] ?? 0) > 0 ? '+' : ''}${boosts[stat]}`).join(', ');
+  }
+
+  private summaryAbilityBoosts(view: SectionView, ability: StatBoostAbility): Partial<Record<AbilityBonusStatKey, number>> {
+    const current = abilityAt(ability, this.endLevelOf(view));
+    if (!current) return {};
+    const weapon = equipmentWeapon(view.section.equipment);
+    const regular = abilityBoosts([current], weapon);
+    return {
+      ...current.boosts,
+      ...regular,
+      ...(weapon ? current.weaponBoosts?.[weapon] ?? {} : {}),
+    };
+  }
+
+  private summaryMovementBonus(view: SectionView, stat: 'mov' | 'bld'): number {
+    const equipped = this.equippedAbilities(view).reduce(
+      (sum, ability) => sum + (this.summaryAbilityBoosts(view, ability)[stat] ?? 0), 0,
+    );
+    const personal = personalBonusesAt(this.unitName(), this.endLevelOf(view)).reduce(
+      (sum, ability) => sum + (ability.boosts[stat] ?? 0), 0,
+    );
+    return equipped + personal;
   }
 
   summaryAbilities(view: SectionView): { name: string; detail: string; inactive: boolean; passive: boolean }[] {
@@ -608,11 +643,11 @@ export class SeedMapperPageComponent {
       const missing = this.missingClassesFor(selected, view.section.id);
       if (missing.length) return [{ name, detail: 'Requires an available class', inactive: true, passive: false }];
       if (!current) return [{ name, detail: `Available at Lv ${selected.learnedAt}`, inactive: true, passive: false }];
-      const detail = this.summaryBonus(abilityBoosts([current], weapon));
+      const detail = this.summaryBonus(this.summaryAbilityBoosts(view, current));
       return [{ name: current.name, detail: detail || 'No bonus with equipped weapon', inactive: !detail, passive: false }];
     });
     const personal = personalBonusesAt(this.unitName(), level).map((bonus) => {
-      const detail = this.summaryBonus(abilityBoosts([bonus], weapon));
+      const detail = this.summaryBonus({ ...bonus.boosts, ...abilityBoosts([bonus], weapon) });
       return { name: bonus.name, detail: detail || 'No bonus with equipped weapon', inactive: !detail, passive: true };
     });
     const blaze = this.summaryBonus(blazeBonusOf(this.unitName()));
@@ -629,15 +664,18 @@ export class SeedMapperPageComponent {
     const { mount, level } = this.rowMount(view, lastIndex);
     const battalion = this.battalionOf(view);
     const battalionStatus = this.summaryBattalionStatus(view);
+    const movAbility = this.summaryMovementBonus(view, 'mov');
+    const bldAbility = this.summaryMovementBonus(view, 'bld');
+    const movBooster = boosterUsage(this.seedMap().sections, view.section).mov ?? 0;
 
     return {
       className: className ?? 'No class',
       classIcon: (icons.find((icon) => icon.label === unit?.gender) ?? icons[0])?.src ?? null,
       portrait: unit ? portraitUrl(unit.name) : null,
       unitName: unit?.name ?? null,
-      mov: unitClass ? BASE_MOVE + unitClass.bonusStats.mov : null,
-      movTitle: statBreakdown(unitClass ? BASE_MOVE : '—', unitClass?.bonusStats.mov ?? 0),
-      bld: strength === null ? null : buildFromStrength(strength),
+      mov: unitClass ? BASE_MOVE + unitClass.bonusStats.mov + movBooster + movAbility : null,
+      movTitle: `${statBreakdown(unitClass ? BASE_MOVE : '—', unitClass?.bonusStats.mov ?? 0, movBooster + movAbility)}; ${movBooster} from stat boosters; ${movAbility} from abilities`,
+      bld: strength === null ? null : buildFromStrength(strength) + bldAbility,
       companion: unitClass && isMountedClass(unitClass.name)
         ? {
             label: 'Mount',
@@ -999,13 +1037,14 @@ export class SeedMapperPageComponent {
     const auto = {} as Record<StatKey, boolean>;
 
     this.statKeys.forEach((stat, statIndex) => {
+      const rate = growth?.[stat] ?? null;
       const ceiling = ceilings?.[statIndex] ?? null;
       const known =
-        growth !== null && row.marks[stat] === 0 && ceiling !== null && growth[stat] >= ceiling;
+        rate !== null && row.marks[stat] === 0 && ceiling !== null && rate >= ceiling;
 
       auto[stat] = known;
 
-      if (known) {
+      if (known || (rate !== null && rate >= 100 && row.marks[stat] === 0)) {
         marks[stat] = 1;
       }
     });
@@ -1271,6 +1310,56 @@ export class SeedMapperPageComponent {
       view.section,
       this.startLevelOf(view),
     );
+  }
+
+  statRoomAt(view: SectionView, rowIndex: number, stat: StatKey): number {
+    const start = this.seedMap().startStats[stat];
+    if (start === null) return MAX_BASE_STATS[stat];
+    const progress = rowIndex > 0
+      ? this.progress().get(view.section.id)?.after[rowIndex - 1] ?? this.sectionStart(view)
+      : this.sectionStart(view);
+    const base = start - (this.startingClass()?.bonusStats[stat] ?? 0) + progress.gains[stat];
+    return Math.max(0, MAX_BASE_STATS[stat] - base);
+  }
+
+  isStatCappedAt(view: SectionView, rowIndex: number, stat: StatKey): boolean {
+    return this.statRoomAt(view, rowIndex, stat) === 0;
+  }
+
+  isStatLockedAt(view: SectionView, rowIndex: number, stat: StatKey): boolean {
+    const growth = this.rowGrowth(view, rowIndex)?.[stat] ?? 0;
+    const room = this.statRoomAt(view, rowIndex, stat);
+    return room === 0 || growth === 100 || (growth > 100 && room === 1);
+  }
+
+  levelUpTotals(view: SectionView): LevelUpTotal[] {
+    const levelUps = { ...ZERO_GROWTH };
+
+    for (const { part, until } of this.pathTo(view)) {
+      for (let index = 0; index <= until && index < part.section.rows.length; index++) {
+        const { marks } = this.effectiveRow(this.rowGrowth(part, index), part.section.rows[index], this.slotOf(part, index));
+        for (const stat of this.statKeys) {
+          levelUps[stat] += Math.min(marks[stat], this.statRoomAt(part, index, stat));
+        }
+      }
+    }
+
+    const usedBoosters = boosterUsage(this.seedMap().sections, view.section);
+    const boosterAmounts = boosterStats(usedBoosters);
+
+    return this.statKeys.map((stat) => {
+      const booster = boosterAmounts[stat];
+      return {
+        key: stat,
+        label: this.statLabels[stat],
+        value: levelUps[stat] + booster,
+        levelUps: levelUps[stat],
+        boosters: booster,
+        abilities: 0,
+        title: `Level-up: ${levelUps[stat]}; Stat booster: ${booster}`,
+        boosted: booster > 0,
+      };
+    });
   }
 
   endStatsOf(view: SectionView, comparator: SeedComparator | null = null): StatTotal[] {
@@ -1744,12 +1833,13 @@ export class SeedMapperPageComponent {
     return this.rowOwners().owners.get(this.growthKey(view, rowIndex)) ?? { view, rowIndex };
   }
 
-  setSharedMark(view: SectionView, rowIndex: number, stat: StatKey, risen: boolean): void {
+  setSharedMark(view: SectionView, rowIndex: number, stat: StatKey, risen: boolean | number): void {
     const targets = this.rowOwners().sharers.get(this.growthKey(view, rowIndex)) ?? [
       { sectionId: view.section.id, rowId: view.section.rows[rowIndex].id },
     ];
+    const value = typeof risen === 'number' ? risen : risen ? 1 : 0;
 
-    this.state.setMarks(targets, stat, risen ? 1 : 0);
+    this.state.setMarks(targets, stat, value);
   }
 
   private openExam(view: SectionView, rowIndex: number, inline: boolean): void {

@@ -138,9 +138,9 @@
               class="cell"
               [class.cell--on]="level.marks[stat] > 0"
               [class.cell--auto]="level.auto[stat]"
-              [class.cell--locked]="!level.editable"
-              [disabled]="!level.editable"
-              [title]="level.source ?? ''"
+              [class.cell--locked]="!level.editable || mapperRef.isStatLockedAt(level.view, level.rowIndex, stat)"
+              [disabled]="!level.editable || mapperRef.isStatLockedAt(level.view, level.rowIndex, stat)"
+              [title]="mapperRef.isStatCappedAt(level.view, level.rowIndex, stat) ? 'Base stat cap reached' : mapperRef.statRoomAt(level.view, level.rowIndex, stat) === 1 && (mapperRef.rowGrowth(level.view, level.rowIndex)?.[stat] ?? 0) > 100 ? 'Only one point remains before the base stat cap' : mapperRef.rowGrowth(level.view, level.rowIndex)?.[stat] === 100 ? '100% growth guarantees +1' : level.source ?? ''"
               [attr.aria-label]="statLabels[stat] + ' at Lv ' + level.level"
               (click)="toggle(level, stat)"
             >
@@ -164,12 +164,23 @@
         }
       }
 
-      <div class="tgrid-caption">Lv {{ mapperRef.endLevelOf(focus) }} stats</div>
-      <div class="tgrid-label">Stats</div>
-      @for (total of mapperRef.endStatsOf(focus); track $index) {
-        <div class="tgrid-total" [title]="mapperRef.statTotalTitle(total)"><span [class.stat-bonus]="mapperRef.statHasBonus(total)">{{ total.value ?? '—' }}</span></div>
+      @if (mapperRef.betaView()) {
+        <div class="tgrid-caption">Total Level-Up Stats</div>
+        <div class="tgrid-label">Stats</div>
+        @for (total of mapperRef.levelUpTotals(focus); track total.key) {
+          <div class="tgrid-total" [title]="total.title">
+            <span [class.stat-bonus]="total.boosted">{{ total.value }}</span>
+          </div>
+        }
+        <div class="tgrid-corner"></div>
+      } @else {
+        <div class="tgrid-caption">Lv {{ mapperRef.endLevelOf(focus) }} stats</div>
+        <div class="tgrid-label">Stats</div>
+        @for (total of mapperRef.endStatsOf(focus); track $index) {
+          <div class="tgrid-total" [title]="mapperRef.statTotalTitle(total)"><span [class.stat-bonus]="mapperRef.statHasBonus(total)">{{ total.value ?? '—' }}</span></div>
+        }
+        <div class="tgrid-corner"></div>
       }
-      <div class="tgrid-corner"></div>
     </div>
 
     <footer class="timeline-footer">
