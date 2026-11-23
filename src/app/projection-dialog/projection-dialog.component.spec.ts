@@ -255,13 +255,13 @@ describe('ProjectionDialogComponent', () => {
     expect(host.querySelector('input[aria-label="Reclass to"]')).toBeNull();
   });
 
-  it("doesn't open the on-screen keyboard for the class pickers", () => {
+  it('opens the on-screen keyboard on the first tap for class pickers', () => {
     const { plan, fixture, host } = open('Cai');
     plan.addClass();
     fixture.detectChanges();
 
     for (const label of ['Starting class', 'Reclass to']) {
-      expect(host.querySelector(`input[aria-label="${label}"]`)!.getAttribute('inputmode')).toBe('none');
+      expect(host.querySelector(`input[aria-label="${label}"]`)!.hasAttribute('inputmode')).toBeFalse();
     }
     expect(host.querySelector('input[aria-label="Reclass level"]')!.getAttribute('inputmode')).toBe('numeric');
   });

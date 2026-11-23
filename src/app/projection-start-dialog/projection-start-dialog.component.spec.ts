@@ -40,14 +40,14 @@ describe('ProjectionStartDialogComponent', () => {
     expect(expected).toContain('Cai');
   });
 
-  it("doesn't open the on-screen keyboard for the dropdowns in either mode", () => {
+  it('opens the on-screen keyboard on the first tap in either mode', () => {
     const { dialog, fixture, host } = open();
     const characterBox = () => host.querySelector('input[aria-label="Character"]')!;
 
-    expect(characterBox().getAttribute('inputmode')).toBe('none');
+    expect(characterBox().hasAttribute('inputmode')).toBeFalse();
     dialog.setSource('manual');
     fixture.detectChanges();
-    expect(characterBox().getAttribute('inputmode')).toBe('none');
+    expect(characterBox().hasAttribute('inputmode')).toBeFalse();
   });
 
   it("starts from a recruitment chapter, projecting Mu from Mu*'s growths", () => {

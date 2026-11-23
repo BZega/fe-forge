@@ -9,7 +9,6 @@
         <app-searchable-select
           class="plan-picker"
           label="Starting class"
-          [keyboard]="false"
           [groups]="rowClassItems()[0]"
           [focusGroup]="rowFocusRanks()[0]"
           [value]="startClassId()"
@@ -34,7 +33,6 @@
         <app-searchable-select
           class="plan-picker"
           label="Reclass to"
-          [keyboard]="false"
           placeholder="— Select a class —"
           [groups]="rowClassItems()[entryIndex]"
           [focusGroup]="rowFocusRanks()[entryIndex]"
