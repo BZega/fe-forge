@@ -182,6 +182,7 @@ const NO_ROLLS: RollEstimate[] = STAT_KEYS.map(() => estimateRoll([]));
     '[style.--mapper-legacy-header-height]': 'headerHeight() + "px"',
     '[class.beta-view]': 'betaView()',
     '[class.keyboard-adjusting]': 'betaView() && keyboardAdjusting()',
+    '(dropdownkeyboardwillopen)': 'onDropdownKeyboardWillOpen($event)',
     '(dropdownkeyboardchange)': 'onDropdownKeyboardChange($event)',
   },
 })
@@ -202,6 +203,7 @@ export class SeedMapperPageComponent {
   readonly betaView = signal(false);
   readonly keyboardAdjusting = signal(false);
   private readonly keyboardDropdowns = new Set<EventTarget>();
+  private dropdownScroll: { select: EventTarget; scroller: HTMLElement; top: number } | null = null;
   readonly statLabels = STAT_LABELS;
   readonly minLevel = MIN_LEVEL;
   readonly maxLevel = MAX_LEVEL;
@@ -1454,6 +1456,14 @@ export class SeedMapperPageComponent {
 
   // --- events ------------------------------------------------------------
 
+  onDropdownKeyboardWillOpen(event: Event): void {
+    if (!(event.target instanceof HTMLElement)) return;
+    const scroller = event.target.closest<HTMLElement>('main');
+    if (!scroller || !matchMedia('(max-width: 720px)').matches) return;
+
+    this.dropdownScroll = { select: event.target, scroller, top: scroller.scrollTop };
+  }
+
   onDropdownKeyboardChange(event: Event): void {
     if (!(event instanceof CustomEvent) || !(event.target instanceof HTMLElement)) return;
     if (event.detail === true) {
@@ -1467,22 +1477,12 @@ export class SeedMapperPageComponent {
     this.keyboardAdjusting.set(this.keyboardDropdowns.size > 0);
   }
 
-  private restoreDropdownPosition(select: HTMLElement): void {
-    if (!matchMedia('(max-width: 720px)').matches) return;
+  private restoreDropdownPosition(select: EventTarget): void {
+    const saved = this.dropdownScroll;
+    this.dropdownScroll = null;
+    if (!saved || saved.select !== select) return;
 
-    const scroller = select.closest<HTMLElement>('main');
-    const field = select.querySelector<HTMLElement>('.field');
-    if (!scroller || !field) return;
-
-    const desiredTop = scroller.getBoundingClientRect().top + this.headerHeight() + 8;
-    const delta = field.getBoundingClientRect().top - desiredTop;
-
-    if (delta < -2) {
-      scroller.scrollTo({
-        top: Math.max(0, Math.round(scroller.scrollTop + delta)),
-        behavior: 'auto',
-      });
-    }
+    saved.scroller.scrollTo({ top: saved.top, behavior: 'auto' });
   }
 
   onUnitChange(id: number | null): void {

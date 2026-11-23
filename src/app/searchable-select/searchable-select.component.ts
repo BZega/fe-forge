@@ -193,6 +193,9 @@ export class SearchableSelectComponent {
 
   onFieldPointerDown(): void {
     this.openBeforePress = this.open();
+    if (!this.openBeforePress && this.keyboard()) {
+      this.host.nativeElement.dispatchEvent(new CustomEvent('dropdownkeyboardwillopen', { bubbles: true }));
+    }
   }
 
   onFieldClick(event: MouseEvent): void {

@@ -52,25 +52,18 @@ describe('SeedMapperPageComponent starting stats', () => {
     expect(page.querySelector('.page-header-title')?.nextElementSibling?.classList.contains('page-header')).toBeTrue();
   });
 
-  it('scrolls a restored dropdown below the sticky header before it returns', () => {
+  it('restores the exact scroll position captured before opening a dropdown', () => {
     const main = document.createElement('main');
     const select = document.createElement('app-searchable-select');
-    const field = document.createElement('div');
-    field.className = 'field';
-    select.append(field);
     main.append(select);
-    component.headerHeight.set(100);
-    spyOn(window, 'matchMedia').and.returnValue({ matches: true } as MediaQueryList);
-    spyOn(main, 'getBoundingClientRect').and.returnValue(new DOMRect(0, 56, 390, 788));
-    spyOn(field, 'getBoundingClientRect').and.returnValue(new DOMRect(0, 50, 300, 30));
-    spyOnProperty(main, 'scrollTop', 'get').and.returnValue(500);
     const scroll = spyOn(main, 'scrollTo');
+    component['dropdownScroll'] = { select, scroller: main, top: 275 };
 
     component['restoreDropdownPosition'](select);
 
     expect(scroll).toHaveBeenCalledTimes(1);
     expect(scroll.calls.mostRecent().args as unknown as [ScrollToOptions])
-      .toEqual([{ top: 386, behavior: 'auto' }]);
+      .toEqual([{ top: 275, behavior: 'auto' }]);
   });
 
   describe('stat boosters', () => {
