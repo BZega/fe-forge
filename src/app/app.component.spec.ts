@@ -260,6 +260,7 @@ describe('AppComponent mobile field visibility', () => {
   let fieldPos: number;
   let panelHeight: number;
   let scrollTop: number;
+  let innerHeight: number;
   let coarse: boolean;
   let scroll: jasmine.Spy;
 
@@ -290,7 +291,8 @@ describe('AppComponent mobile field visibility', () => {
     }).compileComponents();
     localStorage.setItem('fe-forge:keyboard-inset', '444');
     spyOnProperty(window, 'visualViewport', 'get').and.returnValue(viewport);
-    spyOnProperty(window, 'innerHeight', 'get').and.returnValue(844);
+    innerHeight = 844;
+    spyOnProperty(window, 'innerHeight', 'get').and.callFake(() => innerHeight);
     coarse = true;
     const media = window.matchMedia('(pointer: coarse)');
     spyOnProperty(media, 'matches', 'get').and.callFake(() => coarse);
@@ -335,6 +337,16 @@ describe('AppComponent mobile field visibility', () => {
     expect(scroll).toHaveBeenCalledOnceWith({ top: 550, behavior: 'auto' });
     expect(panelBottom()).toBe(392);
     expect(fieldTop()).toBeGreaterThanOrEqual(64);
+  });
+
+  it('measures keyboard inset from the baseline when standalone Safari resizes innerHeight', async () => {
+    await tap();
+    innerHeight = 400;
+    viewport.height = 400;
+    viewport.dispatchEvent(new Event('resize'));
+    await wait(300);
+
+    expect(host.style.getPropertyValue('--keyboard-inset')).toBe('444px');
   });
 
   it('does not move again once the keyboard opens where it was expected', async () => {

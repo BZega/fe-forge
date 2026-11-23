@@ -70,6 +70,7 @@ export class AppComponent {
   readonly spoilerMenuOpen = signal(false);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private layoutViewportHeight = window.innerHeight;
   private keyboardInset = readKeyboardInset();
 
   private spoilerRouteData(): 'units' | 'classes' | 'mounts' | 'builds' | null {
@@ -205,7 +206,10 @@ export class AppComponent {
   private updateKeyboardInset(viewport: VisualViewport): number {
     const host = this.host.nativeElement;
     const zoomed = Math.abs(viewport.scale - 1) >= 0.01;
-    const inset = zoomed ? 0 : Math.max(0, Math.round(window.innerHeight - viewport.height));
+    if (!isEditing() && window.innerHeight >= this.layoutViewportHeight) {
+      this.layoutViewportHeight = window.innerHeight;
+    }
+    const inset = zoomed ? 0 : Math.max(0, Math.round(this.layoutViewportHeight - viewport.height));
     const previous = this.cssPixels('--keyboard-inset');
 
     if (inset > 0) {
@@ -307,7 +311,7 @@ export class AppComponent {
   private visibleArea(viewport: VisualViewport, scroller: HTMLElement, predicted: boolean): VisibleArea {
     const bounds = scroller.getBoundingClientRect();
     const keyboardTop = predicted
-      ? window.innerHeight - this.keyboardInset
+      ? this.layoutViewportHeight - this.keyboardInset
       : viewport.offsetTop + viewport.height;
 
     return {
