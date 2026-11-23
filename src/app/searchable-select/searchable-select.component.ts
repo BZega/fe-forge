@@ -125,7 +125,7 @@ export class SearchableSelectComponent {
   private panelOrigin = { x: 0, y: 0 };
 
   private followField(): void {
-    this.measureRoom();
+    this.measureRoom(false);
 
     const host = this.host.nativeElement as HTMLElement;
     const panel = host.querySelector<HTMLElement>('.panel');
@@ -141,7 +141,7 @@ export class SearchableSelectComponent {
 
     if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
       this.panelOrigin = { x: this.panelOrigin.x + dx, y: this.panelOrigin.y + dy };
-      this.measureRoom();
+      this.measureRoom(false);
     }
   }
 
@@ -172,14 +172,16 @@ export class SearchableSelectComponent {
     }
   }
 
-  private measureRoom(): void {
+  private measureRoom(updateHeight = true): void {
     const host = this.host.nativeElement as HTMLElement;
     const viewport = window.visualViewport;
     const bottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
     const field = host.getBoundingClientRect();
-    const room = Math.floor(bottom - field.bottom - LIST_GAP);
 
-    host.style.setProperty('--dropdown-room', `${room}px`);
+    if (updateHeight) {
+      const room = Math.floor(bottom - field.bottom - LIST_GAP);
+      host.style.setProperty('--dropdown-room', `${room}px`);
+    }
 
     if (this.inDialog()) {
       host.setAttribute('data-floating', '');

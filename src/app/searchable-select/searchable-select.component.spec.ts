@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { SearchableSelectComponent, SelectItem } from './searchable-select.component';
 
 @Component({
@@ -45,6 +46,19 @@ describe('SearchableSelectComponent without the keyboard', () => {
 
     expect(input.getAttribute('inputmode')).toBe('none');
     expect(options()).toEqual(['Alexandra', 'Alecto', 'Aleph', 'Bertrand']);
+  });
+
+  it('keeps the capped list height while following a field inside a modal', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    host.setAttribute('role', 'dialog');
+    tapInput();
+    const select = host.querySelector<HTMLElement>('app-searchable-select')!;
+    const component = fixture.debugElement.query(By.directive(SearchableSelectComponent)).componentInstance as SearchableSelectComponent;
+    select.style.setProperty('--dropdown-room', '208px');
+
+    component['followField']();
+
+    expect(select.style.getPropertyValue('--dropdown-room')).toBe('208px');
   });
 
   it('switches to typing when the text box is tapped again, waiting for 2 letters and showing at most 2 results', () => {
