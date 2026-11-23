@@ -194,33 +194,6 @@
   }
 }
 
-.tgrid-mount-editor {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  padding: 0.6rem;
-  background: #1b3639;
-  border: 1px solid var(--panel-border);
-  border-radius: 6px;
-  font-size: 0.8rem;
-
-  app-searchable-select {
-    flex: 1 1 12rem;
-    min-width: 0;
-  }
-}
-
-.mount-editor-label {
-  font-weight: 700;
-}
-
-.mount-editor-hint {
-  flex-basis: 100%;
-  opacity: 0.7;
-}
-
 .tgrid-class {
   overflow: hidden;
   text-overflow: ellipsis;

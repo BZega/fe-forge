@@ -418,6 +418,20 @@ export class AppComponent {
     this.spoilerMenuOpen.set(true);
   }
 
+  @HostListener('focusin', ['$event'])
+  @HostListener('click', ['$event'])
+  onNumberInputInteraction(event: FocusEvent | MouseEvent): void {
+    this.selectNumberInput(event.target);
+  }
+
+  private selectNumberInput(target: EventTarget | null): void {
+    if (!(target instanceof HTMLInputElement) || target.type !== 'number') return;
+
+    requestAnimationFrame(() => {
+      if (document.activeElement === target) target.select();
+    });
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (event.target instanceof Element && !event.target.closest('.spoiler-menu, .spoiler-indicator')) {

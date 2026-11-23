@@ -1006,7 +1006,7 @@ describe('SeedTimelineComponent', () => {
     const view = page.sectionViews().find((view) => view.section.id === branch)!;
     expect(page.rowMount(view, 0).mount?.id).toBe(mount.id);
     expect(seed().mountId).toBeNull();
-    const bond = host.querySelector<HTMLSelectElement>('.timeline select[aria-label="Bond Level"]')!;
+    const bond = host.querySelector<HTMLSelectElement>('app-mount-dialog select[aria-label="Bond Level"]')!;
     expect(bond).not.toBeNull();
     bond.value = bond.options[bond.options.length - 1].value;
     bond.dispatchEvent(new Event('change'));
@@ -1035,11 +1035,11 @@ describe('SeedTimelineComponent', () => {
     expect(buttons()[1].classList.contains('mount-button--selected')).toBeTrue();
     expect(getComputedStyle(buttons()[1]).borderTopColor).toBe('rgb(240, 192, 74)');
     const picker = fixture.debugElement.queryAll(By.directive(SearchableSelectComponent))
-      .find((element) => element.nativeElement.closest('.tgrid-mount-editor'))!
+      .find((element) => element.nativeElement.closest('app-mount-dialog'))!
       .componentInstance as SearchableSelectComponent;
     picker.valueChange.emit(wild.id);
     fixture.detectChanges();
-    let bond = host.querySelector<HTMLSelectElement>('.tgrid-mount-editor select')!;
+    let bond = host.querySelector<HTMLSelectElement>('app-mount-dialog select')!;
     bond.value = '5';
     bond.dispatchEvent(new Event('change'));
     fixture.detectChanges();
@@ -1063,7 +1063,7 @@ describe('SeedTimelineComponent', () => {
     expect(icons()[1]).toBe(skillIconUrl('riding', 'good'));
     expect(buttons()[1].classList.contains('mount-button--selected')).toBeFalse();
     expect(icons()[2]).toBe(skillIconUrl('riding', 'neutral'));
-    bond = host.querySelector<HTMLSelectElement>('.tgrid-mount-editor select')!;
+    bond = host.querySelector<HTMLSelectElement>('app-mount-dialog select')!;
     expect(bond.value).toBe('5');
     page.onRowMountChange(currentView(), 2, white.id);
     page.onRowMountLevelChange(currentView(), 2, '2');
@@ -1072,7 +1072,7 @@ describe('SeedTimelineComponent', () => {
     expect(page.rowMount(currentView(), 2)).toEqual({ mount: white, level: 2 });
     expect(page.rowMount(currentView(), 3)).toEqual({ mount: white, level: 2 });
     expect(page.rowGrowth(currentView(), 2)!.res - originalGrowth.res).toBe(5);
-    const reset = Array.from(host.querySelectorAll<HTMLButtonElement>('.tgrid-mount-editor button'))
+    const reset = Array.from(host.querySelectorAll<HTMLButtonElement>('app-mount-dialog button'))
       .find((button) => button.textContent!.includes('Use previous mount'))!;
     reset.click();
     fixture.detectChanges();

@@ -158,39 +158,6 @@
             +
           </button>
 
-          @if (level.mount && level.mountEditable && mountEditorKey() === level.key) {
-            <div class="tgrid-mount-editor" role="group" [id]="level.key + '-mount'" [attr.aria-label]="'Mount from Lv ' + level.level">
-              <span class="mount-editor-label">From Lv {{ level.level }}</span>
-              <app-searchable-select
-                label="Mount"
-                [items]="mapperRef.mountItems(mapperRef.rowClassId(level.view, level.rowIndex), level.mount.id)"
-                [clearable]="false"
-                [value]="level.mount.id"
-                (valueChange)="mapperRef.onRowMountChange(level.view, level.rowIndex, $event)"
-              />
-              @if (mapperRef.bondLevelsOf(level.mount).length > 0) {
-                <label>
-                  Bond Level
-                  <select
-                    class="timeline-select"
-                    aria-label="Bond Level"
-                    [value]="level.bondLevel"
-                    (change)="mapperRef.onRowMountLevelChange(level.view, level.rowIndex, $any($event.target).value)"
-                  >
-                    @for (bond of mapperRef.bondLevelsOf(level.mount); track bond.level) {
-                      <option [value]="bond.level" [selected]="bond.level === level.bondLevel">Level {{ bond.level }}</option>
-                    }
-                  </select>
-                </label>
-              }
-              @if (level.view.section.rows[level.rowIndex].mount) {
-                <button type="button" class="ghost-button" (click)="mapperRef.clearRowMount(level.view, level.rowIndex)">Use previous mount</button>
-              }
-              <button type="button" class="ghost-button" (click)="mountEditorKey.set(null)">Done</button>
-              <span class="mount-editor-hint">Applies to this level and later levels until changed again.</span>
-            </div>
-          }
-
           @if (level.note) {
             <div class="tgrid-note">{{ level.note }}</div>
           }
@@ -220,4 +187,20 @@
       </button>
     </footer>
   </section>
+
+  @if (mountEditor(); as level) {
+    <app-mount-dialog
+      [id]="level.key + '-mount'"
+      [level]="level.level"
+      [mounts]="mapperRef.mountItems(mapperRef.rowClassId(level.view, level.rowIndex), level.mount?.id)"
+      [mountId]="level.mount!.id"
+      [bondLevels]="mapperRef.bondLevelsOf(level.mount)"
+      [bondLevel]="level.bondLevel"
+      [canClear]="level.view.section.rows[level.rowIndex].mount !== undefined"
+      (mountChange)="mapperRef.onRowMountChange(level.view, level.rowIndex, $event)"
+      (bondLevelChange)="mapperRef.onRowMountLevelChange(level.view, level.rowIndex, $event)"
+      (cleared)="mapperRef.clearRowMount(level.view, level.rowIndex)"
+      (closed)="mountEditorKey.set(null)"
+    />
+  }
 }

@@ -231,6 +231,24 @@ describe('AppComponent', () => {
     expect(compiled.querySelector('router-outlet')).toBeTruthy();
   });
 
+  it('selects number input values after focus for easy replacement', async () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.value = '42';
+    fixture.nativeElement.append(input);
+    const select = spyOn(input, 'select');
+
+    input.focus();
+    await new Promise<void>((resolve) => setTimeout(resolve, 30));
+    expect(select).toHaveBeenCalledTimes(1);
+
+    input.click();
+    await new Promise<void>((resolve) => setTimeout(resolve, 30));
+    expect(select).toHaveBeenCalledTimes(2);
+  });
+
   it('closes the open menu when the area below it is tapped', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const compiled = fixture.nativeElement as HTMLElement;

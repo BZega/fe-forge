@@ -1,7 +1,7 @@
 import { afterRenderEffect, ChangeDetectionStrategy, Component, computed, effect, ElementRef, input, model, signal, untracked, viewChild } from '@angular/core';
 import { GrowthRates, Mount, mountBonusAt, mountGrowthAt, STAT_KEYS, STAT_LABELS, StatKey } from '../models/growth.models';
 import type { SectionView, SeedMapperPageComponent } from '../seed-mapper-page/seed-mapper-page.component';
-import { SearchableSelectComponent } from '../searchable-select/searchable-select.component';
+import { MountDialogComponent } from '../mount-dialog/mount-dialog.component';
 import { skillIconUrl, useFallbackIcon } from '../icon-links';
 import { boosterDescription } from '../models/stat-boosters';
 import { StatIncreaseMenuComponent } from '../stat-increase-menu/stat-increase-menu.component';
@@ -61,7 +61,7 @@ interface TimelineOption {
 
 @Component({
   selector: 'app-seed-timeline',
-  imports: [SearchableSelectComponent, StatIncreaseMenuComponent],
+  imports: [MountDialogComponent, StatIncreaseMenuComponent],
   templateUrl: './seed-timeline.component.html',
   styleUrl: './seed-timeline.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -84,6 +84,12 @@ export class SeedTimelineComponent {
   readonly focused = computed<SectionView | null>(
     () => this.views().find((view) => view.section.id === this.focusId()) ?? this.views().at(-1) ?? null,
   );
+
+  readonly mountEditor = computed<TimelineLevel | null>(() => {
+    const key = this.mountEditorKey();
+    const item = key ? this.items().find((candidate) => candidate.key === key) : null;
+    return item?.kind === 'level' ? item : null;
+  });
 
   constructor() {
     afterRenderEffect((onCleanup) => {

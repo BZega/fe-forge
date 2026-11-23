@@ -1,0 +1,49 @@
+<div class="backdrop" (click)="close()"></div>
+
+<div class="dialog dialog--mount" role="dialog" aria-modal="true" aria-labelledby="mount-dialog-title">
+  <header class="dialog-header">
+    <div>
+      <p class="dialog-eyebrow">Growth Mapper</p>
+      <h2 id="mount-dialog-title">Mount from Lv {{ level() }}</h2>
+    </div>
+    <button type="button" class="dialog-close" aria-label="Close" (click)="close()">&times;</button>
+  </header>
+
+  <div class="mount-fields">
+    <div class="field">
+      <span class="field-label">Mount</span>
+      <app-searchable-select
+        label="Mount"
+        [items]="mounts()"
+        [clearable]="false"
+        [value]="mountId()"
+        (valueChange)="mountChange.emit($event)"
+      />
+    </div>
+
+    @if (bondLevels().length > 0) {
+      <label class="field">
+        <span class="field-label">Bond Level</span>
+        <select
+          class="mount-select"
+          aria-label="Bond Level"
+          [value]="bondLevel()"
+          (change)="bondLevelChange.emit($any($event.target).value)"
+        >
+          @for (bond of bondLevels(); track bond.level) {
+            <option [value]="bond.level" [selected]="bond.level === bondLevel()">Level {{ bond.level }}</option>
+          }
+        </select>
+      </label>
+    }
+  </div>
+
+  <p class="mount-hint">Applies to this level and later levels until changed again.</p>
+
+  <footer class="dialog-footer">
+    @if (canClear()) {
+      <button type="button" class="button" (click)="cleared.emit()">Use previous mount</button>
+    }
+    <button type="button" class="button button--primary" (click)="close()">Done</button>
+  </footer>
+</div>
