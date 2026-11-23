@@ -1,10 +1,6 @@
-:host {
-  padding-bottom: calc(1.5rem + var(--keyboard-inset, 0px));
-}
-
 .dialog--start {
   width: min(560px, 100%);
-  max-height: min(80vh, calc(100dvh - 3rem - var(--keyboard-inset, 0px)));
+  max-height: 80vh;
   overflow-y: auto;
 }
 

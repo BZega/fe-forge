@@ -266,14 +266,17 @@ describe('ProjectionDialogComponent', () => {
     expect(host.querySelector('input[aria-label="Reclass level"]')!.getAttribute('inputmode')).toBe('numeric');
   });
 
-  it('moves the modal up by the height of the on-screen keyboard', () => {
+  it('keeps modal geometry stable while the shared handler adjusts dropdown visibility', () => {
     const { fixture } = open('Cai');
     const host = fixture.nativeElement as HTMLElement;
-    const before = parseFloat(getComputedStyle(host).paddingBottom);
+    const dialog = host.querySelector<HTMLElement>('.dialog--projection')!;
+    const beforePadding = getComputedStyle(host).paddingBottom;
+    const beforeHeight = getComputedStyle(dialog).maxHeight;
 
     host.style.setProperty('--keyboard-inset', '300px');
 
-    expect(parseFloat(getComputedStyle(host).paddingBottom)).toBe(before + 300);
+    expect(getComputedStyle(host).paddingBottom).toBe(beforePadding);
+    expect(getComputedStyle(dialog).maxHeight).toBe(beforeHeight);
   });
 
   it("projects from the joining chapter's class until a reclass takes over", () => {
