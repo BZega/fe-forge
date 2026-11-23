@@ -473,12 +473,6 @@
   .seeds {
     flex: none;
     overflow: visible;
-    transition: transform 180ms ease;
-    will-change: transform;
-  }
-
-  :host(.keyboard-folded) .seeds {
-    transform: translateY(calc(-1 * var(--mapper-legacy-header-height, 0px)));
   }
 
   .page-header {
@@ -489,14 +483,15 @@
     padding-bottom: 8px;
     margin-inline: -3px;
     padding-inline: 3px;
+    transition: top 180ms ease;
+  }
+
+  :host(.keyboard-adjusting) .page-header {
+    top: calc(-1 * var(--mapper-legacy-header-height, 0px) - 8px);
   }
 
   .page-header-title h1 {
     font-size: 1.35rem;
-  }
-
-  :host(.keyboard-folded) .page-header {
-    pointer-events: none;
   }
 
   .seed {

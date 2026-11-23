@@ -181,7 +181,7 @@ const NO_ROLLS: RollEstimate[] = STAT_KEYS.map(() => estimateRoll([]));
     '[style.--mapper-header-height]': '(betaView() ? headerHeight() : 0) + "px"',
     '[style.--mapper-legacy-header-height]': 'headerHeight() + "px"',
     '[class.beta-view]': 'betaView()',
-    '[class.keyboard-folded]': 'betaView() && keyboardFolded()',
+    '[class.keyboard-adjusting]': 'betaView() && keyboardAdjusting()',
     '(dropdownkeyboardchange)': 'onDropdownKeyboardChange($event)',
   },
 })
@@ -200,7 +200,7 @@ export class SeedMapperPageComponent {
   readonly statKeys = STAT_KEYS;
   readonly summaryShowsGrowth = signal(false);
   readonly betaView = signal(false);
-  readonly keyboardFolded = signal(false);
+  readonly keyboardAdjusting = signal(false);
   private readonly keyboardDropdowns = new Set<EventTarget>();
   readonly statLabels = STAT_LABELS;
   readonly minLevel = MIN_LEVEL;
@@ -1461,7 +1461,7 @@ export class SeedMapperPageComponent {
     } else {
       this.keyboardDropdowns.delete(event.target);
     }
-    this.keyboardFolded.set(this.keyboardDropdowns.size > 0);
+    this.keyboardAdjusting.set(this.keyboardDropdowns.size > 0);
   }
 
   onUnitChange(id: number | null): void {

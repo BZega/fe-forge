@@ -846,31 +846,38 @@ describe('SeedTimelineComponent', () => {
     expect(identity.querySelector('.summary-class-name')!.textContent!.trim()).toBe('Gladiator');
   });
 
-  it('keeps the summary folded while tapping an option and restores it only after selection', () => {
+  it('keeps the dropdown open through option focus without changing mapper layout', () => {
     const { fixture, host: page } = render();
     const unit = page.querySelector<HTMLInputElement>('[aria-label="Seed setup"] input[aria-label="Unit"]')!;
+    const select = unit.closest('app-searchable-select')!;
     unit.dispatchEvent(new Event('focus'));
     fixture.detectChanges();
-    expect(page.classList.contains('keyboard-folded')).toBeTrue();
-    const option = Array.from(unit.closest('app-searchable-select')!.querySelectorAll<HTMLButtonElement>('.option'))
+    expect(page.classList.contains('keyboard-adjusting')).toBeTrue();
+    expect(select.querySelector('.panel')).not.toBeNull();
+
+    const option = Array.from(select.querySelectorAll<HTMLButtonElement>('.option'))
       .find((button) => button.textContent!.trim() === 'Mu')!;
     option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
     unit.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: option }));
     option.dispatchEvent(new FocusEvent('focusin', { bubbles: true, relatedTarget: unit }));
     fixture.detectChanges();
-    expect(page.classList.contains('keyboard-folded')).toBeTrue();
+    expect(select.querySelector('.panel')).not.toBeNull();
     expect(state.seedMap().unitId).toBe(unitId('Cai'));
+
     option.click();
     fixture.detectChanges();
     expect(state.seedMap().unitId).toBe(unitId('Mu'));
-    expect(page.classList.contains('keyboard-folded')).toBeFalse();
+    expect(select.querySelector('.panel')).toBeNull();
+    expect(page.classList.contains('keyboard-adjusting')).toBeFalse();
 
     unit.dispatchEvent(new Event('focus'));
     fixture.detectChanges();
-    expect(page.classList.contains('keyboard-folded')).toBeTrue();
+    expect(select.querySelector('.panel')).not.toBeNull();
+    expect(page.classList.contains('keyboard-adjusting')).toBeTrue();
     unit.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     fixture.detectChanges();
-    expect(page.classList.contains('keyboard-folded')).toBeFalse();
+    expect(select.querySelector('.panel')).toBeNull();
+    expect(page.classList.contains('keyboard-adjusting')).toBeFalse();
   });
 
   it('shows passive stat bonuses and no next-level growth at the level cap', () => {
