@@ -1,0 +1,101 @@
+@let profile = this.profile();
+@let growth = this.growth();
+@let growthDetails = this.growthDetails();
+@let totals = this.totals();
+@let atMax = level() >= maxLevel();
+
+<section class="mapper-summary" aria-label="Selected timeline summary">
+  <div class="summary-identity" role="group" [attr.aria-label]="profile.unitName ?? 'Unit'">
+    <div class="summary-class">
+      @if (profile.classIcon; as icon) {
+        <img class="summary-class-icon" [src]="icon" alt="" (load)="$any($event.target).hidden = false"
+          (error)="$any($event.target).hidden = true" />
+      }
+      <span class="summary-class-name">{{ profile.className }}</span>
+    </div>
+    <div class="summary-row summary-hp" [title]="totals[0].title">
+      <span>HP</span><strong [class.stat-bonus]="totals[0].boosted">{{ totals[0].value ?? '—' }}</strong>
+    </div>
+    <div class="summary-row">
+      <span>Lv</span><strong>{{ level() }}</strong>
+    </div>
+    <div class="summary-row summary-row--pair">
+      <span class="summary-pair" [title]="profile.movTitle"><span>Mov</span><strong>{{ profile.mov ?? '—' }}</strong></span>
+      <span class="summary-pair" title="Bld = Str ÷ 5, rounded down (minimum 1)"><span>Bld</span><strong>{{ profile.bld ?? '—' }}</strong></span>
+    </div>
+    <div class="summary-row summary-companion" [class.summary-inactive]="profile.companion.inactive"
+      [title]="profile.companion.title || profile.companion.value">
+      <span>{{ profile.companion.label }}</span><strong>{{ profile.companion.value }}</strong>
+    </div>
+    @if (profile.portrait; as portrait) {
+      <img class="summary-portrait" [src]="portrait" [alt]="profile.unitName" referrerpolicy="no-referrer"
+        (load)="$any($event.target).hidden = false" (error)="$any($event.target).hidden = true" />
+    }
+  </div>
+
+  <div class="summary-group summary-growth" [class.summary-group--active]="showsGrowth()">
+    <div class="summary-heading">
+      <h2>Growth Rates <small>{{ atMax ? 'max level' : 'next level' }}</small></h2>
+      <ng-container [ngTemplateOutlet]="summaryToggle" />
+    </div>
+    <div class="summary-stat-grid summary-stat-grid--growth" aria-live="polite">
+      @for (stat of statKeys; track stat) {
+        <div [title]="growth ? growthDetails[stat].title : atMax ? 'Maximum level reached' : 'Select a unit and class'">
+          <span>{{ statLabels[stat] }}</span>
+          <strong [class.stat-bonus]="growth && growthDetails[stat].boosted">{{ growth ? growth[stat] + '%' : '—' }}</strong>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="summary-group summary-stats" [class.summary-group--active]="!showsGrowth()">
+    <div class="summary-heading">
+      <h2>Current Stats</h2>
+      <ng-container [ngTemplateOutlet]="summaryToggle" />
+    </div>
+    <div class="summary-stat-grid">
+      <span class="summary-stat-spacer" aria-hidden="true"><span>HP</span><strong>0</strong></span>
+      @for (stat of summaryStatKeys; track stat; let index = $index) {
+        <div [title]="totals[index + 1].title">
+          <span>{{ statLabels[stat] }}</span>
+          <strong [class.stat-bonus]="totals[index + 1].boosted">{{ totals[index + 1].value ?? '—' }}</strong>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="summary-group summary-list summary-equipment" role="region" aria-label="Weapons and equipment">
+    <div class="summary-heading">
+      <h2 title="Listed bonuses are before the shared +10 non-class limit">Weapons / Equipment</h2>
+    </div>
+    @for (item of equipment(); track item.slot) {
+      <div class="summary-item summary-item--equipment"
+        [title]="item.slot + ': ' + item.name + ' — ' + (item.bonus || 'No modeled stat bonus')">
+        <span>{{ item.shortSlot }}</span><strong>{{ item.name }}</strong>
+        @if (item.bonus) { <small>{{ item.bonus }}</small> }
+      </div>
+    } @empty {
+      <p class="summary-empty">None equipped</p>
+    }
+  </div>
+
+  <div class="summary-group summary-list summary-abilities" role="region" aria-label="Abilities and passives">
+    <div class="summary-heading">
+      <h2 title="Only stat-boosting abilities and passives are shown. Listed bonuses are before the shared +10 non-class limit">Abilities</h2>
+    </div>
+    @for (ability of abilities(); track ability.name) {
+      <div class="summary-item" [class.summary-inactive]="ability.inactive" [title]="ability.detail">
+        @if (ability.passive) { <span>Passive</span> }<strong>{{ ability.name }}</strong><small>{{ ability.detail }}</small>
+      </div>
+    } @empty {
+      <p class="summary-empty">No stat bonuses equipped</p>
+    }
+  </div>
+</section>
+
+<ng-template #summaryToggle>
+  <button type="button" class="summary-toggle" [attr.aria-pressed]="showsGrowth()"
+    title="Switch between current stats and growth rates" (click)="showsGrowth.set(!showsGrowth())">
+    Growth
+  </button>
+</ng-template>

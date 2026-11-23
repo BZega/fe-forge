@@ -18,6 +18,8 @@ import { SearchableSelectComponent, SelectItemGroup } from '../searchable-select
 import { HelpDialogComponent } from '../help-dialog/help-dialog.component';
 import { SeedRngDialogComponent, RngSection } from '../seed-rng-dialog/seed-rng-dialog.component';
 import { SeedTimelineComponent } from '../seed-timeline/seed-timeline.component';
+import { SeedMapperSummaryComponent } from '../seed-mapper-summary/seed-mapper-summary.component';
+import type { SummaryTotal } from '../seed-mapper-summary/seed-mapper-summary.component';
 import { GrowthDataService } from '../services/growth-data.service';
 import { SeedSaveStorageService } from '../services/seed-save-storage.service';
 import { SeedSerializerService } from '../services/seed-serializer.service';
@@ -168,6 +170,7 @@ const NO_ROLLS: RollEstimate[] = STAT_KEYS.map(() => estimateRoll([]));
     ProjectionDialogComponent,
     SearchableSelectComponent,
     SeedRngDialogComponent,
+    SeedMapperSummaryComponent,
     SeedTimelineComponent,
     StatBoosterDialogComponent,
   ],
@@ -195,7 +198,6 @@ export class SeedMapperPageComponent {
   readonly loadedSave = this.state.loadedSave;
   readonly status = signal<string | null>(null);
   readonly statKeys = STAT_KEYS;
-  readonly summaryStatKeys = STAT_KEYS.slice(1);
   readonly summaryShowsGrowth = signal(false);
   readonly betaView = signal(false);
   readonly keyboardFolded = signal(false);
@@ -579,6 +581,14 @@ export class SeedMapperPageComponent {
       const slot = equipmentSlot(item);
       return { name: item.Name, slot, shortSlot: SHORT_SLOT_LABELS[slot], bonus: itemBonusDescription(item) };
     });
+  }
+
+  summaryTotals(view: SectionView): SummaryTotal[] {
+    return this.endStatsOf(view).map((total) => ({
+      value: total.value,
+      title: this.statTotalTitle(total),
+      boosted: this.statHasBonus(total),
+    }));
   }
 
   private summaryBonus(boosts: GrowthRates): string {
