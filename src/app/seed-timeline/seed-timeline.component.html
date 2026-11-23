@@ -16,6 +16,26 @@
       </label>
 
       <div class="timeline-actions">
+        @if (mapperRef.betaView()) {
+        <button type="button" class="ghost-button"
+          [disabled]="!mapperRef.canAddLevel(focus)"
+          [title]="'Add levels to ' + focus.title"
+          (click)="mapperRef.openLevelEntry(focus)">
+          Add levels
+        </button>
+        <button type="button" class="ghost-button"
+          [disabled]="!mapperRef.canOpenRng()"
+          [title]="mapperRef.canOpenRng() ? 'Show the roll ranges for every section' : 'Pick a unit and class first'"
+          (click)="mapperRef.openRng()">
+          Seed RNG
+        </button>
+        <button type="button" class="ghost-button"
+          [disabled]="!mapperRef.canAppendExam(focus)"
+          [title]="mapperRef.appendExamHint(focus)"
+          (click)="mapperRef.openAppendExam(focus)">
+          Exam / Reclass
+        </button>
+        }
         <app-stat-increase-menu [abilitiesEnabled]="mapperRef.hasAvailableAbilities(focus)"
           (items)="mapperRef.openBoosters(focus)" (inventory)="mapperRef.equipmentSectionId.set(focus.section.id)"
           (abilities)="mapperRef.openAbilityPicker(focus)" (assign)="mapperRef.battalionSectionId.set(focus.section.id)" />

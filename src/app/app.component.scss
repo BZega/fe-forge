@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  // Only main should scroll, including browser focus/scroll restoration.
   overflow: clip;
 }
 

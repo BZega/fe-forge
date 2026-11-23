@@ -72,4 +72,26 @@ describe('SearchableSelectComponent without the keyboard', () => {
 
     expect(input.getAttribute('inputmode')).toBe('none');
   });
+
+  it('reports keyboard-open state until selection or dismissal, not input blur', () => {
+    const states: boolean[] = [];
+    fixture.nativeElement.addEventListener('dropdownkeyboardchange', (event: CustomEvent<boolean>) => states.push(event.detail));
+    tapInput();
+    expect(states.at(-1)).toBeFalse();
+    tapInput();
+    expect(states.at(-1)).toBeTrue();
+    type('al');
+    input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    fixture.detectChanges();
+    expect(states.at(-1)).toBeTrue();
+    (fixture.nativeElement.querySelector('.option') as HTMLElement).click();
+    fixture.detectChanges();
+    expect(states.at(-1)).toBeFalse();
+    tapInput();
+    tapInput();
+    expect(states.at(-1)).toBeTrue();
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+    expect(states.at(-1)).toBeFalse();
+  });
 });

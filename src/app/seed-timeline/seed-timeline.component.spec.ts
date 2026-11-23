@@ -221,13 +221,14 @@ describe('SeedTimelineComponent', () => {
 
   const seed = () => state.seedMap().sections[0];
 
-  const render = () => {
+  const render = (beta = true) => {
     localStorage.clear();
     TestBed.configureTestingModule({
       imports: [SeedMapperPageComponent],
       providers: [provideRouter([])],
     });
     const fixture = TestBed.createComponent(SeedMapperPageComponent);
+    fixture.componentInstance.betaView.set(beta);
     state = TestBed.inject(SeedMapperStateService);
     state.reset();
     state.setUnit(unitId('Cai'));
@@ -238,7 +239,7 @@ describe('SeedTimelineComponent', () => {
     return { fixture, page: fixture.componentInstance, host: fixture.nativeElement as HTMLElement };
   };
   const toggleButton = (host: HTMLElement, label: string) =>
-    Array.from(host.querySelectorAll<HTMLButtonElement>('.page-header button')).find((button) =>
+    Array.from(host.querySelectorAll<HTMLButtonElement>('.timeline-actions button')).find((button) =>
       button.textContent!.includes(label),
     );
 
@@ -252,6 +253,32 @@ describe('SeedTimelineComponent', () => {
     expect(toggleButton(host, 'Timeline view')).toBeUndefined();
     expect(host.querySelector('[aria-label="Seed setup"]')).not.toBeNull();
     expect(host.querySelector('.saves')).not.toBeNull();
+  });
+
+  it('defaults to the original layout and switches layouts without changing the seed or focused branch', () => {
+    const { fixture, page, host } = render(false);
+    const before = state.seedMap();
+    page.timelineFocusId.set(seed().id);
+    fixture.detectChanges();
+    const toggle = () => host.querySelector<HTMLButtonElement>('.beta-toggle')!;
+    expect(toggle().getAttribute('aria-pressed')).toBe('false');
+    expect(host.querySelector('.mapper-summary')).toBeNull();
+    expect(host.querySelector('.seeds .page-header')).toBeNull();
+    expect(host.querySelector('.page-header-actions')!.textContent).toContain('Add levels');
+    expect(toggleButton(host, 'Add levels')).toBeUndefined();
+    toggle().click();
+    fixture.detectChanges();
+    expect(toggle().getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('.seeds .mapper-summary')).not.toBeNull();
+    expect(toggleButton(host, 'Add levels')).toBeDefined();
+    toggle().click();
+    fixture.detectChanges();
+    expect(host.querySelector('.mapper-summary')).toBeNull();
+    expect(state.seedMap()).toBe(before);
+    expect(page.timelineFocusId()).toBe(seed().id);
+    host.querySelector<HTMLButtonElement>('.page-header-actions button')!.click();
+    fixture.detectChanges();
+    expect(page.levelEntry()).not.toBeNull();
   });
 
   it('keeps the original single-level button alongside the header batch modal', () => {
@@ -412,6 +439,16 @@ describe('SeedTimelineComponent', () => {
     const withBattalion = page.endStatsOf(view());
     expect(page.battalionHint(view())).toContain('Not counted');
     expect(page.battalionOf(view())?.id).toBe(battalion.id);
+    const companion = () => host.querySelector('.summary-identity .summary-companion')!;
+    expect(companion().textContent).toContain('Mount');
+    expect(companion().textContent).not.toContain(battalion.name);
+    state.addAvailableClass(classId('Gladiator'));
+    state.setReclass(seed().id, seed().rows[2].id, classId('Gladiator'));
+    fixture.detectChanges();
+    expect(companion().textContent).toContain('Battalion');
+    expect(companion().textContent).toContain(battalion.name);
+    expect(companion().classList.contains('summary-inactive')).toBeFalse();
+    state.setReclass(seed().id, seed().rows[2].id, classId('Ornius Rider'));
     state.setBattalion(seed().id, null);
     expect(page.endStatsOf(view()).map((stat) => stat.value)).toEqual(withBattalion.map((stat) => stat.value));
   });
@@ -441,6 +478,7 @@ describe('SeedTimelineComponent', () => {
     page.onEquipmentConfirmed(['Wooden Sword']);
     fixture.detectChanges();
     expect(seed().equipment).toContain('Wooden Sword');
+    expect(host.querySelector('.summary-equipment')!.textContent).toContain('Wooden Sword');
     equipmentButton().click();
     fixture.detectChanges();
     expect(host.querySelector('app-equipment-dialog')).not.toBeNull();
@@ -682,6 +720,7 @@ describe('SeedTimelineComponent', () => {
       while (seed().rows.length < 13) {
         state.addLevel(seed().id);
       }
+
       fixture.detectChanges();
 
       const view = page.sectionViews()[0];
@@ -707,6 +746,165 @@ describe('SeedTimelineComponent', () => {
       expect(host.querySelectorAll('.tgrid-band--growth').length).toBe(growthRows.length);
     });
   }
+
+  it('shows next-level growth after a gate while retaining the timeline growth rows', () => {
+    const { fixture, page, host } = render();
+    state.addAvailableClass(classId('Charioteer'));
+    state.setStatsLevel(32);
+    page.onClassChange(page.sectionViews()[0], classId('Charioteer'));
+    fixture.detectChanges();
+    const view = page.sectionViews()[0];
+    expect(page.endLevelOf(view)).toBe(35);
+    const expected = page.endGrowth(view)!;
+    expect(expected).not.toEqual(page.rowGrowth(view, view.section.rows.length - 1)!);
+    host.querySelector<HTMLButtonElement>('.summary-toggle')!.click();
+    fixture.detectChanges();
+    const values = host.querySelectorAll<HTMLElement>('.summary-growth .summary-stat-grid strong');
+    STAT_KEYS.forEach((stat, index) => expect(values[index].textContent!.trim()).toBe(`${expected[stat]}%`));
+    expect(host.querySelector('.tgrid-band--growth')).not.toBeNull();
+  });
+
+  it('shows a stat-sheet summary with seed selectors back in Seed setup and aligned stat columns', () => {
+    const { fixture, page, host } = render();
+    STAT_KEYS.forEach((stat, index) => state.setStartStat(stat, 20 + index));
+    fixture.detectChanges();
+    const view = page.sectionViews()[0];
+    const noble = classes.find((unitClass) => unitClass.name === 'Noble/Commoner')!;
+    const totals = page.endStatsOf(view);
+    const setup = host.querySelector('[aria-label="Seed setup"]')!;
+    const unit = setup.querySelector<HTMLInputElement>('input[aria-label="Unit"]')!;
+    const startingClass = setup.querySelector<HTMLInputElement>('input[aria-label="Starting Class"]')!;
+    expect(unit).not.toBeNull();
+    expect(startingClass).not.toBeNull();
+    expect(host.querySelector('.page-header input')).toBeNull();
+
+    const identity = host.querySelector<HTMLElement>('.summary-identity')!;
+    expect(identity.getAttribute('aria-label')).toBe('Cai');
+    expect(identity.querySelector('.summary-class-name')!.textContent!.trim()).toBe(page.summaryProfile(view).className);
+    expect(identity.querySelector('.summary-class-icon')).not.toBeNull();
+    expect(identity.querySelector('.summary-portrait')).not.toBeNull();
+    const rows = Array.from(identity.querySelectorAll('.summary-row')).map((row) =>
+      Array.from(row.querySelectorAll('span:not(.summary-pair), strong')).map((part) => part.textContent!.trim()).join(' '));
+    const strength = totals[STAT_KEYS.indexOf('str')].value!;
+    expect(totals[0].value).not.toBeNull();
+    expect(rows[0]).toBe(`HP ${totals[0].value}`);
+    expect(rows[1]).toBe(`Lv ${page.endLevelOf(view)}`);
+    expect(rows[2]).toBe(`Mov ${4 + noble.bonusStats.mov} Bld ${Math.max(1, Math.floor(strength / 5))}`);
+    expect(rows[3]).toContain('Battalion');
+
+    const stats = Array.from(host.querySelectorAll<HTMLElement>('.summary-stats .summary-stat-grid > div'));
+    const growth = Array.from(host.querySelectorAll<HTMLElement>('.summary-growth .summary-stat-grid > div'));
+    const label = (cell: HTMLElement) => cell.querySelector('span')!.textContent!.trim();
+    expect(stats.map(label)).toEqual(['Str', 'Mag', 'Spd', 'Dex', 'Def', 'Res', 'Lck', 'Cha']);
+    expect(growth.map(label)).toEqual(['HP', 'Str', 'Mag', 'Spd', 'Dex', 'Def', 'Res', 'Lck', 'Cha']);
+    const left = (cell: HTMLElement) => cell.getBoundingClientRect().left;
+    const top = (cell: HTMLElement) => cell.getBoundingClientRect().top;
+    expect(left(stats[3])).toBeCloseTo(left(stats[0]), 1);
+    expect(left(stats[4])).toBeGreaterThan(left(stats[0]));
+    expect(top(stats[4])).toBeCloseTo(top(stats[0]), 1);
+    expect(left(growth[4])).toBeCloseTo(left(growth[0]), 1);
+    expect(left(growth[5])).toBeGreaterThan(left(growth[0]));
+    expect(top(growth[5])).toBeCloseTo(top(growth[1]), 1);
+    expect(top(stats[0])).toBeCloseTo(top(growth[1]), 1);
+
+    expect(page.summaryShowsGrowth()).toBeFalse();
+    const toggle = host.querySelector<HTMLButtonElement>('.summary-toggle')!;
+    expect(toggle.getAttribute('aria-pressed')).toBe('false');
+    toggle.click();
+    fixture.detectChanges();
+    expect(toggle.getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('.summary-growth')!.classList.contains('summary-group--active')).toBeTrue();
+    expect(host.querySelector('.summary-stats')!.classList.contains('summary-group--active')).toBeFalse();
+    toggle.click();
+    fixture.detectChanges();
+    expect(page.summaryShowsGrowth()).toBeFalse();
+
+    unit.dispatchEvent(new Event('focus'));
+    fixture.detectChanges();
+    Array.from(setup.querySelectorAll<HTMLButtonElement>('.option'))
+      .find((button) => button.textContent!.trim() === 'Mu')!.click();
+    fixture.detectChanges();
+    expect(state.seedMap().unitId).toBe(unitId('Mu'));
+    expect(identity.getAttribute('aria-label')).toBe('Mu');
+    state.addAvailableClass(classId('Gladiator'));
+    fixture.detectChanges();
+    startingClass.dispatchEvent(new Event('focus'));
+    fixture.detectChanges();
+    Array.from(setup.querySelectorAll<HTMLButtonElement>('.option'))
+      .find((button) => button.textContent!.trim() === 'Gladiator')!.click();
+    fixture.detectChanges();
+    expect(seed().classId).toBe(classId('Gladiator'));
+    expect(identity.querySelector('.summary-class-name')!.textContent!.trim()).toBe('Gladiator');
+  });
+
+  it('keeps the summary folded while tapping an option and restores it only after selection', () => {
+    const { fixture, host: page } = render();
+    const unit = page.querySelector<HTMLInputElement>('[aria-label="Seed setup"] input[aria-label="Unit"]')!;
+    unit.dispatchEvent(new Event('focus'));
+    fixture.detectChanges();
+    expect(page.classList.contains('keyboard-folded')).toBeTrue();
+    const option = Array.from(unit.closest('app-searchable-select')!.querySelectorAll<HTMLButtonElement>('.option'))
+      .find((button) => button.textContent!.trim() === 'Mu')!;
+    option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    unit.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: option }));
+    option.dispatchEvent(new FocusEvent('focusin', { bubbles: true, relatedTarget: unit }));
+    fixture.detectChanges();
+    expect(page.classList.contains('keyboard-folded')).toBeTrue();
+    expect(state.seedMap().unitId).toBe(unitId('Cai'));
+    option.click();
+    fixture.detectChanges();
+    expect(state.seedMap().unitId).toBe(unitId('Mu'));
+    expect(page.classList.contains('keyboard-folded')).toBeFalse();
+
+    unit.dispatchEvent(new Event('focus'));
+    fixture.detectChanges();
+    expect(page.classList.contains('keyboard-folded')).toBeTrue();
+    unit.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+    expect(page.classList.contains('keyboard-folded')).toBeFalse();
+  });
+
+  it('shows passive stat bonuses and no next-level growth at the level cap', () => {
+    const { fixture, page, host } = render();
+    expect(host.querySelector('.summary-abilities')!.textContent).toContain('Blaze');
+    expect(host.querySelector('.summary-abilities')!.textContent).toContain('Mag +3');
+    state.setStatsLevel(96);
+    fixture.detectChanges();
+    expect(page.endLevelOf(page.sectionViews()[0])).toBe(99);
+    expect(page.endGrowth(page.sectionViews()[0])).toBeNull();
+    host.querySelector<HTMLButtonElement>('.summary-toggle')!.click();
+    fixture.detectChanges();
+    expect(host.querySelector('.summary-growth h2')!.textContent).toContain('max level');
+    expect(host.querySelector('.summary-growth .summary-stat-grid strong')!.textContent!.trim()).toBe('—');
+  });
+
+  it('updates the sticky summary when changing timelines and shows conditional ability use', () => {
+    const { fixture, page, host } = render();
+    state.setUnit(unitId('Mu'));
+    state.setStatsLevel(32);
+    state.setAbilities(seed().id, ["Warrior's Blood"]);
+    state.setEquipment(seed().id, ['Wooden Sword']);
+    const branch = state.addBranch(seed().id, seed().rows[0].id, {
+      classId: classId('Diviner'), chance: 100, passed: true,
+    })!;
+    state.setEquipment(branch, []);
+    fixture.detectChanges();
+    page.timelineFocusId.set(seed().id);
+    fixture.detectChanges();
+    expect(host.querySelector('.summary-identity')!.getAttribute('aria-label')).toBe('Mu');
+    expect(host.querySelector('.summary-abilities')!.textContent).toContain("Warrior's Blood+");
+    expect(host.querySelector('.summary-abilities')!.textContent).toContain('Spd +2');
+    expect(host.querySelector('.summary-equipment')!.textContent).toContain('Wooden Sword');
+    page.timelineFocusId.set(branch);
+    fixture.detectChanges();
+    expect(host.querySelector('.summary-equipment')!.textContent).toContain('None equipped');
+    expect(host.querySelector('.summary-abilities')!.textContent).toContain('No bonus with equipped weapon');
+    expect(host.querySelector('.summary-abilities .summary-inactive')).not.toBeNull();
+    expect(getComputedStyle(host.querySelector('.page-header')!).position).toBe('sticky');
+    for (const list of Array.from(host.querySelectorAll('.summary-list'))) {
+      expect(getComputedStyle(list).overflowY).toBe('visible');
+    }
+  });
 
   it('uses the pre-level-up level for class gates on branches and inline class changes', () => {
     const { fixture, page } = render();
@@ -996,9 +1194,12 @@ describe('SeedTimelineComponent', () => {
     state.setAbilities(seed().id, ['Divine Insight']);
     fixture.detectChanges();
     const totals = page.endStatsOf(page.sectionViews()[0]);
-    const cells = host.querySelectorAll<HTMLElement>('.tgrid-total');
-    const index = STAT_KEYS.indexOf('spd');
-    const speed = cells[index].querySelector<HTMLElement>('span')!;
+    const cells = host.querySelectorAll<HTMLElement>('.summary-stats .summary-stat-grid > div');
+    const bottom = host.querySelectorAll<HTMLElement>('.tgrid-total');
+    expect(bottom.length).toBe(STAT_KEYS.length);
+    totals.forEach((total, index) => expect(bottom[index].textContent!.trim()).toBe(String(total.value ?? '—')));
+    const index = STAT_KEYS.indexOf('spd') - 1;
+    const speed = cells[index].querySelector<HTMLElement>('strong')!;
     expect(speed.classList.contains('stat-bonus')).toBeTrue();
     expect(cells[index].title).toContain('Class +0; Modifier +10');
     expect(getComputedStyle(speed).color).toBe('rgb(240, 192, 74)');
@@ -1007,7 +1208,7 @@ describe('SeedTimelineComponent', () => {
     const width = speed.getBoundingClientRect().width;
     speed.classList.remove('stat-bonus');
     expect(speed.getBoundingClientRect().width).toBe(width);
-    expect(cells[STAT_KEYS.indexOf('hp')].querySelector('.stat-bonus')).toBeNull();
-    expect(totals[index].value).toBeGreaterThanOrEqual(30);
+    expect(host.querySelector('.summary-hp .stat-bonus')).toBeNull();
+    expect(totals[index + 1].value).toBeGreaterThanOrEqual(30);
   });
 });

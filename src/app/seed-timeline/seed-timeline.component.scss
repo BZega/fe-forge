@@ -1,6 +1,6 @@
 :host {
   display: block;
-  --timeline-sticky-top: 0px;
+  --timeline-sticky-top: var(--mapper-header-height, 0px);
 }
 
 .timeline {
@@ -415,7 +415,7 @@
 
 @media (max-width: 720px) {
   :host {
-    --timeline-sticky-top: var(--mapper-header-height, 0px);
+    --timeline-sticky-top: var(--mapper-legacy-header-height, 0px);
   }
   .timeline {
     padding: 0 0.6rem 0.9rem;

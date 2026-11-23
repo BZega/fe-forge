@@ -7,11 +7,11 @@ import { classUnlockLevel, snapRank } from '../class-plan/class-plan.component';
 import { PlanStep } from '../class-plan/class-plan.component';
 import { ProjectionDialogComponent } from '../projection-dialog/projection-dialog.component';
 import { ProjectionActual } from '../projection-start-dialog/projection-start-dialog.component';
-import { classLevelGate, levelUpGrowth, RecruitmentChapter } from '../models/recruitment.models';
+import { BASE_MOVE, buildFromStrength, classLevelGate, levelUpGrowth, RecruitmentChapter } from '../models/recruitment.models';
 import { Battalion, BATTALION_TYPE_ORDER, CLASS_LEVEL_CONFIGS, MAX_BASE_STATS } from '../models/growth.models';
 import { isMountedClass } from '../models/bonuses';
-import { abilitiesFor, baseStatsOf, bondLevelOf, characterKey, ClassAbility, CLASS_RANK_ORDER, ClassRank, DEFAULT_MOUNT_BOND_LEVEL, GrowthRates, MAX_EQUIPPED_ABILITIES, Mount, MountBondLevel, mountBonusAt, mountGrowthAt, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, sumGrowth, toGrowth, Unit, UnitClass, WeaponKey, ZERO_GROWTH } from '../models/growth.models';
-import { abilitiesAt, abilityLock, blazeBonusOf, MAX_EXTRA_BONUS, personalBonusesAt, statAbilityPickerGroups, usesWeapon } from '../models/bonuses';
+import { abilitiesFor, abilityBoosts, baseStatsOf, bondLevelOf, characterKey, ClassAbility, classLabel, CLASS_RANK_ORDER, ClassRank, DEFAULT_MOUNT_BOND_LEVEL, GrowthRates, MAX_EQUIPPED_ABILITIES, Mount, MountBondLevel, mountBonusAt, mountGrowthAt, STAT_KEYS, STAT_LABELS, StatBoostAbility, StatKey, sumGrowth, toGrowth, Unit, UnitClass, WeaponKey, ZERO_GROWTH } from '../models/growth.models';
+import { abilitiesAt, abilityAt, abilityLock, blazeBonusOf, MAX_EXTRA_BONUS, personalBonusesAt, statAbilityPickerGroups, usesWeapon } from '../models/bonuses';
 import { estimateRoll, MAX_UNRELIABLE_GAINS, MIN_READINGS_TO_FILL, RollBounds, rollBounds, RollEstimate, RollObservation, UNKNOWN_ROLL } from '../models/seed-roll';
 import { CURRENT_SAVE_VERSION, migrateSave, newSaveId, SeedSave } from '../models/seed-save';
 import { SearchableSelectComponent, SelectItemGroup } from '../searchable-select/searchable-select.component';
@@ -25,7 +25,8 @@ import { SpoilerService } from '../services/spoiler.service';
 import { ALWAYS_AVAILABLE_CLASS, availableClassIds, effectiveClassId, ExamDraft, InlineExam, MAX_LEVEL, MIN_LEVEL, rowSwitchesTo, SeedComparator, SeedMapperStateService, SeedMarkUpdate, SeedRow, SeedSection, switchesClass } from '../services/seed-mapper-state.service';
 import { EquipmentDialogComponent } from '../equipment-dialog/equipment-dialog.component';
 import { BattalionDialogComponent } from '../battalion-dialog/battalion-dialog.component';
-import { equippedItems, equipmentWeapon, itemBoosts } from '../models/equipment';
+import { EquipmentSlot, equippedItems, equipmentSlot, equipmentWeapon, itemBonusDescription, itemBoosts } from '../models/equipment';
+import { classIcons, portraitUrl } from '../icon-links';
 import { hasStatBonus, statBreakdown } from '../models/stat-display';
 import { LevelEntryDialogComponent, LevelEntryRow } from '../level-entry-dialog/level-entry-dialog.component';
 import { StatBoosterDialogComponent } from '../stat-booster-dialog/stat-booster-dialog.component';
@@ -134,7 +135,23 @@ interface ExamDialogState {
   branch?: boolean;
 }
 
+export interface SummaryProfile {
+  className: string;
+  classIcon: string | null;
+  portrait: string | null;
+  unitName: string | null;
+  mov: number | null;
+  movTitle: string;
+  bld: number | null;
+  companion: { label: string; value: string; inactive: boolean; title: string };
+}
+
 const STR_INDEX = STAT_KEYS.indexOf('str');
+
+const SHORT_SLOT_LABELS: Readonly<Record<EquipmentSlot, string>> = {
+  Weapon: 'Wpn', Shield: 'Shld', Mask: 'Mask', Staff: 'Stf', Accessory: 'Acc',
+};
+
 const NO_ROLLS: RollEstimate[] = STAT_KEYS.map(() => estimateRoll([]));
 
 @Component({
@@ -157,7 +174,13 @@ const NO_ROLLS: RollEstimate[] = STAT_KEYS.map(() => estimateRoll([]));
   templateUrl: './seed-mapper-page.component.html',
   styleUrl: './seed-mapper-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[style.--mapper-header-height]': 'headerHeight() + "px"' },
+  host: {
+    '[style.--mapper-header-height]': '(betaView() ? headerHeight() : 0) + "px"',
+    '[style.--mapper-legacy-header-height]': 'headerHeight() + "px"',
+    '[class.beta-view]': 'betaView()',
+    '[class.keyboard-folded]': 'betaView() && keyboardFolded()',
+    '(dropdownkeyboardchange)': 'onDropdownKeyboardChange($event)',
+  },
 })
 export class SeedMapperPageComponent {
   private readonly api = inject(GrowthDataService);
@@ -172,10 +195,15 @@ export class SeedMapperPageComponent {
   readonly loadedSave = this.state.loadedSave;
   readonly status = signal<string | null>(null);
   readonly statKeys = STAT_KEYS;
+  readonly summaryStatKeys = STAT_KEYS.slice(1);
+  readonly summaryShowsGrowth = signal(false);
+  readonly betaView = signal(false);
+  readonly keyboardFolded = signal(false);
+  private readonly keyboardDropdowns = new Set<EventTarget>();
   readonly statLabels = STAT_LABELS;
   readonly minLevel = MIN_LEVEL;
   readonly maxLevel = MAX_LEVEL;
-  readonly header = viewChild.required<ElementRef<HTMLElement>>('pageHeader');
+  readonly header = viewChild<ElementRef<HTMLElement>>('pageHeader');
   readonly headerHeight = signal(0);
   readonly boosterEditor = signal<{ sectionId: number; entries: BoosterEntry[]; inherited: BoosterCounts } | null>(null);
   readonly boosterEditorError = signal<string | null>(null);
@@ -239,6 +267,7 @@ export class SeedMapperPageComponent {
   private readonly unitAbilities = computed(() => abilitiesFor(this.statBoostAbilities(), this.unitName() || null));
 
   private readonly unitName = computed(() => this.api.unitById(this.seedMap().unitId)?.name ?? '');
+  readonly summaryUnit = computed(() => this.allUnits().find((unit) => unit.id === this.seedMap().unitId) ?? null);
 
   readonly maxAbilities = MAX_EQUIPPED_ABILITIES;
 
@@ -375,7 +404,11 @@ export class SeedMapperPageComponent {
 
   constructor() {
     afterRenderEffect((onCleanup) => {
-      const header = this.header().nativeElement;
+      const header = this.header()?.nativeElement;
+      if (!header) {
+        this.headerHeight.set(0);
+        return;
+      }
       const observer = new ResizeObserver(() => this.headerHeight.set(header.getBoundingClientRect().height));
       observer.observe(header);
       this.headerHeight.set(header.getBoundingClientRect().height);
@@ -509,13 +542,14 @@ export class SeedMapperPageComponent {
       : (this.rowClasses().get(view.section.id)?.[rowIndex]?.growth ?? view.growth);
   }
 
-  rowGrowthDetails(view: SectionView, rowIndex: number): Record<StatKey, { boosted: boolean; title: string }> {
+  rowGrowthDetails(view: SectionView, rowIndex: number, nextLevel = false): Record<StatKey, { boosted: boolean; title: string }> {
     const selected = this.allUnits().find((unit) => unit.id === this.seedMap().unitId);
     const base = this.allUnits().find((unit) => unit.name === characterKey(selected?.name ?? '')) ?? selected;
     const unitClass = this.classes().find((unitClass) => unitClass.id === this.rowClassId(view, rowIndex));
     const config = unitClass && CLASS_LEVEL_CONFIGS[unitClass.name];
-    const levelBonus = toGrowth(config ? config.bonuses[classLevelGate(config, this.levelOf(view, rowIndex) - 1)] : null);
-    const growth = this.rowGrowth(view, rowIndex);
+    const level = this.levelOf(view, rowIndex) + (nextLevel ? 1 : 0);
+    const levelBonus = toGrowth(config ? config.bonuses[classLevelGate(config, level - 1)] : null);
+    const growth = nextLevel ? this.endGrowth(view) : this.rowGrowth(view, rowIndex);
     return Object.fromEntries(this.statKeys.map((stat) => {
       const baseValue = base?.[stat] ?? 0;
       const classValue = (unitClass?.[stat] ?? 0) + levelBonus[stat];
@@ -530,6 +564,89 @@ export class SeedMapperPageComponent {
   rowMount(view: SectionView, rowIndex: number): { mount: Mount | null; level: number | null } {
     const row = this.rowClasses().get(view.section.id)?.[rowIndex];
     return row ? { mount: row.mount, level: row.mountLevel } : { mount: view.mount, level: view.mountLevel };
+  }
+
+  endGrowth(view: SectionView): GrowthRates | null {
+    const index = view.section.rows.length - 1;
+    const classId = this.rowClassId(view, index);
+    if (classId === null || this.seedMap().unitId === null || this.endLevelOf(view) >= MAX_LEVEL) return null;
+    const { mount, level } = this.rowMount(view, index);
+    return this.combine(this.seedMap().unitId, classId, mount, level, this.endLevelOf(view) + 1);
+  }
+
+  summaryEquipment(view: SectionView): { name: string; slot: string; shortSlot: string; bonus: string }[] {
+    return equippedItems(view.section.equipment).map((item) => {
+      const slot = equipmentSlot(item);
+      return { name: item.Name, slot, shortSlot: SHORT_SLOT_LABELS[slot], bonus: itemBonusDescription(item) };
+    });
+  }
+
+  private summaryBonus(boosts: GrowthRates): string {
+    return this.statKeys.filter((stat) => boosts[stat] !== 0)
+      .map((stat) => `${this.statLabels[stat]} ${boosts[stat] > 0 ? '+' : ''}${boosts[stat]}`).join(', ');
+  }
+
+  summaryAbilities(view: SectionView): { name: string; detail: string; inactive: boolean; passive: boolean }[] {
+    const level = this.endLevelOf(view);
+    const weapon = equipmentWeapon(view.section.equipment);
+    const equipped = view.section.abilities.flatMap((name) => {
+      const selected = this.unitAbilities().find((ability) => ability.name === name);
+      if (!selected) return [{ name, detail: 'Unavailable', inactive: true, passive: false }];
+      const current = abilityAt(selected, level);
+      const missing = this.missingClassesFor(selected, view.section.id);
+      if (missing.length) return [{ name, detail: 'Requires an available class', inactive: true, passive: false }];
+      if (!current) return [{ name, detail: `Available at Lv ${selected.learnedAt}`, inactive: true, passive: false }];
+      const detail = this.summaryBonus(abilityBoosts([current], weapon));
+      return [{ name: current.name, detail: detail || 'No bonus with equipped weapon', inactive: !detail, passive: false }];
+    });
+    const personal = personalBonusesAt(this.unitName(), level).map((bonus) => {
+      const detail = this.summaryBonus(abilityBoosts([bonus], weapon));
+      return { name: bonus.name, detail: detail || 'No bonus with equipped weapon', inactive: !detail, passive: true };
+    });
+    const blaze = this.summaryBonus(blazeBonusOf(this.unitName()));
+    return [...equipped, ...personal, ...(blaze ? [{ name: 'Blaze', detail: blaze, inactive: false, passive: true }] : [])];
+  }
+
+  summaryProfile(view: SectionView): SummaryProfile {
+    const lastIndex = view.section.rows.length - 1;
+    const unit = this.summaryUnit();
+    const unitClass = this.classes().find((candidate) => candidate.id === this.rowClassId(view, lastIndex)) ?? null;
+    const className = unitClass ? classLabel(unitClass.name, unit) : null;
+    const icons = className ? classIcons(className) : [];
+    const strength = this.endStatsOf(view)[STR_INDEX].value;
+    const { mount, level } = this.rowMount(view, lastIndex);
+    const battalion = this.battalionOf(view);
+    const battalionStatus = this.summaryBattalionStatus(view);
+
+    return {
+      className: className ?? 'No class',
+      classIcon: (icons.find((icon) => icon.label === unit?.gender) ?? icons[0])?.src ?? null,
+      portrait: unit ? portraitUrl(unit.name) : null,
+      unitName: unit?.name ?? null,
+      mov: unitClass ? BASE_MOVE + unitClass.bonusStats.mov : null,
+      movTitle: statBreakdown(unitClass ? BASE_MOVE : '—', unitClass?.bonusStats.mov ?? 0),
+      bld: strength === null ? null : buildFromStrength(strength),
+      companion: unitClass && isMountedClass(unitClass.name)
+        ? {
+            label: 'Mount',
+            value: mount ? `${mount.name}${level === null ? '' : ` · Bond ${level}`}` : 'None',
+            inactive: !mount,
+            title: mount ? '' : 'No mount for this class',
+          }
+        : {
+            label: 'Battalion',
+            value: battalion ? `${battalion.name}${battalionStatus ? ` (${battalionStatus})` : ''}` : 'None',
+            inactive: !battalion || battalionStatus !== null,
+            title: battalion ? this.battalionHint(view) : '',
+          },
+    };
+  }
+
+  summaryBattalionStatus(view: SectionView): string | null {
+    const classId = this.rowClassId(view, view.section.rows.length - 1);
+    const unitClass = this.classes().find((candidate) => candidate.id === classId);
+    if (!unitClass) return 'inactive: no class';
+    return isMountedClass(unitClass.name) ? 'inactive: mounted' : null;
   }
 
   private readonly availableBySection = computed(() => {
@@ -1326,6 +1443,16 @@ export class SeedMapperPageComponent {
   }
 
   // --- events ------------------------------------------------------------
+
+  onDropdownKeyboardChange(event: Event): void {
+    if (!(event instanceof CustomEvent) || !event.target) return;
+    if (event.detail === true) {
+      this.keyboardDropdowns.add(event.target);
+    } else {
+      this.keyboardDropdowns.delete(event.target);
+    }
+    this.keyboardFolded.set(this.keyboardDropdowns.size > 0);
+  }
 
   onUnitChange(id: number | null): void {
     this.state.setUnit(id);

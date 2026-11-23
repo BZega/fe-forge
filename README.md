@@ -124,9 +124,27 @@ level gains and class floor increases) at **120 HP** and **99 for other stats**.
 Class stat bonuses and the shared **+10 non-class bonus** are added afterward,
 so displayed in-game totals can exceed those base caps. Projected probability
 distributions also stop at the base caps before bonuses are added.
-Growth Mapper keeps **Add levels**, **Exam / Reclass**, and **Seed RNG** visible
-while scrolling. The Timeline controls also stick below the main action bar,
-including the timeline selector, Projected Stats, and the Stat Increase menu.
+Growth Mapper defaults to the original layout, with **Add levels**, **Seed RNG**,
+and **Exam / Reclass** in the top header. Use **BETA view** at the top to try the
+new stat-sheet layout, or **Exit BETA** to return. Switching layouts preserves the
+seed map and selected timeline; the view choice resets when the page is reopened.
+In BETA, Growth Mapper keeps the selected timeline's summary sticky while scrolling. The
+Timeline controls also stick below it, including the timeline selector, **Add levels**,
+**Seed RNG**, **Exam / Reclass**, Projected Stats, and the Stat Increase menu.
+The summary reads like the in-game stat sheet: the unit card shows the current
+class, portrait, HP, level, Mov (4 + class Mov bonus), Bld (Str ÷ 5, minimum 1),
+and either the mount and bond level (mounted classes) or the battalion. Next to it
+are next-level growth rates, current stats, equipment, and equipped stat-boosting
+abilities. The summary also lists modeled personal and Blaze stat bonuses; listed
+individual bonuses are before the shared +10 cap, which is reflected in the current
+stats. The unit and starting-class selectors are in Seed setup. On mobile, the
+summary uses four panels (Unit, Stats / Growth, Equipment, Abilities), shows current
+stats by default with a Growth toggle, and folds away while a dropdown that opens
+the on-screen keyboard is open, including focus changes onto its options. It
+returns after selection or explicit dismissal, not when the search input blurs.
+Growth rows remain in the timeline to
+show changes along the route, and the final stats line remains at the bottom;
+starting stats remain editable in Seed setup.
 **Add levels** opens a draft for the selected timeline with one level ready to mark.
 Choose a count from 1 to `99 - current level` to enter multiple level-ups together.
 Tap the stats that rose, then confirm the batch; Cancel, closing, or Escape discards

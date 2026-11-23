@@ -1,4 +1,4 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, effect, ElementRef, HostListener, inject, Injector, input, output, signal, viewChild } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, HostListener, inject, Injector, input, output, signal, viewChild } from '@angular/core';
 
 export interface SelectItem {
   id: number;
@@ -90,6 +90,15 @@ export class SearchableSelectComponent {
   private openBeforePress = false;
 
   constructor() {
+    const notifyKeyboardState = (open: boolean) => {
+      this.host.nativeElement.dispatchEvent(new CustomEvent('dropdownkeyboardchange', {
+        bubbles: true,
+        detail: open,
+      }));
+    };
+    effect(() => notifyKeyboardState(this.open() && (this.keyboard() || this.typing())));
+    inject(DestroyRef).onDestroy(() => notifyKeyboardState(false));
+
     effect(() => {
       const element = this.searchBox()?.nativeElement;
 

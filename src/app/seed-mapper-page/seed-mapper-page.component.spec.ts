@@ -35,6 +35,23 @@ describe('SeedMapperPageComponent starting stats', () => {
   const allow = (...names: string[]) =>
     names.forEach((name) => state.addAvailableClass(classes.find((unitClass) => unitClass.name === name)!.id));
 
+  it('keeps the title and help in the scrolling content rather than the sticky header', () => {
+    const fixture = TestBed.createComponent(SeedMapperPageComponent);
+    fixture.componentInstance.betaView.set(true);
+    fixture.detectChanges();
+    const page: HTMLElement = fixture.nativeElement;
+    expect(page.querySelector('.seeds .page-header-title h1')?.textContent).toContain('Growth Mapper');
+    expect(page.querySelector('.seeds .page-header-title app-help-dialog')).not.toBeNull();
+    expect(page.querySelector('.page-header .page-header-title')).toBeNull();
+    expect(page.querySelector('.page-header .timeline-actions')).toBeNull();
+    const actions = page.querySelector('.timeline .timeline-actions');
+    expect(actions?.textContent).toContain('Add levels');
+    expect(actions?.textContent).toContain('Seed RNG');
+    expect(actions?.textContent).toContain('Exam / Reclass');
+    expect(page.querySelector('.seeds')?.firstElementChild?.classList.contains('page-header-title')).toBeTrue();
+    expect(page.querySelector('.page-header-title')?.nextElementSibling?.classList.contains('page-header')).toBeTrue();
+  });
+
   describe('stat boosters', () => {
     const seed = () => component.sectionViews()[0];
 

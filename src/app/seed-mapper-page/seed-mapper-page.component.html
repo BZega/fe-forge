@@ -1,60 +1,153 @@
-<header #pageHeader class="page-header">
-  <div>
-    <div class="page-header-title">
-      <h1>Growth Mapper</h1>
-      <app-help-dialog heading="Growth Mapper" [paragraphs]="helpText" />
-    </div>
-  </div>
-
-  <div class="page-header-actions">
-    <button type="button" class="ghost-button"
-      [disabled]="!focusedTimeline() || !canAddLevel(focusedTimeline()!)"
-      [title]="focusedTimeline() ? 'Add levels to ' + focusedTimeline()!.title : 'Add levels'"
-      (click)="openLevelEntry(focusedTimeline())">
-      Add levels
-    </button>
-    <button
-      type="button"
-      class="ghost-button"
-      [disabled]="!canOpenRng()"
-      [title]="
-        canOpenRng()
-          ? 'Show the roll ranges for every section'
-          : 'Pick a unit and class first'
-      "
-      (click)="openRng()"
-    >
-      Seed RNG
-    </button>
-
-    <button
-      type="button"
-      class="ghost-button"
-      [disabled]="!canAppendExam(focusedTimeline())"
-      [title]="appendExamHint(focusedTimeline())"
-      (click)="openAppendExam(focusedTimeline())"
-    >
-      Exam / Reclass
+<ng-template #pageTitle>
+  <div class="page-header-title">
+    <h1>Growth Mapper</h1>
+    <app-help-dialog heading="Growth Mapper" [paragraphs]="helpText" />
+    <button type="button" class="ghost-button beta-toggle"
+      [attr.aria-pressed]="betaView()" (click)="betaView.set(!betaView())">
+      {{ betaView() ? 'Exit BETA' : 'BETA view' }}
     </button>
   </div>
-</header>
+</ng-template>
+
+<ng-template #mapperHeader>
+  <header #pageHeader class="page-header">
+    @if (!betaView()) {
+      <ng-container [ngTemplateOutlet]="pageTitle" />
+      <div class="page-header-actions">
+        <button type="button" class="ghost-button"
+          [disabled]="!focusedTimeline() || !canAddLevel(focusedTimeline()!)"
+          [title]="focusedTimeline() ? 'Add levels to ' + focusedTimeline()!.title : 'Add levels'"
+          (click)="openLevelEntry(focusedTimeline())">
+          Add levels
+        </button>
+        <button type="button" class="ghost-button" [disabled]="!canOpenRng()"
+          [title]="canOpenRng() ? 'Show the roll ranges for every section' : 'Pick a unit and class first'"
+          (click)="openRng()">Seed RNG</button>
+        <button type="button" class="ghost-button" [disabled]="!canAppendExam(focusedTimeline())"
+          [title]="appendExamHint(focusedTimeline())" (click)="openAppendExam(focusedTimeline())">
+          Exam / Reclass
+        </button>
+      </div>
+    }
+    @if (betaView() && focusedTimeline(); as focus) {
+      @let growth = endGrowth(focus);
+      @let growthDetails = rowGrowthDetails(focus, focus.section.rows.length - 1, true);
+      @let totals = endStatsOf(focus);
+      @let profile = summaryProfile(focus);
+      @let atMax = endLevelOf(focus) >= maxLevel;
+      <section class="mapper-summary" aria-label="Selected timeline summary">
+        <div class="summary-identity" role="group" [attr.aria-label]="profile.unitName ?? 'Unit'">
+          <div class="summary-class">
+            @if (profile.classIcon; as icon) {
+              <img class="summary-class-icon" [src]="icon" alt="" (load)="$any($event.target).hidden = false"
+                (error)="$any($event.target).hidden = true" />
+            }
+            <span class="summary-class-name">{{ profile.className }}</span>
+          </div>
+          <div class="summary-row summary-hp" [title]="statTotalTitle(totals[0])">
+            <span>HP</span><strong [class.stat-bonus]="statHasBonus(totals[0])">{{ totals[0].value ?? '—' }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Lv</span><strong>{{ endLevelOf(focus) }}</strong>
+          </div>
+          <div class="summary-row summary-row--pair">
+            <span class="summary-pair" [title]="profile.movTitle"><span>Mov</span><strong>{{ profile.mov ?? '—' }}</strong></span>
+            <span class="summary-pair" title="Bld = Str ÷ 5, rounded down (minimum 1)"><span>Bld</span><strong>{{ profile.bld ?? '—' }}</strong></span>
+          </div>
+          <div class="summary-row summary-companion" [class.summary-inactive]="profile.companion.inactive"
+            [title]="profile.companion.title || profile.companion.value">
+            <span>{{ profile.companion.label }}</span><strong>{{ profile.companion.value }}</strong>
+          </div>
+          @if (profile.portrait; as portrait) {
+            <img class="summary-portrait" [src]="portrait" [alt]="profile.unitName" referrerpolicy="no-referrer"
+              (load)="$any($event.target).hidden = false" (error)="$any($event.target).hidden = true" />
+          }
+        </div>
+
+        <div class="summary-group summary-growth" [class.summary-group--active]="summaryShowsGrowth()">
+          <div class="summary-heading">
+            <h2>Growth Rates <small>{{ atMax ? 'max level' : 'next level' }}</small></h2>
+            <ng-container [ngTemplateOutlet]="summaryToggle" />
+          </div>
+          <div class="summary-stat-grid summary-stat-grid--growth" aria-live="polite">
+            @for (stat of statKeys; track stat) {
+              <div [title]="growth ? growthDetails[stat].title : atMax ? 'Maximum level reached' : 'Select a unit and class'">
+                <span>{{ statLabels[stat] }}</span>
+                <strong [class.stat-bonus]="growth && growthDetails[stat].boosted">{{ growth ? growth[stat] + '%' : '—' }}</strong>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="summary-group summary-stats" [class.summary-group--active]="!summaryShowsGrowth()">
+          <div class="summary-heading">
+            <h2>Current Stats</h2>
+            <ng-container [ngTemplateOutlet]="summaryToggle" />
+          </div>
+          <div class="summary-stat-grid">
+            <span class="summary-stat-spacer" aria-hidden="true"><span>HP</span><strong>0</strong></span>
+            @for (stat of summaryStatKeys; track stat; let index = $index) {
+              <div [title]="statTotalTitle(totals[index + 1])">
+                <span>{{ statLabels[stat] }}</span>
+                <strong [class.stat-bonus]="statHasBonus(totals[index + 1])">{{ totals[index + 1].value ?? '—' }}</strong>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="summary-group summary-list summary-equipment" role="region" aria-label="Weapons and equipment">
+          <div class="summary-heading">
+            <h2 title="Listed bonuses are before the shared +10 non-class limit">Weapons / Equipment</h2>
+          </div>
+          @for (item of summaryEquipment(focus); track item.slot) {
+            <div class="summary-item summary-item--equipment"
+              [title]="item.slot + ': ' + item.name + ' — ' + (item.bonus || 'No modeled stat bonus')">
+              <span>{{ item.shortSlot }}</span><strong>{{ item.name }}</strong>
+              @if (item.bonus) { <small>{{ item.bonus }}</small> }
+            </div>
+          } @empty {
+            <p class="summary-empty">None equipped</p>
+          }
+        </div>
+
+        <div class="summary-group summary-list summary-abilities" role="region" aria-label="Abilities and passives">
+          <div class="summary-heading">
+            <h2 title="Only stat-boosting abilities and passives are shown. Listed bonuses are before the shared +10 non-class limit">Abilities</h2>
+          </div>
+          @for (ability of summaryAbilities(focus); track ability.name) {
+            <div class="summary-item" [class.summary-inactive]="ability.inactive" [title]="ability.detail">
+              @if (ability.passive) { <span>Passive</span> }<strong>{{ ability.name }}</strong><small>{{ ability.detail }}</small>
+            </div>
+          } @empty {
+            <p class="summary-empty">No stat bonuses equipped</p>
+          }
+        </div>
+      </section>
+    }
+  </header>
+</ng-template>
+
+@if (!betaView()) {
+  <ng-container [ngTemplateOutlet]="mapperHeader" />
+}
 
 <div class="seeds">
+  @if (betaView()) {
+    <ng-container [ngTemplateOutlet]="pageTitle" />
+    <ng-container [ngTemplateOutlet]="mapperHeader" />
+  }
   @if (sectionViews()[0]; as seedView) {
     <section class="seed seed--setup" aria-label="Seed setup">
       <header class="seed-header">
         <h2>Seed</h2>
-        <ng-container [ngTemplateOutlet]="unitPicker" />
         <div class="picker picker--inline">
-          <app-searchable-select
-            class="compact"
-            label="Starting Class"
-            placeholder="— Starting class —"
-            [groups]="availableClassGroups(seedView)"
-            [clearable]="false"
-            [value]="seedView.classId"
-            (valueChange)="onClassChange(seedView, $event)"
-          />
+          <app-searchable-select class="compact" label="Unit" placeholder="— Select a unit —"
+            [items]="units()" [value]="seedMap().unitId" (valueChange)="onUnitChange($event)" />
+        </div>
+        <div class="picker picker--inline">
+          <app-searchable-select class="compact" label="Starting Class" placeholder="— Starting class —"
+            [groups]="availableClassGroups(seedView)" [clearable]="false" [value]="seedView.classId"
+            (valueChange)="onClassChange(seedView, $event)" />
         </div>
         <ng-container [ngTemplateOutlet]="classesButton" [ngTemplateOutletContext]="{ view: seedView }" />
       </header>
@@ -227,17 +320,11 @@
   </section>
 </div>
 
-<ng-template #unitPicker>
-  <div class="picker picker--inline">
-    <app-searchable-select
-      class="compact"
-      label="Unit"
-      placeholder="— Select a unit —"
-      [items]="units()"
-      [value]="seedMap().unitId"
-      (valueChange)="onUnitChange($event)"
-    />
-  </div>
+<ng-template #summaryToggle>
+  <button type="button" class="summary-toggle" [attr.aria-pressed]="summaryShowsGrowth()"
+    title="Switch between current stats and growth rates" (click)="summaryShowsGrowth.set(!summaryShowsGrowth())">
+    Growth
+  </button>
 </ng-template>
 
 <ng-template #classesButton let-view="view">
