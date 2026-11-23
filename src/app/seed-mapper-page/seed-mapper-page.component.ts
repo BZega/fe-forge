@@ -1455,13 +1455,34 @@ export class SeedMapperPageComponent {
   // --- events ------------------------------------------------------------
 
   onDropdownKeyboardChange(event: Event): void {
-    if (!(event instanceof CustomEvent) || !event.target) return;
+    if (!(event instanceof CustomEvent) || !(event.target instanceof HTMLElement)) return;
     if (event.detail === true) {
       this.keyboardDropdowns.add(event.target);
     } else {
       this.keyboardDropdowns.delete(event.target);
+      if (this.keyboardDropdowns.size === 0) {
+        this.restoreDropdownPosition(event.target);
+      }
     }
     this.keyboardAdjusting.set(this.keyboardDropdowns.size > 0);
+  }
+
+  private restoreDropdownPosition(select: HTMLElement): void {
+    if (!matchMedia('(max-width: 720px)').matches) return;
+
+    const scroller = select.closest<HTMLElement>('main');
+    const field = select.querySelector<HTMLElement>('.field');
+    if (!scroller || !field) return;
+
+    const desiredTop = scroller.getBoundingClientRect().top + this.headerHeight() + 8;
+    const delta = field.getBoundingClientRect().top - desiredTop;
+
+    if (delta < -2) {
+      scroller.scrollTo({
+        top: Math.max(0, Math.round(scroller.scrollTop + delta)),
+        behavior: 'auto',
+      });
+    }
   }
 
   onUnitChange(id: number | null): void {
