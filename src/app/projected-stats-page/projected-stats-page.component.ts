@@ -1,27 +1,36 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { HelpDialogComponent } from '../help-dialog/help-dialog.component';
 import { BuildResult, ProjectionBuildComponent } from '../projection-build/projection-build.component';
 import { ProjectionComparisonDialogComponent } from '../projection-comparison-dialog/projection-comparison-dialog.component';
 import { ProjectionStart, ProjectionStartDialogComponent } from '../projection-start-dialog/projection-start-dialog.component';
 import { BoosterCounts } from '../models/stat-boosters';
+import { ProjectionSave, ProjectionSaveStorageService } from '../services/projection-save-storage.service';
 
 interface Build {
   id: number;
+  transactionId: string;
   start: ProjectionStart;
+  savedId: string | null;
+  name: string;
 }
 
 interface StartDialogState {
   editId: number | null;
+  addActuals: boolean;
 }
 
 @Component({
   selector: 'app-projected-stats-page',
-  imports: [HelpDialogComponent, ProjectionBuildComponent, ProjectionComparisonDialogComponent, ProjectionStartDialogComponent],
+  imports: [DatePipe, HelpDialogComponent, ProjectionBuildComponent, ProjectionComparisonDialogComponent, ProjectionStartDialogComponent],
   templateUrl: './projected-stats-page.component.html',
   styleUrl: './projected-stats-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectedStatsPageComponent {
+  private readonly storage = inject(ProjectionSaveStorageService);
+  readonly saves = this.storage.saves;
+  readonly saveStatus = signal('');
   readonly helpText = [
     'Use + Build to add a character: choose Manual (their Lv 1 base stats, or stats you enter at any level) or Recruitment (the stats they join with). In the same window, plan their classes (each reclass has its own level, and classes unlock by rank) and set the level and options for that build. Edit reopens it.',
     'Each stat shows its average, spread (standard deviation), middle 50% of outcomes, and growth rate at the build’s level, with a histogram of every outcome. Add the stats you actually got in the build, as base or in-game stats, to see how lucky they were at that level.',
@@ -34,8 +43,18 @@ export class ProjectedStatsPageComponent {
   ];
 
   private nextId = 1;
-  readonly builds = signal<Build[]>([]);
+  readonly builds = signal<Build[]>(this.uniqueBuilds(this.storage.takeTransfers()));
   private readonly results = signal<ReadonlyMap<number, BuildResult | null>>(new Map());
+
+  private uniqueBuilds(starts: ProjectionStart[]): Build[] {
+    const seen = new Set<string>();
+    return starts.flatMap((original) => {
+      const start = this.storage.ensureTransaction(original);
+      if (seen.has(start.transactionId!)) return [];
+      seen.add(start.transactionId!);
+      return [{ id: this.nextId++, transactionId: start.transactionId!, start, savedId: null, name: start.name }];
+    });
+  }
 
   readonly headings = computed(() => {
     const builds = this.builds();
@@ -69,23 +88,118 @@ export class ProjectedStatsPageComponent {
   });
 
   openStart(): void {
-    this.startDialog.set({ editId: null });
+    this.startDialog.set({ editId: null, addActuals: false });
   }
 
-  editStart(id: number): void {
-    this.startDialog.set({ editId: id });
+  editStart(id: number, addActuals = false): void {
+    this.startDialog.set({ editId: id, addActuals });
   }
 
   onStartConfirmed(start: ProjectionStart): void {
     const editId = this.startDialog()?.editId ?? null;
 
     if (editId === null) {
-      this.builds.update((builds) => [...builds, { id: this.nextId++, start }]);
+      const identified = this.storage.ensureTransaction(start);
+      this.builds.update((builds) => builds.some((build) => build.transactionId === identified.transactionId)
+        ? builds
+        : [...builds, {
+            id: this.nextId++, transactionId: identified.transactionId!, start: identified,
+            savedId: null, name: identified.name,
+          }]);
     } else {
-      this.builds.update((builds) => builds.map((build) => (build.id === editId ? { ...build, start } : build)));
+      const savedId = this.builds().find((build) => build.id === editId)?.savedId ?? null;
+      const identified = this.storage.ensureTransaction(start);
+      this.builds.update((builds) => builds.map((build) => build.id === editId
+        ? { ...build, transactionId: identified.transactionId!, start: identified }
+        : build));
+      if (savedId) {
+        const saved = this.storage.overwrite(savedId, start);
+        if (saved) this.saveStatus.set(`Saved ${saved.name}.`);
+      }
     }
 
     this.startDialog.set(null);
+  }
+
+  saveBuild(id: number): void {
+    const build = this.builds().find((candidate) => candidate.id === id);
+    if (!build) return;
+    const save = build.savedId ? this.storage.overwrite(build.savedId, build.start) : this.storage.create(build.name, build.start);
+    if (save) {
+      this.builds.update((builds) => builds.map((entry) => entry.id === id ? {
+        ...entry,
+        transactionId: save.start.transactionId!,
+        start: save.start,
+        savedId: save.id,
+        name: save.name,
+      } : entry));
+      this.saveStatus.set(`Saved ${save.name}.`);
+    }
+  }
+
+  renameBuild(id: number, name: string): void {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    this.builds.update((builds) => builds.map((entry) => entry.id === id ? { ...entry, name: trimmed } : entry));
+    const savedId = this.builds().find((entry) => entry.id === id)?.savedId;
+    if (savedId) this.storage.rename(savedId, trimmed);
+  }
+
+  loadSave(save: ProjectionSave): void {
+    const start = this.storage.ensureTransaction(save.start);
+    this.builds.update((builds) => builds.some((build) => build.transactionId === start.transactionId)
+      ? builds
+      : [...builds, {
+          id: this.nextId++, transactionId: start.transactionId!, start, savedId: save.id, name: save.name,
+        }]);
+  }
+
+  deleteSave(id: string): void {
+    this.storage.remove(id);
+    this.builds.update((builds) => builds.map((build) => build.savedId === id ? { ...build, savedId: null } : build));
+  }
+
+  downloadSave(save: ProjectionSave): void {
+    const blob = new Blob([JSON.stringify(save, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${slugify(save.name)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url));
+  }
+
+  onUpload(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    void file.text().then((text) => {
+      try {
+        const save = this.storage.import(JSON.parse(text));
+        this.saveStatus.set(`Loaded ${save.name}.`);
+      } catch (error) {
+        this.saveStatus.set(error instanceof Error ? error.message : 'Could not load that projection.');
+      }
+    });
+  }
+
+  setBuildEquipment(id: number, equipment: readonly string[]): void {
+    this.builds.update((builds) => builds.map((build) => build.id === id
+      ? { ...build, start: { ...build.start, equipment } } : build));
+  }
+
+  setBuildAbilities(id: number, abilities: ProjectionStart['abilities']): void {
+    this.builds.update((builds) => builds.map((build) => build.id === id
+      ? { ...build, start: { ...build.start, abilities } } : build));
+  }
+
+  setBuildBattalion(id: number, battalion: ProjectionStart['battalion']): void {
+    this.builds.update((builds) => builds.map((build) => build.id === id
+      ? { ...build, start: { ...build.start, battalion } } : build));
   }
 
   setBuildLevel(id: number, level: number): void {
@@ -191,4 +305,8 @@ export class ProjectedStatsPageComponent {
     this.comparisonOpen.set(false);
     this.picked.set([]);
   }
+}
+
+function slugify(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'projected-stats';
 }

@@ -3,10 +3,10 @@ import { By } from '@angular/platform-browser';
 import { ClassPlanComponent } from '../class-plan/class-plan.component';
 import unitClassData from '../data/unit-classes.json';
 import unitData from '../data/units.json';
-import { STAT_KEYS, Unit, UnitClass } from '../models/growth.models';
+import { baseStatsOf, STAT_KEYS, Unit, UnitClass } from '../models/growth.models';
 import { RecruitmentDataService } from '../services/recruitment-data.service';
 import { SpoilerService } from '../services/spoiler.service';
-import { ProjectionStart, ProjectionStartDialogComponent } from './projection-start-dialog.component';
+import { DEFAULT_PROJECTION_OPTIONS, ProjectionActual, ProjectionStart, ProjectionStartDialogComponent } from './projection-start-dialog.component';
 
 const units = unitData as Pick<Unit, 'id' | 'name'>[];
 const unitId = (name: string) => units.find((unit) => unit.name === name)!.id;
@@ -204,6 +204,88 @@ describe('ProjectionStartDialogComponent', () => {
     expect(confirmed()!.actual).toEqual(jasmine.objectContaining({ level: 25, inGame: true }));
     expect(confirmed()!.actual!.stats.str).toBe(18);
     expect(confirmed()!.options.level).toBe(25);
+  });
+
+  it('appends a new actual level without replacing earlier actual stats', () => {
+    const first: ProjectionActual = {
+      level: 10,
+      stats: { hp: 30, str: 12, mag: 8, spd: 9, dex: 9, def: 7, res: 6, lck: 8, cha: 7 },
+      inGame: false,
+    };
+    const { dialog, fixture, confirmed } = open({
+      initial: {
+        source: 'manual', unit: units[0], name: units[0].name, level: 1, className: null,
+        stats: baseStatsOf(units[0].name)!, chapters: [], routeKey: null, chapterNumber: null,
+        baseStats: true, plan: [], steps: [], options: DEFAULT_PROJECTION_OPTIONS, actuals: [first],
+      },
+      addActualsInitially: true,
+    });
+    fixture.detectChanges();
+    dialog.planStart();
+    dialog.actualLevel.set(12);
+    dialog.actualInputs.set({ hp: 31, str: 13, mag: 8, spd: 9, dex: 9, def: 7, res: 6, lck: 8, cha: 7 });
+    dialog.confirm();
+
+    expect(confirmed()!.actuals?.map((actual) => actual.level)).toEqual([10, 12]);
+    expect(confirmed()!.actuals?.[0]).toEqual(first);
+  });
+
+  it('bounds later actuals from the latest earlier actual and intervening level gains', () => {
+    const first: ProjectionActual = {
+      level: 23,
+      stats: { hp: 30, str: 23, mag: 8, spd: 9, dex: 9, def: 7, res: 6, lck: 8, cha: 7 },
+      inGame: false,
+    };
+    const { dialog, fixture } = open({
+      initial: {
+        source: 'chapter', unit: units.find((unit) => unit.name === 'Peter')!, name: 'Peter', level: 1,
+        className: 'Noble/Commoner', stats: { ...baseStatsOf('Peter')! }, chapters: [],
+        routeKey: null, chapterNumber: null, baseStats: false,
+        plan: [{ id: 1, classId: (unitClassData as UnitClass[]).find((unitClass) => unitClass.name === 'Noble/Commoner')!.id, fromLevel: 1, mountId: null, bondLevel: null }],
+        steps: [], options: DEFAULT_PROJECTION_OPTIONS, actuals: [first],
+      },
+      addActualsInitially: true,
+    });
+    fixture.detectChanges();
+    const enter = (value: string) => {
+      const event = { target: { value } } as unknown as Event;
+      dialog.setActualStat('str', event);
+      return dialog.actualInputs()['str'];
+    };
+
+    dialog.actualLevel.set(24);
+    fixture.detectChanges();
+    expect(dialog['typingLimits']()?.['str']).toBe(24);
+    expect(enter('22')).toBe(23);
+    expect(enter('25')).toBe(24);
+
+    dialog.actualLevel.set(30);
+    fixture.detectChanges();
+    expect(dialog['typingLimits']()?.['str']).toBe(30);
+    expect(enter('22')).toBe(23);
+    expect(enter('40')).toBe(30);
+  });
+
+  it('does not allow a later actual base stat below an earlier actual', () => {
+    const first: ProjectionActual = {
+      level: 10,
+      stats: { hp: 30, str: 20, mag: 8, spd: 9, dex: 9, def: 7, res: 6, lck: 8, cha: 7 },
+      inGame: false,
+    };
+    const { dialog, fixture, host } = open({
+      initial: {
+        source: 'chapter', unit: units.find((unit) => unit.name === 'Cai')!, name: 'Cai', level: 1,
+        className: 'Noble/Commoner', stats: { ...baseStatsOf('Cai')! }, chapters: [],
+        routeKey: null, chapterNumber: null, baseStats: false, plan: [], steps: [],
+        options: DEFAULT_PROJECTION_OPTIONS, actuals: [first],
+      },
+      addActualsInitially: true,
+    });
+    fixture.detectChanges();
+    dialog.actualLevel.set(12);
+    const event = { target: { value: '18' } } as unknown as Event;
+    dialog.setActualStat('str', event);
+    expect(dialog.actualInputs()['str']).toBe(20);
   });
 
   it('pulls impossible actuals down to the most possible, then to the equipped bonuses on Done', () => {

@@ -3,7 +3,7 @@ import { inGameBonus } from '../models/bonuses';
 import { STAT_KEYS, toGrowth } from '../models/growth.models';
 import { RecruitmentChapter, stepAtLevel } from '../models/recruitment.models';
 import { ProjectionDialogComponent } from '../projection-dialog/projection-dialog.component';
-import { ProjectionStart, ProjectionStartDialogComponent } from '../projection-start-dialog/projection-start-dialog.component';
+import { projectionActuals, ProjectionActual, ProjectionStart, ProjectionStartDialogComponent } from '../projection-start-dialog/projection-start-dialog.component';
 
 @Component({
   selector: 'app-projection-picker',
@@ -45,6 +45,10 @@ export class ProjectionPickerComponent {
       },
     ];
   });
+
+  actualsFor(start: ProjectionStart): ProjectionActual[] {
+    return projectionActuals(start);
+  }
 
   close(): void {
     this.closed.emit();

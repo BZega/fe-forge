@@ -326,6 +326,23 @@ describe('ProjectionBuildComponent', () => {
     expect(open(start, { level: 11 }).build.rows().every((row) => row.actual === null)).toBeTrue();
   });
 
+  it('shows actual markers independently at every recorded level', () => {
+    const start = {
+      ...manualStart('Cai', 1, baseStatsOf('Cai')!),
+      actuals: [
+        { level: 5, stats: { ...baseStatsOf('Cai')!, str: 15 }, inGame: false },
+        { level: 8, stats: { ...baseStatsOf('Cai')!, str: 18 }, inGame: false },
+      ],
+      options: { ...options, level: 5 },
+    };
+    const atFive = open(start);
+    expect(atFive.build.rows().find((row) => row.stat === 'str')!.actual).toBeGreaterThan(0);
+
+    const atEight = open(start, { level: 8 });
+    expect(atEight.build.rows().find((row) => row.stat === 'str')!.actual).toBeGreaterThan(0);
+    expect(open(start, { level: 6 }).build.rows().every((row) => row.actual === null)).toBeTrue();
+  });
+
   it('adds bonuses to base actuals and subtracts them from in-game actuals without changing entered gear', () => {
     const sword = ITEMS.find((item) => item.Name === 'Wooden Sword')!;
     const original = sword.BonusStats;

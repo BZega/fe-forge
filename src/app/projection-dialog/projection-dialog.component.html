@@ -117,9 +117,13 @@
         }
       </ul>
 
-      <footer class="dialog-footer">
+      <footer class="dialog-footer dialog-footer--transfer">
+        <label class="transfer-save">
+          <input type="checkbox" [checked]="saveTransfer()" (change)="saveTransfer.set($any($event.target).checked)" />
+          Save to Projected Stats
+        </label>
         <button type="button" class="button" (click)="goBack()">Back</button>
-        <button type="button" class="button button--primary" (click)="close()">Done</button>
+        <button type="button" class="button button--primary" (click)="finish()">Done</button>
       </footer>
     </div>
   }

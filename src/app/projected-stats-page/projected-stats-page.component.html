@@ -22,11 +22,18 @@
     @for (build of builds(); track build.id; let index = $index) {
       <div class="panel" [class.panel--picked]="isPicked(build.id)">
         <app-projection-build
-          [heading]="headings()[index]"
+          [heading]="build.name"
           [start]="build.start"
+          [saved]="build.savedId !== null"
           (editRequested)="editStart(build.id)"
+          (actualsRequested)="editStart(build.id, true)"
+          (saveRequested)="saveBuild(build.id)"
+          (nameChange)="renameBuild(build.id, $event)"
           (levelChange)="setBuildLevel(build.id, $event)"
           (boostersChange)="setBoosters(build.id, $event)"
+          (equipmentChange)="setBuildEquipment(build.id, $event)"
+          (abilitiesChange)="setBuildAbilities(build.id, $event)"
+          (battalionChange)="setBuildBattalion(build.id, $event)"
           (removeRequested)="removeBuild(build.id)"
           (resultChange)="onResult(build.id, $event)"
         />
@@ -50,6 +57,33 @@
   </div>
 }
 
+<section class="projection-saves">
+  <header>
+    <h2>Saved projections</h2>
+    <div class="save-header-actions">
+      @if (saveStatus()) { <span class="save-status">{{ saveStatus() }}</span> }
+      <button type="button" class="ghost-button" (click)="projectionUpload.click()">Upload JSON</button>
+      <input #projectionUpload type="file" accept="application/json,.json" hidden (change)="onUpload($event)" />
+    </div>
+  </header>
+  @if (saves().length === 0) {
+    <p class="saves-empty">No saved projections yet.</p>
+  } @else {
+    <ul>
+      @for (save of saves(); track save.id) {
+        <li>
+          <button type="button" class="save-load" (click)="loadSave(save)">
+            <strong>{{ save.name }}</strong>
+            <span>{{ save.start.name }} · Lv {{ save.start.options.level }} · {{ save.savedAt | date:'medium' }}</span>
+          </button>
+          <button type="button" class="ghost-button" (click)="downloadSave(save)">Download</button>
+          <button type="button" class="ghost-button ghost-button--danger" (click)="deleteSave(save.id)">Delete</button>
+        </li>
+      }
+    </ul>
+  }
+</section>
+
 @if (startDialog(); as dialog) {
   <app-projection-start-dialog
     [heading]="dialog.editId === null ? 'Add a Build' : 'Edit Build'"
@@ -57,6 +91,7 @@
     [confirmLabel]="dialog.editId === null ? 'Add' : 'Save'"
     [initial]="editing()"
     [showOptions]="true"
+    [addActualsInitially]="dialog.addActuals"
     (confirmed)="onStartConfirmed($event)"
     (closed)="startDialog.set(null)"
   />

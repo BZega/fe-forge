@@ -6,7 +6,7 @@ import { abilitiesAt, InGameGear, inGameBonus, isMountedClass, statAbilityPicker
 import { levelUpGrowth, routeLabel, stepAtLevel } from '../models/recruitment.models';
 import { DistributionSummary, projectDistributions, quantile, rankOf, Ranking, shift, StatDistribution, summarize } from '../models/stat-distribution';
 import { PickerDialogComponent } from '../picker-dialog/picker-dialog.component';
-import { DEFAULT_PROJECTION_OPTIONS, ProjectionStart } from '../projection-start-dialog/projection-start-dialog.component';
+import { DEFAULT_PROJECTION_OPTIONS, ProjectionStart, projectionActuals } from '../projection-start-dialog/projection-start-dialog.component';
 import { GrowthDataService } from '../services/growth-data.service';
 import { StatHistogramComponent } from '../stat-histogram/stat-histogram.component';
 import { EquipmentDialogComponent } from '../equipment-dialog/equipment-dialog.component';
@@ -55,20 +55,27 @@ const NO_EQUIPMENT: readonly string[] = [];
 export class ProjectionBuildComponent {
   readonly heading = input.required<string>();
   readonly start = input<ProjectionStart | null>(null);
+  readonly saved = input(false);
 
   readonly options = computed(() => this.start()?.options ?? DEFAULT_PROJECTION_OPTIONS);
 
   readonly editRequested = output<void>();
+  readonly actualsRequested = output<void>();
+  readonly saveRequested = output<void>();
+  readonly nameChange = output<string>();
   readonly removeRequested = output<void>();
   readonly resultChange = output<BuildResult | null>();
   readonly levelChange = output<number>();
   readonly boostersChange = output<BoosterCounts>();
+  readonly equipmentChange = output<readonly string[]>();
+  readonly abilitiesChange = output<readonly StatBoostAbility[]>();
+  readonly battalionChange = output<Battalion | null>();
   readonly boosterPickerOpen = signal(false);
   readonly boosterEntries = computed<BoosterEntry[]>(() => [{
-    key: null, label: this.start()?.actual ? `Used by Lv ${this.start()!.actual!.level}` : `Used by Lv ${this.start()?.level ?? 1}`,
+    key: null, label: projectionActuals(this.start()).length > 0 ? `Used by Lv ${projectionActuals(this.start()).at(-1)!.level}` : `Used by Lv ${this.start()?.level ?? 1}`,
     counts: this.start()?.boosters ?? {},
   }]);
-  readonly boosterContext = computed(() => this.start()?.actual || (this.start()?.source === 'manual' && !this.start()?.baseStats)
+  readonly boosterContext = computed(() => projectionActuals(this.start()).length > 0 || (this.start()?.source === 'manual' && !this.start()?.baseStats)
     ? 'Record boosters already included in your entered stats. They are not added to those stats again.'
     : 'Boosters are added to the app-provided base stats before projecting level ups.');
   onBoostersConfirmed(entries: BoosterEntry[]): void {
@@ -114,6 +121,7 @@ export class ProjectionBuildComponent {
 
   onEquipmentConfirmed(names: string[]): void {
     this.equipment.set(names);
+    this.equipmentChange.emit(names);
     this.equipmentPickerOpen.set(false);
   }
 
@@ -136,11 +144,13 @@ export class ProjectionBuildComponent {
 
   onAbilitiesConfirmed(names: string[]): void {
     this.abilityNames.set(names);
+    this.abilitiesChange.emit(this.equippedAbilities());
     this.abilityPickerOpen.set(false);
   }
 
   setBattalion(value: string): void {
     this.battalion.set(this.battalions().find((battalion) => String(battalion.id) === value) ?? null);
+    this.battalionChange.emit(this.battalion());
   }
 
   readonly startSummary = computed(() => {
@@ -256,8 +266,9 @@ export class ProjectionBuildComponent {
       floorsAt: (at) => reclassFloors.get(at) ?? null,
       minimumAt: (at) => (options.minimum ? (at < options.partOneEndLevel ? 2 : 1) : 0),
       gainsAt: (at) => {
-        const included = start.source === 'manual' && !start.baseStats && !start.actual;
-        const boosterLevel = start.actual?.level ?? start.level;
+        const actuals = projectionActuals(start);
+        const included = start.source === 'manual' && !start.baseStats && actuals.length === 0;
+        const boosterLevel = actuals.at(-1)?.level ?? start.level;
         return !included && at === boosterLevel ? boosterStats(start.boosters ?? {}) : null;
       },
     });
@@ -281,7 +292,7 @@ export class ProjectionBuildComponent {
 
   readonly actualStats = computed<StatInputs>(() => {
     const start = this.start();
-    const actual = start?.actual;
+    const actual = projectionActuals(start).find((entry) => entry.level === this.level());
 
     if (!actual) {
       return emptyStats();
@@ -300,7 +311,7 @@ export class ProjectionBuildComponent {
 
   private readonly shownActuals = computed(() => {
     const bonus = this.viewBonus();
-    const actuals = this.start()?.actual?.level === this.level() ? this.actualStats() : emptyStats();
+    const actuals = projectionActuals(this.start()).some((entry) => entry.level === this.level()) ? this.actualStats() : emptyStats();
 
     return Object.fromEntries(
       this.statKeys.map((stat) => [stat, actuals[stat] === null ? null : actuals[stat]! + bonus[stat]]),

@@ -7,12 +7,14 @@ import { ProjectionComparisonDialogComponent } from '../projection-comparison-di
 import { ProjectionStart, ProjectionStartDialogComponent } from '../projection-start-dialog/projection-start-dialog.component';
 import { GrowthDataService } from '../services/growth-data.service';
 import { SpoilerService } from '../services/spoiler.service';
+import { ProjectionSaveStorageService } from '../services/projection-save-storage.service';
 import { ProjectedStatsPageComponent } from './projected-stats-page.component';
 
 describe('ProjectedStatsPageComponent', () => {
   let units: Unit[];
 
   beforeEach(() => {
+    localStorage.removeItem('fe-forge.projection-saves');
     TestBed.configureTestingModule({ imports: [ProjectedStatsPageComponent], providers: [provideRouter([])] });
     TestBed.inject(SpoilerService).setAllHidden(false);
     TestBed.inject(GrowthDataService).getUnits().subscribe((loaded) => (units = loaded));
@@ -137,6 +139,68 @@ describe('ProjectedStatsPageComponent', () => {
 
     expect(ctx.builds().length).toBe(1);
     expect((ctx.page.builds()[0].start as ProjectionStart).name).toBe('Peter');
+  });
+
+  it('saves a complete build and loads it again as editable projected stats', () => {
+    const ctx = render();
+    addManual(ctx, 'Cai');
+    ctx.page.saveBuild(ctx.page.builds()[0].id);
+    ctx.page.saveBuild(ctx.page.builds()[0].id);
+    ctx.fixture.detectChanges();
+
+    expect(ctx.page.saves().length).toBe(1);
+    ctx.page.removeBuild(ctx.page.builds()[0].id);
+    ctx.fixture.detectChanges();
+    expect(ctx.page.builds()).toEqual([]);
+
+    ctx.page.loadSave(ctx.page.saves()[0]);
+    ctx.page.loadSave(ctx.page.saves()[0]);
+    ctx.fixture.detectChanges();
+    expect(ctx.page.builds().length).toBe(1);
+    expect(ctx.page.builds()[0].start.name).toBe('Cai');
+    expect(ctx.page.builds()[0].savedId).toBe(ctx.page.saves()[0].id);
+  });
+
+  it('adds and saves actual stats for only the selected build', () => {
+    const ctx = render();
+    addManual(ctx, 'Cai');
+    addManual(ctx, 'Peter');
+    const firstId = ctx.page.builds()[0].id;
+    const secondStart = ctx.page.builds()[1].start;
+    ctx.page.saveBuild(firstId);
+    const actualButton = ctx.host.querySelectorAll<HTMLElement>('.build-save-actions')[0]
+      .querySelectorAll<HTMLButtonElement>('button')[1];
+
+    actualButton.click();
+    ctx.fixture.detectChanges();
+    const dialog = ctx.startDialog()!;
+    dialog.actualLevel.set(5);
+    dialog.actualInputs.set({ hp: 30, str: 12, mag: 8, spd: 9, dex: 9, def: 7, res: 6, lck: 8, cha: 7 });
+    dialog.confirm();
+    ctx.settle();
+
+    expect(ctx.page.builds()[0].start.actuals?.map((actual) => actual.level)).toEqual([5]);
+    expect(ctx.page.saves()[0].start.actuals?.map((actual) => actual.level)).toEqual([5]);
+    expect(ctx.page.builds()[1].start).toEqual(secondStart);
+    expect(ctx.host.querySelector('.recorded-actuals')).toBeNull();
+  });
+
+  it('downloads and imports a saved projection without duplicating its transaction', () => {
+    const ctx = render();
+    addManual(ctx, 'Cai');
+    ctx.page.saveBuild(ctx.page.builds()[0].id);
+    const save = ctx.page.saves()[0];
+    const click = spyOn(HTMLAnchorElement.prototype, 'click');
+    spyOn(URL, 'createObjectURL').and.returnValue('blob:test');
+    spyOn(URL, 'revokeObjectURL');
+
+    ctx.page.downloadSave(save);
+    expect(click).toHaveBeenCalled();
+
+    const storage = TestBed.inject(ProjectionSaveStorageService);
+    storage.import(JSON.parse(JSON.stringify(save)));
+    expect(storage.saves().length).toBe(1);
+    expect(storage.saves()[0].start.transactionId).toBe(save.start.transactionId);
   });
 
   it('compares two builds in a modal, picking them first when there are more', () => {

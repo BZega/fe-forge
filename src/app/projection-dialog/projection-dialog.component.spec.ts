@@ -9,6 +9,7 @@ import { SpoilerService } from '../services/spoiler.service';
 import { ClassPlanComponent } from '../class-plan/class-plan.component';
 import { actualTone, ProjectionDialogComponent } from './projection-dialog.component';
 import { blazeBonusOf, MAX_EXTRA_BONUS } from '../models/bonuses';
+import { ProjectionSaveStorageService } from '../services/projection-save-storage.service';
 
 const classes = unitClassData as UnitClass[];
 const byName = (name: string) => classes.find((unitClass) => unitClass.name === name)!;
@@ -111,6 +112,30 @@ describe('ProjectionDialogComponent', () => {
       expect(dialog.projection().find((row) => row.stat === 'str')!.total).toBe(chapter.stats.str);
     });
   };
+  it('transfers a complete projection when save to Projected Stats is checked', () => {
+    const { fixture, dialog, plan } = open('Cai');
+    const actuals = [
+      { level: 4, stats: { ...chapter.stats }, inGame: false },
+      { level: 5, stats: { ...chapter.stats, str: chapter.stats.str + 1 }, inGame: false },
+    ];
+    fixture.componentRef.setInput('actuals', actuals);
+    reclass(plan, 8, 'Gladiator');
+    dialog.submit();
+    dialog.setEndLevel('20');
+    dialog.saveTransfer.set(true);
+    fixture.detectChanges();
+
+    dialog.finish();
+    dialog.finish();
+
+    const transfers = TestBed.inject(ProjectionSaveStorageService).pendingTransfers();
+    expect(transfers.length).toBe(1);
+    expect(transfers[0].name).toBe('Cai');
+    expect(transfers[0].options.level).toBe(20);
+    expect(transfers[0].actuals).toEqual(actuals);
+    expect(transfers[0].steps.some((step) => step.unitClass.name === 'Gladiator')).toBeTrue();
+  });
+
   const reclass = (plan: ClassPlanComponent, level: number, className: string) => {
     plan.addClass();
     const entry = plan.plan().at(-1)!;

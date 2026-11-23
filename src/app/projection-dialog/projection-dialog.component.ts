@@ -5,16 +5,17 @@ import { abilitiesFor, abilityAvailableInClasses, abilityFamily, Battalion, BATT
 import { abilitiesAt, InGameGear, inGameBonus, isMountedClass, statAbilityPickerGroups, usesWeapon } from '../models/bonuses';
 import { levelUpGrowth, projectStats, RecruitmentChapter, stepAtLevel } from '../models/recruitment.models';
 import { PickerDialogComponent } from '../picker-dialog/picker-dialog.component';
-import { ProjectionActual } from '../projection-start-dialog/projection-start-dialog.component';
+import { DEFAULT_PROJECTION_OPTIONS, ProjectionActual, ProjectionStart } from '../projection-start-dialog/projection-start-dialog.component';
 import { GrowthDataService } from '../services/growth-data.service';
 import { EquipmentDialogComponent } from '../equipment-dialog/equipment-dialog.component';
 import { equipmentWeapon } from '../models/equipment';
 import { hasStatBonus, statBreakdown } from '../models/stat-display';
-import { BoosterCounts, BoosterEntry, boosterStats } from '../models/stat-boosters';
+import { BoosterCounts, BoosterEntry, boosterStats, sumBoosters } from '../models/stat-boosters';
 import { StatBoosterDialogComponent } from '../stat-booster-dialog/stat-booster-dialog.component';
 import { MAX_BASE_STATS } from '../models/growth.models';
 import { StatIncreaseMenuComponent } from '../stat-increase-menu/stat-increase-menu.component';
 import { BattalionDialogComponent } from '../battalion-dialog/battalion-dialog.component';
+import { ProjectionSaveStorageService } from '../services/projection-save-storage.service';
 
 export type ActualTone = 'higher' | 'even' | 'lower';
 
@@ -32,6 +33,7 @@ export class ProjectionDialogComponent implements OnInit {
   readonly initialChapter = input<number | null>(null);
   readonly chapterPicker = input(true);
   readonly plannedSteps = input<readonly PlanStep[] | null>(null);
+  readonly transferSource = input<ProjectionStart | null>(null);
   readonly actuals = input<readonly ProjectionActual[]>([]);
   readonly history = input<{ start: RecruitmentChapter; steps: readonly PlanStep[] } | null>(null);
   readonly abilities = input<readonly StatBoostAbility[]>([]);
@@ -97,6 +99,9 @@ export class ProjectionDialogComponent implements OnInit {
 
   readonly closed = output<void>();
   readonly back = output<void>();
+  readonly saveTransfer = signal(false);
+  private readonly saves = inject(ProjectionSaveStorageService);
+  private readonly transferTransactionId = this.saves.transactionIdForTransfer();
 
   readonly statKeys = STAT_KEYS;
   readonly statLabels = STAT_LABELS;
@@ -222,6 +227,68 @@ export class ProjectionDialogComponent implements OnInit {
   submit(): void {
     this.endLevel.set(this.maxLevel);
     this.page.set('results');
+  }
+
+  finish(): void {
+    if (this.saveTransfer()) {
+      const start = this.transferStart();
+      if (start) this.saves.transfer(start);
+    }
+    this.closed.emit();
+  }
+
+  private transferStart(): ProjectionStart | null {
+    const source = this.transferSource();
+    if (source) {
+      return {
+        ...structuredClone(source),
+        equipment: [...this.chosenEquipment()],
+        abilities: this.equippedAbilities(),
+        battalion: this.chosenBattalion(),
+        weapon: this.chosenWeapon(),
+        options: { ...source.options, level: this.endLevel() },
+      };
+    }
+
+    const from = this.history()?.start ?? this.chapter();
+    const steps = this.steps();
+    if (!from || steps.length === 0) return null;
+    const boosterCounts = sumBoosters(
+      ...this.boosterHistory().map((entry) => entry.counts),
+      this.boosters(),
+    );
+    const actual = this.actuals().find((entry) => entry.level === this.endLevel()) ?? null;
+
+    return {
+      transactionId: this.transferTransactionId,
+      source: 'manual',
+      unit: this.unit(),
+      name: this.unit().name,
+      level: from.level,
+      className: from.className,
+      stats: { ...from.stats },
+      chapters: [],
+      routeKey: null,
+      chapterNumber: null,
+      baseStats: false,
+      boosters: boosterCounts,
+      equipment: [...this.chosenEquipment()],
+      inGameStats: false,
+      actual,
+      actuals: [...this.actuals()],
+      abilities: this.equippedAbilities(),
+      weapon: this.chosenWeapon(),
+      battalion: this.chosenBattalion(),
+      plan: steps.map((step, index) => ({
+        id: index + 1,
+        classId: step.unitClass.id,
+        fromLevel: step.fromLevel,
+        mountId: step.mount?.id ?? null,
+        bondLevel: step.bondLevel,
+      })),
+      steps,
+      options: { ...DEFAULT_PROJECTION_OPTIONS, level: this.endLevel() },
+    };
   }
 
   setEndLevel(value: string): void {

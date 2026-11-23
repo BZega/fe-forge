@@ -393,6 +393,25 @@
   background: #142c30;
 }
 
+.build-save-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--panel-border);
+
+  input {
+    flex: 1;
+    min-width: 0;
+    background: #142c30;
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    color: inherit;
+    padding: 0.35rem 0.55rem;
+  }
+}
+
 .histogram-panel {
   border: 1px solid var(--panel-border);
   border-radius: 8px;
@@ -434,6 +453,19 @@
 }
 
 @media (max-width: 560px) {
+  .build-save-actions {
+    align-items: stretch;
+    flex-wrap: wrap;
+
+    input {
+      flex-basis: 100%;
+    }
+
+    button {
+      flex: 1;
+    }
+  }
+
   .build {
     padding: 0.75rem;
   }
