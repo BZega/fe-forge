@@ -532,6 +532,26 @@ describe('AppComponent mobile field visibility', () => {
       expect(host.style.getPropertyValue('--scroll-extra')).toBe('');
       expect(document.activeElement).toBe(input);
     });
+
+    it('creates enough modal scroll room for a keyboard-predicted shift', () => {
+      const modal = document.createElement('div');
+      modal.setAttribute('aria-modal', 'true');
+      scroller.append(modal);
+      modal.append(dropdown);
+      spyOn(modal, 'getBoundingClientRect').and.returnValue(new DOMRect(0, 12, 390, 640));
+      spyOnProperty(modal, 'scrollHeight', 'get').and.returnValue(640);
+      spyOnProperty(modal, 'clientHeight', 'get').and.returnValue(640);
+      const modalScroll: jasmine.Spy = spyOn(modal, 'scrollTo');
+
+      tapOn(input);
+
+      expect(modal.style.getPropertyValue('--keyboard-dialog-extra')).toBe('544px');
+      expect(modalScroll).toHaveBeenCalledOnceWith({ top: 544, behavior: 'auto' });
+
+      input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+      expect(modal.style.getPropertyValue('--keyboard-dialog-extra')).toBe('');
+    });
+
     it('leaves a scrolling drag alone', () => {
       const event = tapOn(input, 300, 360);
 

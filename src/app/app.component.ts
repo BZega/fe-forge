@@ -132,6 +132,7 @@ export class AppComponent {
         }
 
         this.clearDropdownCaps();
+        this.clearDialogScrollExtra();
         this.trimScrollExtra();
       };
       const onScroll = () => {
@@ -164,6 +165,7 @@ export class AppComponent {
           schedule();
         } else {
           this.clearDropdownCaps();
+          this.clearDialogScrollExtra();
           this.trimScrollExtra();
         }
       });
@@ -314,8 +316,12 @@ export class AppComponent {
     const target = Math.max(0, Math.round(scroller.scrollTop + delta));
     const shortfall = target - (scroller.scrollHeight - scroller.clientHeight);
 
-    if (shortfall > 0 && scroller.matches('main')) {
-      this.setScrollExtra(this.cssPixels('--scroll-extra') + shortfall);
+    if (shortfall > 0) {
+      if (scroller.matches('main')) {
+        this.setScrollExtra(this.cssPixels('--scroll-extra') + shortfall);
+      } else {
+        scroller.style.setProperty('--keyboard-dialog-extra', `${Math.ceil(shortfall)}px`);
+      }
     }
 
     scroller.scrollTo({ top: target, behavior });
@@ -331,6 +337,12 @@ export class AppComponent {
     this.host.nativeElement
       .querySelectorAll<HTMLElement>('app-searchable-select')
       .forEach((select) => select.style.removeProperty('--dropdown-max-height'));
+  }
+
+  private clearDialogScrollExtra(): void {
+    this.host.nativeElement
+      .querySelectorAll<HTMLElement>('[aria-modal="true"]')
+      .forEach((dialog) => dialog.style.removeProperty('--keyboard-dialog-extra'));
   }
 
   private trimScrollExtra(): void {

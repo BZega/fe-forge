@@ -69,6 +69,13 @@ body {
   }
 }
 
+[role='dialog']::after {
+  content: '';
+  display: block;
+  flex: none;
+  height: var(--keyboard-dialog-extra, 0px);
+}
+
 [role='dialog'],
 [role='dialog'] * {
   scrollbar-width: none;
