@@ -20,7 +20,8 @@
 
   <div class="support-links">
     @for (link of links; track link.label) {
-      <a class="button button--primary support-link" [href]="link.url" target="_blank" rel="noopener noreferrer">
+      <a class="button button--primary support-link" [href]="link.url" target="_blank" rel="noopener noreferrer"
+        (click)="openSupport($event, link.url)">
         {{ link.label }}
       </a>
     }
