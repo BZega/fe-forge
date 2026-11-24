@@ -5,6 +5,7 @@ import { BONUS_STAT_LABELS, BonusStatKey, STAT_KEYS, StatKey } from '../models/g
 export interface GrowthListRow {
   id: number;
   name: string;
+  slug?: string;
   growth: Partial<Record<BonusStatKey, number>>;
   total: number;
   tag?: GrowthListTag;

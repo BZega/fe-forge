@@ -7,6 +7,7 @@ import { StatSortComponent, StatSortDirection } from '../stat-sort/stat-sort.com
 import { BONUS_STAT_KEYS, BonusStatKey, CLASS_RANK_ORDER, STAT_KEYS, toGrowth, UnitClass } from '../models/growth.models';
 import { GrowthDataService } from '../services/growth-data.service';
 import { SpoilerService } from '../services/spoiler.service';
+import { routeSlug } from '../models/route-slug';
 
 type ClassListView = 'growth' | 'bonus' | 'floors';
 
@@ -114,6 +115,7 @@ export class ClassesPageComponent {
           return {
             id: unitClass.id,
             name: unitClass.name,
+            slug: routeSlug(unitClass.name),
             growth: values,
             total: statKeys.reduce((total, stat) => total + (values[stat] ?? 0), 0),
           };

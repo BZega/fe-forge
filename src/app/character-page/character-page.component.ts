@@ -1,7 +1,8 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, linkedSignal, signal, viewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, linkedSignal, PLATFORM_ID, signal, viewChildren } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { GrowthCalculatorComponent } from '../growth-calculator/growth-calculator.component';
 import { portraitUrl, skillIconUrl, useFallbackIcon } from '../icon-links';
@@ -16,6 +17,8 @@ import { SkillGridComponent } from '../skill-grid/skill-grid.component';
 import { ItemCardComponent } from '../item-card/item-card.component';
 import { hasStatBonus, statBreakdown } from '../models/stat-display';
 import { blazeBonusOf, MAX_EXTRA_BONUS } from '../models/bonuses';
+import { routeSlug } from '../models/route-slug';
+import { SeoService } from '../services/seo.service';
 
 type Tone = 'positive' | 'negative' | 'zero' | 'base';
 
@@ -37,6 +40,9 @@ export class CharacterPageComponent {
   private readonly recruitmentData = inject(RecruitmentDataService);
   private readonly state = inject(CalculatorStateService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly seo = inject(SeoService);
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly panels = viewChildren(GrowthCalculatorComponent);
 
   readonly tabs = computed(() => [
@@ -66,14 +72,19 @@ export class CharacterPageComponent {
     () => this.classes().find((c) => c.name === 'Noble/Commoner')?.id ?? null,
   );
 
-  readonly unitId = toSignal(
-    this.route.paramMap.pipe(map((params) => Number(params.get('id')))),
-    { initialValue: NaN },
+  readonly routeKey = toSignal(
+    this.route.paramMap.pipe(map((params) => params.get('id') ?? '')),
+    { initialValue: '' },
   );
 
-  readonly unit = computed(
-    () => this.units().find((u) => u.id === this.unitId()) ?? null,
-  );
+  readonly unit = computed(() => {
+    const key = this.routeKey();
+    return /^\d+$/.test(key)
+      ? this.units().find((unit) => unit.id === Number(key)) ?? null
+      : this.units().find((unit) => routeSlug(unit.name) === key) ?? null;
+  });
+
+  readonly unitId = computed(() => this.unit()?.id ?? NaN);
 
   readonly activeTab = linkedSignal<number, CharacterTab>({
     source: this.unitId,
@@ -172,6 +183,18 @@ export class CharacterPageComponent {
       })),
     };
   });
+
+  constructor() {
+    effect(() => {
+      const unit = this.unit();
+      if (!unit) return;
+      const slug = routeSlug(unit.name);
+      this.seo.set(unit.name, `/characters/${slug}`, `${unit.name} growth rates, class planning, recruitment, abilities, and projected stats.`);
+      if (isPlatformBrowser(this.platformId) && /^\d+$/.test(this.routeKey())) {
+        void this.router.navigate(['/characters', slug], { replaceUrl: true });
+      }
+    });
+  }
 
   readonly projectionOpen = signal(false);
 

@@ -70,7 +70,7 @@ export class AppComponent {
   readonly spoilerMenuOpen = signal(false);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
-  private layoutViewportHeight = window.innerHeight;
+  private layoutViewportHeight = typeof window === 'undefined' ? 844 : window.innerHeight;
   private keyboardInset = readKeyboardInset();
 
   private spoilerRouteData(): 'units' | 'classes' | 'mounts' | 'builds' | null {
@@ -456,6 +456,7 @@ export class AppComponent {
 }
 
 function readSpoilerNoticePreference(): boolean {
+  if (typeof localStorage === 'undefined') return false;
   try {
     return localStorage.getItem(SPOILER_NOTICE_KEY) === 'true';
   } catch (error) {
@@ -465,17 +466,18 @@ function readSpoilerNoticePreference(): boolean {
 }
 
 function readKeyboardInset(): number {
+  const height = typeof window === 'undefined' ? 844 : window.innerHeight;
   try {
-    const stored = Number(localStorage.getItem(KEYBOARD_KEY));
+    const stored = Number(typeof localStorage === 'undefined' ? 0 : localStorage.getItem(KEYBOARD_KEY));
 
-    if (stored > 0 && stored < window.innerHeight * 0.8) {
+    if (stored > 0 && stored < height * 0.8) {
       return stored;
     }
   } catch {
     // Storage can be unavailable.
   }
 
-  return Math.round(window.innerHeight * 0.6);
+  return Math.round(height * 0.6);
 }
 
 function writeKeyboardInset(inset: number): void {

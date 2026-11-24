@@ -217,7 +217,7 @@ describe('ClassPageComponent class switcher keyboard', () => {
     page.press(page.filter(), 'ArrowDown');
     page.press(page.filter(), 'Enter');
 
-    expect(page.navigate).toHaveBeenCalledWith(['/classes', ordered[2].id]);
+    expect(page.navigate).toHaveBeenCalledWith(['/classes', page.component.routeSlug(ordered[2].name)]);
     expect(page.component.switcherOpen()).toBeFalse();
     expect(document.activeElement).toBe(page.toggle());
   });
@@ -238,10 +238,10 @@ describe('ClassPageComponent class switcher keyboard', () => {
     const page = open(second.id);
 
     page.press(page.toggle(), 'ArrowDown');
-    expect(page.navigate).toHaveBeenCalledWith(['/classes', ordered[2].id]);
+    expect(page.navigate).toHaveBeenCalledWith(['/classes', page.component.routeSlug(ordered[2].name)]);
 
     page.press(page.toggle(), 'ArrowUp');
-    expect(page.navigate).toHaveBeenCalledWith(['/classes', ordered[0].id]);
+    expect(page.navigate).toHaveBeenCalledWith(['/classes', page.component.routeSlug(ordered[0].name)]);
   });
 
   it('wraps from the first class back to the last', () => {
@@ -249,7 +249,7 @@ describe('ClassPageComponent class switcher keyboard', () => {
 
     page.press(page.toggle(), 'ArrowUp');
 
-    expect(page.navigate).toHaveBeenCalledWith(['/classes', ordered.at(-1)!.id]);
+    expect(page.navigate).toHaveBeenCalledWith(['/classes', page.component.routeSlug(ordered.at(-1)!.name)]);
   });
 
   it('links to the previous and next class at the bottom of the page, on opposite sides', () => {
@@ -270,10 +270,10 @@ describe('ClassPageComponent class switcher keyboard', () => {
     const page = open(second.id);
 
     page.press(document.body, 'ArrowRight');
-    expect(page.navigate).toHaveBeenCalledWith(['/classes', ordered[2].id]);
+    expect(page.navigate).toHaveBeenCalledWith(['/classes', page.component.routeSlug(ordered[2].name)]);
 
     page.press(document.body, 'ArrowLeft');
-    expect(page.navigate).toHaveBeenCalledWith(['/classes', ordered[0].id]);
+    expect(page.navigate).toHaveBeenCalledWith(['/classes', page.component.routeSlug(ordered[0].name)]);
   });
 
   it('leaves left and right alone while typing, on the stat tabs, or with the list open', () => {

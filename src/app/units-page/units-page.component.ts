@@ -5,6 +5,7 @@ import { HelpDialogComponent } from '../help-dialog/help-dialog.component';
 import { toGrowth, Unit } from '../models/growth.models';
 import { GrowthDataService } from '../services/growth-data.service';
 import { SpoilerService } from '../services/spoiler.service';
+import { routeSlug } from '../models/route-slug';
 
 @Component({
   selector: 'app-units-page',
@@ -53,6 +54,7 @@ export class UnitsPageComponent {
       rows: this.units().map((unit) => ({
         id: unit.id,
         name: unit.name,
+        slug: routeSlug(unit.name),
         growth: toGrowth(unit),
         total: unit.total,
       })),

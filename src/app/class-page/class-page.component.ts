@@ -1,5 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, inject, Injector, linkedSignal, signal, viewChild } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, effect, ElementRef, HostListener, inject, Injector, linkedSignal, PLATFORM_ID, signal, viewChild } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
@@ -10,6 +11,8 @@ import { SpoilerService } from '../services/spoiler.service';
 import { StatRowItem, StatRowsComponent } from '../stat-rows/stat-rows.component';
 import { statBreakdown } from '../models/stat-display';
 import { SkillGridComponent } from '../skill-grid/skill-grid.component';
+import { routeSlug } from '../models/route-slug';
+import { SeoService } from '../services/seo.service';
 
 type StatTab = 'bonus' | 'base';
 
@@ -26,6 +29,8 @@ export class ClassPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
+  private readonly seo = inject(SeoService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   private readonly switcher = viewChild<ElementRef<HTMLElement>>('switcher');
   private readonly toggle = viewChild<ElementRef<HTMLButtonElement>>('toggle');
@@ -56,14 +61,31 @@ export class ClassPageComponent {
     initialValue: [] as ClassAbility[],
   });
 
-  readonly classId = toSignal(
-    this.route.paramMap.pipe(map((params) => Number(params.get('id')))),
-    { initialValue: NaN },
+  readonly routeKey = toSignal(
+    this.route.paramMap.pipe(map((params) => params.get('id') ?? '')),
+    { initialValue: '' },
   );
 
-  readonly unitClass = computed(
-    () => this.classes().find((c) => c.id === this.classId()) ?? null,
-  );
+  readonly unitClass = computed(() => {
+    const key = this.routeKey();
+    return /^\d+$/.test(key)
+      ? this.classes().find((unitClass) => unitClass.id === Number(key)) ?? null
+      : this.classes().find((unitClass) => routeSlug(unitClass.name) === key) ?? null;
+  });
+
+  readonly classId = computed(() => this.unitClass()?.id ?? NaN);
+
+  constructor() {
+    effect(() => {
+      const unitClass = this.unitClass();
+      if (!unitClass) return;
+      const slug = routeSlug(unitClass.name);
+      this.seo.set(unitClass.name, `/classes/${slug}`, `${unitClass.name} growth rates, stat bonuses, base stats, skills, and class abilities.`);
+      if (isPlatformBrowser(this.platformId) && /^\d+$/.test(this.routeKey())) {
+        void this.router.navigate(['/classes', slug], { replaceUrl: true });
+      }
+    });
+  }
 
   readonly levelConfig = computed(() => {
     const name = this.unitClass()?.name;
@@ -233,6 +255,8 @@ export class ClassPageComponent {
     this.activeSkill.update((current) => (current === skill ? null : skill));
   }
 
+  readonly routeSlug = routeSlug;
+
   readonly switcherGroups = computed(() => {
     const needle = this.filter().trim().toLowerCase();
 
@@ -278,7 +302,7 @@ export class ClassPageComponent {
 
     if (step) {
       event.preventDefault();
-      this.router.navigate(['/classes', step.id]);
+      this.router.navigate(['/classes', routeSlug(step.name)]);
     }
   }
 
@@ -334,12 +358,13 @@ export class ClassPageComponent {
 
     event.preventDefault();
     const step = event.key === 'ArrowDown' ? 1 : -1;
-    this.router.navigate(['/classes', list[(index + step + list.length) % list.length].id]);
+    this.router.navigate(['/classes', routeSlug(list[(index + step + list.length) % list.length].name)]);
   }
 
   goTo(classId: number): void {
     this.closeSwitcher();
-    this.router.navigate(['/classes', classId]);
+    const unitClass = this.classes().find((candidate) => candidate.id === classId);
+    if (unitClass) this.router.navigate(['/classes', routeSlug(unitClass.name)]);
     this.toggle()?.nativeElement.focus();
   }
 

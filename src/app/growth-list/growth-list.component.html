@@ -65,7 +65,7 @@
             <tr>
               <th scope="row" class="list-name">
                 @if (linkBase(); as base) {
-                  <a class="list-link" [routerLink]="[base, row.id]">{{ row.name }}</a>
+                  <a class="list-link" [routerLink]="[base, row.slug ?? row.id]">{{ row.name }}</a>
                 } @else {
                   {{ row.name }}
                 }

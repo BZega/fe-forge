@@ -1,2 +1,3 @@
 User-agent: *
 Allow: /
+Sitemap: https://feforge.app/sitemap.xml

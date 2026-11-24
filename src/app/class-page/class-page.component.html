@@ -71,7 +71,7 @@
                       [class.switcher-option--current]="option.id === current.id"
                       [class.switcher-option--active]="option.id === highlightId()"
                       [attr.aria-selected]="option.id === highlightId()"
-                      [routerLink]="['/classes', option.id]"
+                      [routerLink]="['/classes', routeSlug(option.name)]"
                       (click)="$event.preventDefault(); goTo(option.id)"
                     >
                       {{ option.name }}
@@ -226,10 +226,10 @@
   @let neighbours = adjacentClasses();
   <nav class="class-steps" aria-label="Previous and next class">
     @if (neighbours.previous; as previous) {
-      <a class="back" [routerLink]="['/classes', previous.id]" title="Previous class (←)">&lsaquo; {{ previous.name }}</a>
+      <a class="back" [routerLink]="['/classes', routeSlug(previous.name)]" title="Previous class (←)">&lsaquo; {{ previous.name }}</a>
     }
     @if (neighbours.next; as next) {
-      <a class="back class-steps-next" [routerLink]="['/classes', next.id]" title="Next class (→)">{{ next.name }} &rsaquo;</a>
+      <a class="back class-steps-next" [routerLink]="['/classes', routeSlug(next.name)]" title="Next class (→)">{{ next.name }} &rsaquo;</a>
     }
   </nav>
 } @else {
