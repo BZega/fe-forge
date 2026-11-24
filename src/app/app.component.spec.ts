@@ -192,6 +192,17 @@ describe('AppComponent spoiler reminders', () => {
     save.and.callThrough();
   });
 
+  it('resets the shared main scroller when changing routes', async () => {
+    const scroller = fixture.nativeElement.querySelector('main') as HTMLElement;
+    const scroll = spyOn(scroller, 'scrollTo');
+
+    await navigate('/growth-mapper');
+
+    expect(scroll).toHaveBeenCalled();
+    expect(scroll.calls.mostRecent().args as unknown as [ScrollToOptions])
+      .toEqual([{ top: 0, left: 0, behavior: 'auto' }]);
+  });
+
   it('anchors the navbar and prevents root scrolling', () => {
     const host = fixture.nativeElement as HTMLElement;
     const nav = host.querySelector('.topnav')!;

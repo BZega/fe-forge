@@ -1,5 +1,5 @@
-import { afterNextRender, Component, computed, DestroyRef, ElementRef, HostListener, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { afterNextRender, Component, computed, DestroyRef, ElementRef, HostListener, inject, Injector, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
 import { SPOILER_TIERS, SpoilerService, SpoilerTier } from './services/spoiler.service';
@@ -70,6 +70,7 @@ export class AppComponent {
   readonly spoilerMenuOpen = signal(false);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly injector = inject(Injector);
   private layoutViewportHeight = typeof window === 'undefined' ? 844 : window.innerHeight;
   private keyboardInset = readKeyboardInset();
 
@@ -100,6 +101,19 @@ export class AppComponent {
 
   constructor() {
     const destroyRef = inject(DestroyRef);
+
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      takeUntilDestroyed(destroyRef),
+    ).subscribe(() => {
+      afterNextRender(() => {
+        const scroller = this.host.nativeElement.querySelector<HTMLElement>('main');
+        if (scroller) {
+          scroller.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        }
+        this.setScrollExtra(0);
+      }, { injector: this.injector });
+    });
 
     afterNextRender(() => {
       const viewport = window.visualViewport;

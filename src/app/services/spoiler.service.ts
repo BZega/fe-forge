@@ -1,4 +1,5 @@
-import { computed, effect, Injectable, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { computed, effect, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 
 export type SpoilerTier = 'war' | 'salvation' | 'dlc';
 
@@ -50,12 +51,14 @@ const SALVATION_CLASS_RANKS: ReadonlySet<string> = new Set(['Master', 'Divine'])
 
 @Injectable({ providedIn: 'root' })
 export class SpoilerService {
-  readonly hiddenTiers = signal<HiddenTiers>(read());
+  private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
+  readonly hiddenTiers = signal<HiddenTiers>(this.browser ? read() : allTiers(true));
   readonly hidden = computed(() => Object.values(this.hiddenTiers()).some(Boolean));
   readonly allHidden = computed(() => Object.values(this.hiddenTiers()).every(Boolean));
 
   constructor() {
     effect(() => {
+      if (!this.browser) return;
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this.hiddenTiers()));
       } catch {
